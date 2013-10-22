@@ -1,0 +1,42 @@
+apply {
+    plugin 'groovy'
+    plugin 'maven'
+    plugin 'idea'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        // TODO: Default to local, but allow override
+        url "http://localhost:8080/netkernel-maven"
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+group = 'org.netkernel'
+version = '0.0.1'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile group: 'urn.com.ten60.core', name: 'netkernel.api', version: '4.2.5'
+    compile group: 'urn.com.ten60.core', name: 'netkernel.impl', version: '4.36.24'
+    compile group: 'urn.com.ten60.core', name: 'layer0', version: '1.108.57'
+    compile group: 'urn.com.ten60.core', name: 'module.standard', version: '1.66.29'
+    compile group: 'urn.com.ten60.core', name: 'cache.se', version: '1.6.11'
+    compile group: 'urn.org.netkernel', name: 'ext.layer1', version: '1.53.26'
+
+    testCompile 'junit:junit:4+'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.8'
+}

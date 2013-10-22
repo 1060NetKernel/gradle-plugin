@@ -5,6 +5,7 @@ import org.apache.tools.ant.BuildListener
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.DownloadConfig
+import org.netkernel.gradle.util.FileSystemHelper
 
 /*
  * A task to download a version of NetKernel.
@@ -18,6 +19,8 @@ class DownloadNetKernelTask extends DefaultTask {
 
     DownloadConfig downloadConfig
 
+    def fsHelper = new FileSystemHelper()
+
     // Defaults
     static def DISTRIBUTION_URL = 'http://apposite.netkernel.org/dist'
     static def NKSE = 'SE'
@@ -27,7 +30,12 @@ class DownloadNetKernelTask extends DefaultTask {
 
     @TaskAction
     void downloadNetKernel() {
-        def dest = "/Users/brian/nk-tmp"
+        def dest = fsHelper.dirInGradleHomeDirectory("download/netkernel")
+        if(!fsHelper.dirExists(dest)&&!fsHelper.createDirectory(dest)) {
+            // TODO: Handle this exception
+            println "Error creating: ${dest}"
+        }
+
         def url
 
         if(downloadConfig.url != null) {

@@ -1,0 +1,24 @@
+apply plugin: 'netkernel'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            // TODO: Default to local, but allow override
+            url "http://localhost:8080/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '0.0.1'
+    }
+}
+
+netkernel {
+    download {
+        ee {
+            //url = "http://localhost:8000"
+        }
+    }
+}

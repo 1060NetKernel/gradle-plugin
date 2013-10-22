@@ -1,6 +1,7 @@
 apply {
     plugin 'groovy'
     plugin 'maven'
+    plugin 'idea'
 }
 
 repositories {
@@ -9,6 +10,14 @@ repositories {
     maven {
         // TODO: Default to local, but allow override
         url "http://localhost:8080/netkernel-maven"
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
     }
 }
 

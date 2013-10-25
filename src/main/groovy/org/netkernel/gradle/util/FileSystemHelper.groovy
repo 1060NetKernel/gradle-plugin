@@ -9,7 +9,7 @@ class FileSystemHelper {
      * @param dir
      * @return
      */
-    boolean dirExists(String dir) {
+    boolean dirExists(def dir) {
         new File(dir).exists()
     }
 
@@ -26,7 +26,7 @@ class FileSystemHelper {
      * @param dirName
      * @return
      */
-    def createDirectory(String dirName) {
+    def createDirectory(def dirName) {
         boolean retValue = false
 
         def f = new File(dirName)
@@ -45,11 +45,11 @@ class FileSystemHelper {
      * @param dirName
      * @return
      */
-    def dirInGradleHomeDirectory(String dirName) {
+    def dirInGradleHomeDirectory(def dirName) {
         "${gradleHomeDir()}/$dirName"
     }
 
-    def dirExistsInGradleHomeDirectory(String dirName) {
+    def dirExistsInGradleHomeDirectory(def dirName) {
         return existsDir(dirInGradleHomeDirectory(dirName))
     }
 
@@ -58,8 +58,8 @@ class FileSystemHelper {
      * @param dirName
      * @return
      */
-    def createDirInGradleHomeDirectory(String dirName) {
-        def dir = "${gradleHomeDir}/$dirName"
+    def createDirInGradleHomeDirectory(def dirName) {
+        def dir = "${gradleHomeDir()}/$dirName"
         return createDirectory(dir)
     }
 }

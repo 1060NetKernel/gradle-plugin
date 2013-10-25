@@ -1,13 +1,13 @@
 package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
-
 /**
  *  A simple class to manage NetKernel download parameters.
  */
 class Download {
     final DownloadConfig ee = new DownloadConfig()
     final DownloadConfig se = new DownloadConfig()
+
     final Project project
 
     Download(Project project) {

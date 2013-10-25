@@ -33,6 +33,7 @@ dependencies {
     compile group: 'urn.com.ten60.core', name: 'module.standard', version: '1.66.29'
     compile group: 'urn.com.ten60.core', name: 'cache.se', version: '1.6.11'
     compile group: 'urn.org.netkernel', name: 'ext.layer1', version: '1.53.26'
+    compile group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.6'
 
     testCompile 'junit:junit:4+'
 }

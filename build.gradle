@@ -8,8 +8,8 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
-        // TODO: Default to local, but allow override
-        url "http://localhost:8080/netkernel-maven"
+        // TODO: Default to netkernelroc.org, but allow override
+        url "http://maven.netkernelroc.org/netkernel-maven"
     }
 }
 
@@ -27,12 +27,12 @@ version = '0.0.1'
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile group: 'urn.com.ten60.core', name: 'netkernel.api', version: '4.2.5'
-    compile group: 'urn.com.ten60.core', name: 'netkernel.impl', version: '4.36.24'
-    compile group: 'urn.com.ten60.core', name: 'layer0', version: '1.108.57'
-    compile group: 'urn.com.ten60.core', name: 'module.standard', version: '1.66.29'
-    compile group: 'urn.com.ten60.core', name: 'cache.se', version: '1.6.11'
-    compile group: 'urn.org.netkernel', name: 'ext.layer1', version: '1.53.26'
+    compile group: 'urn.com.ten60.core', name: 'netkernel.api', version: '[1.0.0,)'
+    compile group: 'urn.com.ten60.core', name: 'netkernel.impl', version: '[1.0.0,)'
+    compile group: 'urn.com.ten60.core', name: 'layer0', version: '[1.0.0,)'
+    compile group: 'urn.com.ten60.core', name: 'module.standard', version: '[1.0.0,)'
+    compile group: 'urn.com.ten60.core', name: 'cache.se', version: '[1.0.0,)'
+    compile group: 'urn.org.netkernel', name: 'ext.layer1', version: '[1.0.0,)'
     compile group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.6'
 
     testCompile 'junit:junit:4+'

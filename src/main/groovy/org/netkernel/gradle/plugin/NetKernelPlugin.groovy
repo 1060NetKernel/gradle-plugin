@@ -66,8 +66,8 @@ class NetKernelPlugin implements Plugin<Project> {
         project.task('startNKEE', type: StartNetKernelTask) {
             executionConfig = defaultEEJar
         }
-
         project.tasks.startNKEE.dependsOn "downloadNKEE"
+        
         project.task('installNKEE', type: InstallNetKernelTask) {
             executionConfig = defaultEEJar
         }

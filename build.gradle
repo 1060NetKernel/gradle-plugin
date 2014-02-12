@@ -34,6 +34,7 @@ dependencies {
     compile group: 'urn.com.ten60.core', name: 'cache.se', version: '[1.0.0,)'
     compile group: 'urn.org.netkernel', name: 'ext.layer1', version: '[1.0.0,)'
     compile group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.6'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.0.1'
 
     testCompile 'junit:junit:4+'
 }

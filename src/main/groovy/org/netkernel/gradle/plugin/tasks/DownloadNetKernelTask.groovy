@@ -10,7 +10,8 @@ import org.netkernel.gradle.util.FileSystemHelper
  */
 class DownloadNetKernelTask extends DefaultTask {
     String release = NKSE
-    String version = '5.1.1'
+    String version = '5.2.1'
+    //String version = CURRENT_MAJOR_NK_RELEASE  //Don't know how to get this from the NetKernelPlugin class
     String baseURL = DISTRIBUTION_URL
     String releaseDir
     String filePrefix

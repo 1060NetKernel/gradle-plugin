@@ -12,7 +12,7 @@ import org.netkernel.gradle.util.FileSystemHelper
  */
 class NetKernelPlugin implements Plugin<Project> {
     def FileSystemHelper fsHelper = new FileSystemHelper()
-    def CURRENT_MAJOR_NK_RELEASE = '5.1.1'
+    def CURRENT_MAJOR_NK_RELEASE = '5.2.1'
 
     void apply(Project project) {
 

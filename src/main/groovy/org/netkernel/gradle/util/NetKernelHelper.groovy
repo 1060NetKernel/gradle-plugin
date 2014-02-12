@@ -3,6 +3,7 @@ package org.netkernel.gradle.util
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
 import org.netkernel.gradle.plugin.ExecutionConfig
+import org.netkernel.layer0.util.Utils
 
 /**
  * A helper class for interacting with a NetKernel instance.
@@ -58,15 +59,20 @@ class NetKernelHelper {
                 case ExecutionConfig.Mode.NETKERNEL_INSTALL:
                     workingDir = fsHelper.dirInGradleHomeDirectory("netkernel/download")
                     def downloadFile = "${workingDir}/${executionConfig.installJar}"
+                    println("Process to be Executed: ${javaBinary} -jar ${downloadFile}")
                     process = new ProcessBuilder(javaBinary, "-jar", downloadFile)
                     break;
             }
-
-            process.redirectErrorStream(true)
+            def proc=process.redirectErrorStream(true)
                  .directory(new File(workingDir))
                  .start()
+            /* Debug when process couldn't be found - this feeds forked process stdout into gradle stdout
+            def procis=proc.getInputStream()
+            Utils.pipe(procis, System.out)
+            println("Exit Value: ${proc.exitValue()}")
+            */
         } else {
-            println "Not starting NetKernel at ${directory} because it is already running on that port"
+            println "Not starting NetKernel because it is already running on that port"
             // TODO: Throw exception? Ignore?
         }
     }

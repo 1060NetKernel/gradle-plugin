@@ -5,7 +5,9 @@ import org.gradle.api.Project
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
+import org.netkernel.gradle.plugin.tasks.CleanAllTask
 import org.netkernel.gradle.util.FileSystemHelper
+
 
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
@@ -74,5 +76,11 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks.installNKEE.dependsOn "startNKEE"
 
         // TODO: Add the above behavior for every environment
+        
+        //Housekeeping Tasks
+        project.task('cleanAll', type: CleanAllTask) {
+            executionConfig = defaultEEJar
+        }
+        //project.tasks.cleanAll.dependsOn "clean"
     }
 }

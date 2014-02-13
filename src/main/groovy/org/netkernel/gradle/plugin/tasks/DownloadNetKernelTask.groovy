@@ -5,6 +5,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.DownloadConfig
 import org.netkernel.gradle.util.FileSystemHelper
+import org.netkernel.gradle.util.PropertyHelper
 import org.netkernel.layer0.util.Utils
 
 //Imports for Apache Client used in NKEE download
@@ -79,6 +80,7 @@ class DownloadNetKernelTask extends DefaultTask {
     DownloadConfig downloadConfig
 
     def fsHelper = new FileSystemHelper()
+    def propHelper = new PropertyHelper()
 
     //TODO: Drive some of this from the ExecutionConfigs?
 
@@ -124,8 +126,17 @@ class DownloadNetKernelTask extends DefaultTask {
                 if(filePrefix == null) {
                     filePrefix = DEFAULT_RELEASEDIRS[release]
                 }
-                println("WORK IN PROGRESS - FILL THIS SPACE")
-                downloadNKEEImpl("${filePrefix}-${version}.jar", dest, null, null)
+
+                def username = propHelper.findProjectProperty(project, "nkeeUsername", 
+                    downloadConfig.username)
+                def password = propHelper.findProjectProperty(project, "nkeePassword", 
+                    downloadConfig.password)
+                    
+                if(!username || !password) {
+                    ant.fail("Downloading NKEE requires a username and password")
+                }
+                
+                downloadNKEEImpl("${filePrefix}-${version}.jar", dest, username, password)
             break;
             default:
                 // TODO: Fail, unknown version
@@ -185,15 +196,15 @@ class DownloadNetKernelTask extends DefaultTask {
 			HttpPost post=new HttpPost("https://cs.1060research.com/csp/login");
 			post.getParams().setParameter("http.protocol.expect-continue", Boolean.TRUE);
 			List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-			formparams.add(new BasicNameValuePair("password", ""));
+			formparams.add(new BasicNameValuePair("password", password));
 			formparams.add(new BasicNameValuePair("url", "https://cs.1060research.com/csp/"));
-			formparams.add(new BasicNameValuePair("username", "test"));
+			formparams.add(new BasicNameValuePair("username", username));
 			UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");
 			post.setEntity(entity);
 
 			//Make the request
-			response=client.execute(post, state)
-			statusCode=response.getStatusLine().getStatusCode();
+			def response=client.execute(post, state)
+			def statusCode=response.getStatusLine().getStatusCode();
 			if(statusCode==200)
 			{	println("We logged in!")
 				//Now we can download the distribution
@@ -201,10 +212,10 @@ class DownloadNetKernelTask extends DefaultTask {
 				response=client.execute(get, state)
 				statusCode=response.getStatusLine().getStatusCode();
 				if(statusCode==200)
-				{	is=response.getEntity().getContent()
+				{	def is=response.getEntity().getContent()
 					//f=new File(dest, "NKEE-5.2.1.jar")
-					f=new File(dest, url)
-					fos=new FileOutputStream(f)
+					def f=new File(dest, url)
+					def fos=new FileOutputStream(f)
 					Utils.pipe(is, fos)
 					fos.flush()
 					fos.close()

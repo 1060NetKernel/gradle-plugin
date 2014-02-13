@@ -5,6 +5,8 @@ package org.netkernel.gradle.plugin
  */
 class DownloadConfig {
     def url
+    def username
+    def password
 
     DownloadConfig() {
     }

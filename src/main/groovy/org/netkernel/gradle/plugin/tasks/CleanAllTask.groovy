@@ -16,8 +16,8 @@ class CleanAllTask extends DefaultTask {
 
     @TaskAction
     def cleanAll() {
-    	println("Deleting ~/.gradle/netkernel/")
     	def nkdir = fsHelper.dirInGradleHomeDirectory("netkernel")
+        println("Deleting ${nkdir}")
     	def f=new File(nkdir)
     	f.deleteDir()
     }

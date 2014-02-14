@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
+import org.gradle.api.tasks.Copy
 import org.netkernel.gradle.util.FileSystemHelper
 
 /**
@@ -15,7 +16,8 @@ class NetKernelPlugin implements Plugin<Project> {
     def CURRENT_MAJOR_NK_RELEASE = '5.2.1'
 
     void apply(Project project) {
-
+        project.apply plugin: 'groovy'
+        
         def envs = project.container(ExecutionConfig)
 
         def defaultSEJar = new ExecutionConfig()
@@ -74,5 +76,32 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks.installNKEE.dependsOn "startNKEE"
 
         // TODO: Add the above behavior for every environment
+        
+        project.task('module', type: Copy) {
+            into "${project.buildDir}/${project.name}"
+            from project.sourceSets.main.output
+        }
+        
+        project.tasks.module.dependsOn "compileGroovy"
+        
+        project.task('moduleResources', type: Copy) {
+            into "${project.buildDir}/${project.name}"
+            from "${project.projectDir}/src/module"
+        }
+        
+        println "${project.projectDir}"
+        println "${project.name}"
+        
+        addNetKernelConfiguration(project)
+    }
+    
+    def addNetKernelConfiguration(Project project) {
+      /*  project.sourceSets {
+            project.configure([main, test]) {
+                project.configure([java,groovy]) {
+                    srcDirs = [project.projectDir]
+                }
+            }
+        } */
     }
 }

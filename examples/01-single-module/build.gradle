@@ -15,6 +15,21 @@ buildscript {
     }
 }
 
+repositories {
+    mavenCentral()
+    netkernel.useROCRepo()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.2.1'
+    compile netkernel.dep('netkernel.api')
+    compile netkernel.dep('netkernel.impl')
+    compile netkernel.dep('layer0')
+    compile netkernel.dep('module.standard')
+    compile netkernel.dep('cache.se')
+    compile netkernel.dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
+}
+
 netkernel {
     download {
         ee {
@@ -23,5 +38,4 @@ netkernel {
             //password = ""
         }
     }
-    
 }

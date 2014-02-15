@@ -26,4 +26,12 @@ class NetKernelExtension {
     def envs(Closure closure) {
         envs.configure(closure)
     }
+    
+    org.gradle.api.artifacts.Dependency dep(String name, String version='[1.0.0,)', String group='urn.com.ten60.core') {
+        project.dependencies.create(group: group, name: name, version: version)
+    }
+    
+    void useROCRepo() {
+        project.repositories.maven { url "http://maven.netkernelroc.org:8080/netkernel-maven" }
+    }
 }

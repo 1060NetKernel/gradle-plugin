@@ -70,63 +70,50 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
  * A task to download a version of NetKernel.
  */
 class DownloadNetKernelTask extends DefaultTask {
-    String release = NKSE
-    String version = '5.2.1'
-    //String version = CURRENT_MAJOR_NK_RELEASE  //Don't know how to get this from the NetKernelPlugin class
-    String baseURL = DISTRIBUTION_URL
-    String releaseDir
-    String filePrefix
-
-    DownloadConfig downloadConfig
-
-    def fsHelper = new FileSystemHelper()
-    def propHelper = new PropertyHelper()
-
-    //TODO: Drive some of this from the ExecutionConfigs?
-
-    // Defaults
+    // Static Defaults
     static def DISTRIBUTION_URL = 'http://apposite.netkernel.org/dist'
     static def NKSE = 'SE'
     static def NKEE = 'EE'
     static def DEFAULT_RELEASEDIRS = [ 'SE' : '1060-NetKernel-SE',
                                        'EE' : '1060-NetKernel-EE' ]
 
+    DownloadConfig downloadConfig
+
+    //Variable parameters
+    //TODO: Drive some of this from the ExecutionConfigs?
+    String release = NKSE
+    String version = '5.2.1' //TODO Needs to be parameterised
+    String baseURL = DISTRIBUTION_URL
+    String releaseDir
+    String filePrefix
+
+    //Helpers
+    def fsHelper = new FileSystemHelper()
+    def propHelper = new PropertyHelper()
+
     @TaskAction
     void downloadNetKernel() {
         def dest = fsHelper.dirInGradleHomeDirectory("netkernel/download")
         if(!fsHelper.dirExists(dest)&&!fsHelper.createDirectory(dest)) {
-            // TODO: Handle this exception
-            println "Error creating: ${dest}"
+            ant.fail("Error creating: ${dest}")
         }
 
-        def url
-
+        //Set base parameters
         if(downloadConfig.url != null) {
             baseURL = downloadConfig.url
+        }
+        if(releaseDir == null) {
+            releaseDir = DEFAULT_RELEASEDIRS[release]
+        }
+        if(filePrefix == null) {
+            filePrefix = DEFAULT_RELEASEDIRS[release]
         }
 
         switch(release) {
             case NKSE:
-            	if(releaseDir == null) {
-                    releaseDir = DEFAULT_RELEASEDIRS[release]
-                }
-
-                if(filePrefix == null) {
-                    filePrefix = DEFAULT_RELEASEDIRS[release]
-                }
-
-                url = "${baseURL}/${releaseDir}/${filePrefix}-${version}.jar"
-                downloadNKSEImpl(url, dest)
+                downloadNKSEImpl("${baseURL}/${releaseDir}/${filePrefix}-${version}.jar", dest)
             break;
             case NKEE:
-            	if(releaseDir == null) {
-                    releaseDir = DEFAULT_RELEASEDIRS[release]
-                }
-
-                if(filePrefix == null) {
-                    filePrefix = DEFAULT_RELEASEDIRS[release]
-                }
-
                 def username = propHelper.findProjectProperty(project, "nkeeUsername", 
                     downloadConfig.username)
                 def password = propHelper.findProjectProperty(project, "nkeePassword", 
@@ -139,7 +126,7 @@ class DownloadNetKernelTask extends DefaultTask {
                 downloadNKEEImpl("${filePrefix}-${version}.jar", dest, username, password)
             break;
             default:
-                // TODO: Fail, unknown version
+            	ant.fail("Unknown NetKernel version!")
             break;
         }
     }
@@ -172,7 +159,7 @@ class DownloadNetKernelTask extends DefaultTask {
     	
     }
     
-    void downloadNKEEImpl(url, dest, username, password)
+    void downloadNKEEImpl(distribution, dest, username, password)
     {
     	try
         {	//Prepare State Management
@@ -206,33 +193,40 @@ class DownloadNetKernelTask extends DefaultTask {
 			def response=client.execute(post, state)
 			def statusCode=response.getStatusLine().getStatusCode();
 			if(statusCode==200)
-			{	println("We logged in!")
+			{	println("Successfully logged in to NKEE server")
 				//Now we can download the distribution
-				HttpGet get=new HttpGet("https://cs.1060research.com/csp/download/14");
-				response=client.execute(get, state)
-				statusCode=response.getStatusLine().getStatusCode();
-				if(statusCode==200)
-				{	def is=response.getEntity().getContent()
-					//f=new File(dest, "NKEE-5.2.1.jar")
-					def f=new File(dest, url)
-					def fos=new FileOutputStream(f)
-					Utils.pipe(is, fos)
-					fos.flush()
-					fos.close()
-					println("We got NKEE!")
+				try
+				{
+					def get=new HttpGet("https://cs.1060research.com/csp/download/${distribution}");
+					response=client.execute(get, state)
+					statusCode=response.getStatusLine().getStatusCode();
+					if(statusCode==200)
+					{	def is=response.getEntity().getContent()
+						def f=new File(dest, distribution)
+						def fos=new FileOutputStream(f)
+						Utils.pipe(is, fos)
+						fos.flush()
+						fos.close()
+						println("Successfully downloaded ${distribution}")
+					}
 				}
-				//Finally logout
-				get=new HttpGet("https://cs.1060research.com/csp/security/logout");
-				response=client.execute(get, state)
+				catch(Exception e)
+				{	e.printStackTrace()
+				}
+				finally
+				{	//Finally logout
+					def get=new HttpGet("https://cs.1060research.com/csp/security/logout");
+					response=client.execute(get, state)
+					println("Successfully logged out from NKEE server")
+				}
 			}
 			else
-			{	throw new Exception("Login failed")				
+			{	ant.fail("Login Failed")				
 			}
-			
         }
         catch(Exception e)
-        {	e.printStackTrace()                	
+        {	e.printStackTrace()
+        	ant.fail("Failed to connect to NKEE server")
         }
-    	
     }
 }

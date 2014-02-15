@@ -2,10 +2,11 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
-import org.gradle.api.tasks.Copy
+import org.netkernel.gradle.plugin.tasks.CleanAllTask
 import org.netkernel.gradle.util.FileSystemHelper
 
 /**
@@ -89,9 +90,13 @@ class NetKernelPlugin implements Plugin<Project> {
             from "${project.projectDir}/src/module"
         }
         
-        println "${project.projectDir}"
-        println "${project.name}"
+        project.tasks.moduleResources.dependsOn "module"
         
+        //Housekeeping Tasks
+        project.task('cleanAll', type: CleanAllTask) {
+            executionConfig = defaultEEJar
+        }        
+
         addNetKernelConfiguration(project)
     }
     
@@ -103,5 +108,6 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
             }
         } */
+
     }
 }

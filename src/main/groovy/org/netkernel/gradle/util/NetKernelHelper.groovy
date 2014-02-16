@@ -62,6 +62,11 @@ class NetKernelHelper {
                     println("Process to be Executed: ${javaBinary} -jar ${downloadFile}")
                     process = new ProcessBuilder(javaBinary, "-jar", downloadFile)
                     break;
+                case ExecutionConfig.Mode.NETKERNEL_FULL:
+                    workingDir = executionConfig.directory
+                    // TODO: Add Windows Handling
+                    process = new ProcessBuilder("${workingDir}/bin/netkernel.sh")
+                    break;
             }
             def proc=process.redirectErrorStream(true)
                  .directory(new File(workingDir))

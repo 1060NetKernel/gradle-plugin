@@ -10,7 +10,7 @@ import org.netkernel.gradle.util.NetKernelHelper
 class InstallNetKernelTask extends DefaultTask {
     def NetKernelHelper nkHelper = new NetKernelHelper()
     def FileSystemHelper fsHelper = new FileSystemHelper()
-    def configName = "SEJar"
+    def configName = "SE"
 
     @TaskAction
     def installNK() {
@@ -35,10 +35,16 @@ class InstallNetKernelTask extends DefaultTask {
         //TODO: Check for initialization
         def installationDir = config.directory
 
+        println "INSTALLING TO ${installationDir}"
+        println "Exists:" + fsHelper.dirExists(installationDir)
+        println "Create:" + fsHelper.createDirectory(installationDir)
+
+       try {
         //TODO: Directory already exists handling?
         if(fsHelper.dirExists(installationDir)||
            fsHelper.createDirectory(installationDir)) {
 
+            println "SUCCESS"
             // TODO: Move these details to NetKernelHelper and pass in
             // the ExecutionConfig
 
@@ -72,5 +78,8 @@ class InstallNetKernelTask extends DefaultTask {
                 println "Installation didn't go as planned..."
             }
         }
+       } catch(Throwable t) {
+           t.printStackTrace()
+       }
     }
 }

@@ -5,10 +5,13 @@ package org.netkernel.gradle.nk
  */
 
 enum ReleaseType {
+
     NKSE("SE"),
     NKEE("EE")
 
     private String name
+
+    def static CURRENT_MAJOR_RELEASE = "5.2.1"
 
     private ReleaseType() {
     }
@@ -18,6 +21,6 @@ enum ReleaseType {
     }
 
     public String toString() {
-        return name
+        name
     }
 }

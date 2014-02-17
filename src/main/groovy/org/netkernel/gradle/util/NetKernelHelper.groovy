@@ -2,7 +2,7 @@ package org.netkernel.gradle.util
 
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
-import org.netkernel.gradle.plugin.ExecutionConfig
+import org.netkernel.gradle.nk.ExecutionConfig
 import org.netkernel.layer0.util.Utils
 
 /**

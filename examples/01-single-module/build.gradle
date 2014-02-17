@@ -38,4 +38,40 @@ netkernel {
             //password = ""
         }
     }
+
+    envs {
+        QA {
+            directory = "/Users/brian/qa-install"
+            supportsDaemonModules=true
+        }
+
+        SEJar {
+            directory = "/Users/brian/qa-install"
+        }
+
+        SE {
+            directory = "/Users/brian/newnkinstall"
+        }
+    }
+
+    /*
+
+    env {
+       ee {
+       }
+
+       qa {
+       }
+    }
+
+     */
+    
+/*    env {
+        name = "foo"
+        version = "5.2.1"
+        type = "SE"
+        directory = "...."
+        host = ""
+        port = ""
+    } */
 }

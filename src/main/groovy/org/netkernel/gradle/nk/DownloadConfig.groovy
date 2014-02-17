@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin
+package org.netkernel.gradle.nk
 
 /**
  *  Configuration for where to fetch NetKernel distributions.

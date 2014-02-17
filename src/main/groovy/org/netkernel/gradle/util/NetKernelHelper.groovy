@@ -2,7 +2,7 @@ package org.netkernel.gradle.util
 
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
-import org.netkernel.gradle.plugin.ExecutionConfig
+import org.netkernel.gradle.nk.ExecutionConfig
 import org.netkernel.layer0.util.Utils
 
 /**
@@ -61,6 +61,11 @@ class NetKernelHelper {
                     def downloadFile = "${workingDir}/${executionConfig.installJar}"
                     println("Process to be Executed: ${javaBinary} -jar ${downloadFile}")
                     process = new ProcessBuilder(javaBinary, "-jar", downloadFile)
+                    break;
+                case ExecutionConfig.Mode.NETKERNEL_FULL:
+                    workingDir = executionConfig.directory
+                    // TODO: Add Windows Handling
+                    process = new ProcessBuilder("${workingDir}/bin/netkernel.sh")
                     break;
             }
             def proc=process.redirectErrorStream(true)

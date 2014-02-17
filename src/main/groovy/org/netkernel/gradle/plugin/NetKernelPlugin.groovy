@@ -1,18 +1,12 @@
 package org.netkernel.gradle.plugin
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
-import org.netkernel.gradle.plugin.tasks.DeployDaemonModuleTask
-import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
-import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
-import org.netkernel.gradle.plugin.tasks.InitializeDaemonDirTask
-import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
-import org.netkernel.gradle.plugin.tasks.CleanAllTask
+import org.netkernel.gradle.nk.ReleaseType
+import org.netkernel.gradle.plugin.tasks.*
 import org.netkernel.gradle.util.FileSystemHelper
 import org.netkernel.gradle.util.ModuleHelper
-
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
  */
@@ -22,44 +16,53 @@ class NetKernelPlugin implements Plugin<Project> {
     
     def CURRENT_MAJOR_NK_RELEASE = '5.2.1'
 
+
+    def buildJarInstallerExecutionConfig(def project, def type) {
+        def config = new ExecutionConfig()
+
+        project.configure(config, {
+            name = "${type}Jar"
+            relType = type
+            url = "http://localhost"
+            port = "8080"
+            release = CURRENT_MAJOR_NK_RELEASE
+            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/${type}-${release}")
+            installJar = "1060-NetKernel-${type}-${release}.jar"
+            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
+        })
+
+        config
+    }
+
+    def buildInstalledExecutionConfig(def project, def type) {
+        def config = new ExecutionConfig()
+
+        project.configure(config, {
+            name = "${type}"
+            relType = type
+            url = "http://localhost"
+            port = "8080"
+            release = CURRENT_MAJOR_NK_RELEASE
+            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/${type}-${release}")
+            mode = ExecutionConfig.Mode.NETKERNEL_FULL
+            supportsDaemonModules = true
+        })
+
+        config
+    }
+
+    def gatherExecutionConfigs(def project, def envs) {
+        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKSE))
+        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKEE))
+        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKSE))
+        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKEE))
+    }
+
     void apply(Project project) {
         project.apply plugin: 'groovy'
         
         def envs = project.container(ExecutionConfig)
-
-        def defaultSEJar = new ExecutionConfig()
-
-        project.configure(defaultSEJar, {
-            release = CURRENT_MAJOR_NK_RELEASE
-            installJar = "1060-NetKernel-SE-${release}.jar"
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/SE-${release}")
-            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
-        })
-
-        def defaultEEJar = new ExecutionConfig()
-
-        project.configure(defaultEEJar,  {
-            release = CURRENT_MAJOR_NK_RELEASE
-            installJar = "1060-NetKernel-EE-${release}.jar"
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/EE-${release}")
-            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
-        })
-        
-        def defaultSEInstalled = new ExecutionConfig()
-        
-        project.configure(defaultSEInstalled, {
-            release = CURRENT_MAJOR_NK_RELEASE
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/SE-${release}")
-            mode = ExecutionConfig.Mode.NETKERNEL_FULL
-        })
-        
-        def defaultEEInstalled = new ExecutionConfig()
-        
-        project.configure(defaultEEInstalled, {
-            release = CURRENT_MAJOR_NK_RELEASE
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/EE-${release}")
-            mode = ExecutionConfig.Mode.NETKERNEL_FULL
-        })       
+        gatherExecutionConfigs(project, envs)
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
 
@@ -74,43 +77,56 @@ class NetKernelPlugin implements Plugin<Project> {
             release = DownloadNetKernelTask.NKEE
         }
 
-        // Default SE Installation Behavior
+        envs.each { config ->
+            def startNKJarName = "start${config.name}Jar"
+            def installNKJarName = "install${config.name}"
+            def startNKName = "start${config.name}"
 
-        project.task('startNKSEJar', type: StartNetKernelTask) {
-            executionConfig = defaultSEJar
-        }
-        
-        project.tasks.startNKSEJar.dependsOn "downloadNKSE"
-        project.task('installNKSE', type: InstallNetKernelTask) {
-            executionConfig = defaultSEJar
-        }
-        project.tasks.installNKSE.dependsOn "startNKSEJar"
+            switch(config.mode) {
+                case ExecutionConfig.Mode.NETKERNEL_INSTALL :
 
-        // Default EE Installation Behavior
+                    project.task(startNKJarName, type: StartNetKernelTask) {
+                        configName = config.name
+                    }
 
-        project.task('startNKEEJar', type: StartNetKernelTask) {
-            executionConfig = defaultEEJar
-        }
-        project.tasks.startNKEEJar.dependsOn "downloadNKEE"
-        
-        project.task('installNKEE', type: InstallNetKernelTask) {
-            executionConfig = defaultEEJar
-        }
-        project.tasks.installNKEE.dependsOn "startNKEEJar"
-        
-        // Default SE Start Behavior
-        
-        project.task('startNKSE', type: StartNetKernelTask) {
-            executionConfig = defaultSEInstalled
-        }
-        
-        // Default EE Start Behavior
-        
-        project.task('startNKEE', type: StartNetKernelTask) {
-            executionConfig = defaultEEInstalled
+                    project.task(installNKJarName, type: InstallNetKernelTask) {
+                        configName = config.name
+                    }
+
+                    project.tasks."${startNKJarName}".dependsOn "downloadNK${config.relType}"
+                    project.tasks."${installNKJarName}".dependsOn startNKJarName
+                    break;
+                case ExecutionConfig.Mode.NETKERNEL_FULL :
+
+                    project.task(startNKName, type: StartNetKernelTask) {
+                        configName = config.name
+                    }
+
+                    if(config.supportsDaemonModules) {
+                        def initDaemonDirName = "initDaemonDir${config.name}"
+                        def deployDaemonModuleName = "deployDaemonModule${config.name}"
+                        def undeployDaemonModuleName = "undeployDaemonModule${config.name}"
+
+                        project.task(initDaemonDirName, type: InitializeDaemonDirTask) {
+                            configName = config.name
+                        }
+
+                        //project.tasks."${initDaemonDirName}".dependsOn installNKJarName
+
+                        project.task(deployDaemonModuleName, type: DeployDaemonModuleTask) {
+                            configName = config.name
+                        }
+
+                        project.task(undeployDaemonModuleName, type: Delete) {
+                            delete "${config.directory}/etc/modules.d/${project.name}.xml"
+                        }
+                    }
+
+                    break;
+            }
         }
 
-        // TODO: Add the above behavior for every environment
+        // Module-specific tasks
         
         project.task('module', type: Copy) {
             into "${project.buildDir}/${project.name}"
@@ -125,36 +141,6 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         
         project.tasks.moduleResources.dependsOn "module"
-        
-        // Deployment Tasks
-        
-        project.task('initDaemonDirNKSE', type: InitializeDaemonDirTask) {
-            executionConfig = defaultSEInstalled
-        }
-        
-        project.tasks.initDaemonDirNKSE.dependsOn "installNKSE"
-        
-        project.task('initDaemonDirNKEE', type: InitializeDaemonDirTask) {
-            executionConfig = defaultEEInstalled
-        }
-        
-        project.tasks.initDaemonDirNKEE.dependsOn "installNKEE"
-        
-        project.task('deployDaemonModuleNKSE', type: DeployDaemonModuleTask) {
-            executionConfig = defaultSEInstalled
-        }
-        
-        project.task('deployDaemonModuleNKEE', type: DeployDaemonModuleTask) {
-            executionConfig = defaultEEInstalled
-        }
-        
-        project.task('undeployDaemonModuleNKSE', type: Delete) {
-            delete "${defaultSEInstalled.directory}/etc/modules.d/${project.name}.xml"
-        }
-        
-        project.task('undeployDaemonModuleNKEE', type: Delete) {
-            delete "${defaultEEInstalled.directory}/etc/modules.d/${project.name}.xml"
-        }
         
         // TODO: Rethink this for multi modules
         
@@ -172,9 +158,9 @@ class NetKernelPlugin implements Plugin<Project> {
         // TODO: Support other executionConfigs
         
         //Housekeeping Tasks
-        project.task('cleanAll', type: CleanAllTask) {
+/*        project.task('cleanAll', type: CleanAllTask) {
             executionConfig = defaultEEJar
-        }        
+        } */
 
         addNetKernelConfiguration(project)
     }

@@ -10,12 +10,13 @@ import org.netkernel.gradle.util.NetKernelHelper
  */
 class StartNetKernelTask extends DefaultTask {
     def NetKernelHelper nkHelper = new NetKernelHelper()
+    def configName
     def ExecutionConfig executionConfig
 
     @TaskAction
     def start() {
         println "Starting NetKernel"
-        nkHelper.startNetKernel(executionConfig)
+        nkHelper.startNetKernel(project.netkernel.envs[configName])
         println "Waiting for NetKernel to start..."
 
         while(!nkHelper.isNetKernelRunning()) {

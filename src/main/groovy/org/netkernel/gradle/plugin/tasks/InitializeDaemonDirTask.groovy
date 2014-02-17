@@ -1,21 +1,20 @@
 package org.netkernel.gradle.plugin.tasks
-
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-
-import org.netkernel.gradle.plugin.ExecutionConfig
 import org.netkernel.gradle.util.FileSystemHelper
 
 class InitializeDaemonDirTask extends DefaultTask {
-    def ExecutionConfig executionConfig
     def FileSystemHelper fsHelper = new FileSystemHelper()
+    def configName
     
     @TaskAction
     def checkInstallation() {
         // The current assumption is that the installation we are initializing
         // has been created by a dependency between this and the installation task
+
+        def config = project.netkernel.envs[configName]
         
-        def dir = "${executionConfig.directory}/etc/modules.d"
+        def dir = "${config.directory}/etc/modules.d"
         
         println "Checking on ${dir}"
         
@@ -25,7 +24,7 @@ class InitializeDaemonDirTask extends DefaultTask {
                 
         def loc = []
                 
-        def kernPropsFile = new File("${executionConfig.directory}/etc/kernel.properties")
+        def kernPropsFile = new File("${config.directory}/etc/kernel.properties")
         kernPropsFile.splitEachLine("=") { line ->
             if(line[0].equals("netkernel.init.modulesdir")) {
                 loc.add(line[1])

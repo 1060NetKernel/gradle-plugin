@@ -1,6 +1,8 @@
 package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
+import org.netkernel.gradle.nk.DownloadConfig
+
 /**
  *  A simple class to manage NetKernel download parameters.
  */

@@ -51,6 +51,12 @@ class NetKernelPlugin implements Plugin<Project> {
         envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKEE))
     }
 
+    def applyCleanAllTask(def project, ExecutionConfig config)
+    {		project.task("cleanAll${config.name}", type: CleanAllTask)
+    		{	executionConfig = config
+    		}
+    }
+    
     def installExecutionConfigTasks(def project, ExecutionConfig config) {
         def startNKJarName = "start${config.name}"
         def installNKJarName = "install${config.name}"
@@ -152,13 +158,11 @@ class NetKernelPlugin implements Plugin<Project> {
         project.afterEvaluate {
             project.netkernel.envs.each { c ->
                 installExecutionConfigTasks(project, c)
+                applyCleanAllTask(project ,c)
             }
         }
         
-        //Housekeeping Tasks
-/*        project.task('cleanAll', type: CleanAllTask) {
-            executionConfig = defaultEEJar
-        } */
+        
 
         addNetKernelConfiguration(project)
     }

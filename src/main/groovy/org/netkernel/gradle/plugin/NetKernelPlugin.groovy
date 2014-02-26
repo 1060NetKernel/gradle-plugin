@@ -12,7 +12,11 @@ import org.netkernel.gradle.util.ModuleHelper
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
  */
 class NetKernelPlugin implements Plugin<Project> {
-    def fsHelper = new FileSystemHelper()
+    
+	public static final String NETKERNELSRC="NETKERNELSRC"
+	public static final String GRADLESRC="GRADLESRC"
+	
+	def fsHelper = new FileSystemHelper()
     def moduleHelper = new ModuleHelper()
     
     def buildJarInstallerExecutionConfig(def project, def type) {
@@ -131,28 +135,32 @@ class NetKernelPlugin implements Plugin<Project> {
         def sourceStructure
         def projectDir=project.projectDir;
         if (new File(projectDir,"src/module.xml").exists())
-        {   sourceStructure="netkernelSrc"
+        {   sourceStructure=NETKERNELSRC
         }
         else
-        {   sourceStructure="gradleDefault"
+        {   sourceStructure=GRADLESRC
         }
         println("sourceStructure="+sourceStructure)
 
         def jarName=null
 
         switch(sourceStructure)
-        {   case "netkernelSrc":
-
-                def fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.java'] );
-                fileTree.visit { f ->  println f }
-
+        {   case NETKERNELSRC:
+        		//Configure the javaCompiler
+        		def fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.java'] );
+                //fileTree.visit { f ->  println f }
                 project.tasks.compileJava.configure {
+                    source=fileTree
+                }
+                //Configure the groovyCompiler
+        		fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.groovy'] );
+                project.tasks.compileGroovy.configure {
                     source=fileTree
                 }
                 jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module.xml")
 
                 break;
-            case "gradleDefault":
+            case GRADLESRC:
                 jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module/module.xml")
             break;
         }
@@ -166,12 +174,12 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks.module.dependsOn "compileGroovy"
         
         project.task('moduleResources', type: Copy) {
-            if(sourceStructure.equals("gradleDefault"))
+            if(sourceStructure.equals(GRADLESRC))
             {
             into "${project.buildDir}/${project.name}"
             from "${project.projectDir}/src/module"
             }
-            if(sourceStructure.equals("netkernelSrc"))
+            if(sourceStructure.equals(NETKERNELSRC))
             {
                 into "${project.buildDir}/${project.name}"
                 from "${project.projectDir}/src"

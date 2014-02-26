@@ -127,24 +127,59 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         // Module-specific tasks
-        
+
+        def sourceStructure
+        def projectDir=project.projectDir;
+        if (new File(projectDir,"src/module.xml").exists())
+        {   sourceStructure="netkernelSrc"
+        }
+        else
+        {   sourceStructure="gradleDefault"
+        }
+        println("sourceStructure="+sourceStructure)
+
+        def jarName=null
+
+        switch(sourceStructure)
+        {   case "netkernelSrc":
+
+                def fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.java'] );
+                fileTree.visit { f ->  println f }
+
+                project.tasks.compileJava.configure {
+                    source=fileTree
+                }
+                jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module.xml")
+
+                break;
+            case "gradleDefault":
+                jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module/module.xml")
+            break;
+        }
+
+        println("Finished configuring srcStructure")
+
         project.task('module', type: Copy) {
             into "${project.buildDir}/${project.name}"
             from project.sourceSets.main.output
         }
-        
         project.tasks.module.dependsOn "compileGroovy"
         
         project.task('moduleResources', type: Copy) {
+            if(sourceStructure.equals("gradleDefault"))
+            {
             into "${project.buildDir}/${project.name}"
             from "${project.projectDir}/src/module"
+            }
+            if(sourceStructure.equals("netkernelSrc"))
+            {
+                into "${project.buildDir}/${project.name}"
+                from "${project.projectDir}/src"
+            }
         }
-        
         project.tasks.moduleResources.dependsOn "module"
         
         // TODO: Rethink this for multi modules
-        
-        def jarName = moduleHelper.getModuleArchiveName("${project.projectDir}/src/module/module.xml")
 
         project.tasks.jar.configure {
             destinationDir=project.file("${project.buildDir}/modules")

@@ -21,7 +21,7 @@ class NetKernelExtension {
     }
 
     def download(Closure closure) {
-        project.configure(download, closure)
+        project.configure( download, closure)
     }
 
     def envs(Closure closure) {
@@ -35,4 +35,27 @@ class NetKernelExtension {
     void useROCRepo() {
         project.repositories.maven { url "http://maven.netkernelroc.org:8080/netkernel-maven" }
     }
+
+    void useLocalhostRepo() {
+        println("useLocalhostRepo")
+        project.repositories.maven { url "http://localhost:8080/netkernel-maven" }
+    }
+
+
+    void useMavenCentral() {
+        project.repositories.mavenCentral()
+    }
+
+    void useStandardCompileDependencies() {
+        project.dependencies {
+            compile dep('netkernel.api')
+            compile dep('netkernel.impl')
+            compile dep('layer0')
+            compile dep('module.standard')
+            compile dep('cache.se')
+            compile dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
+        }
+    }
+
+
 }

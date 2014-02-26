@@ -152,6 +152,8 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileJava.configure {
                     source=fileTree
                 }
+
+
                 //Configure the groovyCompiler
         		fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.groovy'] );
                 project.tasks.compileGroovy.configure {
@@ -183,6 +185,38 @@ class NetKernelPlugin implements Plugin<Project> {
             {
                 into "${project.buildDir}/${project.name}"
                 from "${project.projectDir}/src"
+            }
+            //Find out what classes were used to build this
+            //TODO Copy non-core jar files into the lib/ directory of the module
+            doLast {
+                println ("JAVA CLASSPATH AT BUILD")
+                project.tasks.compileJava.classpath.each { f ->
+                    File fi=f
+                    if(fi.absolutePath.contains("urn.com.ten60.core"))
+                    {   println "CORE ${fi.name}"
+                    }
+                    else if(fi.absolutePath.contains("urn.org.netkernel"))
+                    {   println "CORE ${fi.name}"
+                    }
+                    else
+                    {   println "LIBRARY DEPENDENCY ${fi.name}"
+
+                    }
+                }
+                println ("GROOVY CLASSPATH AT BUILD")
+                project.tasks.compileGroovy.classpath.each { f ->
+                    File fi=f
+                    if(fi.absolutePath.contains("urn.com.ten60.core"))
+                    {   println "CORE ${fi.name}"
+                    }
+                    else if(fi.absolutePath.contains("urn.org.netkernel"))
+                    {   println "CORE ${fi.name}"
+                    }
+                    else
+                    {   println "LIBRARY DEPENDENCY ${fi.name}"
+
+                    }
+                }
             }
         }
         project.tasks.moduleResources.dependsOn "module"

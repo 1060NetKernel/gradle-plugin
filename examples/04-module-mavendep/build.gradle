@@ -6,8 +6,8 @@ buildscript {
         mavenCentral()
         maven {
             // TODO: Default to local, but allow override
-            //url "http://maven.netkernelroc.org:8080/netkernel-maven"
-            url "http://localhost:8080/netkernel-maven"
+            url "http://maven.netkernelroc.org:8080/netkernel-maven"
+            //url "http://localhost:8080/netkernel-maven"
         }
     }
 
@@ -21,13 +21,14 @@ buildscript {
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.2.1'
     compile 'urn.org.netkernel:ext.system:1.41.29'
+    compile 'org.apache.commons:commons-compress:1.7'
 }
 
 netkernel {
 
     useMavenCentral()
-    //useROCRepo()
-	useLocalhostRepo()
+    useROCRepo()
+	//useLocalhostRepo()
 
     useStandardCompileDependencies()
 

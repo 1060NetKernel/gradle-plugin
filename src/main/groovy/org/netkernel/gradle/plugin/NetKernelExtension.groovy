@@ -33,14 +33,16 @@ class NetKernelExtension {
     }
     
     void useROCRepo() {
-        project.repositories.maven { url "http://maven.netkernelroc.org:8080/netkernel-maven" }
+        useRepo "http://maven.netkernelroc.org:8080/netkernel-maven"
     }
 
     void useLocalhostRepo() {
-        println("useLocalhostRepo")
-        project.repositories.maven { url "http://localhost:8080/netkernel-maven" }
+        useRepo "http://localhost:8080/netkernel-maven"
     }
 
+    void useRepo(String repoURL)
+    {   project.repositories.maven { url repoURL }
+    }
 
     void useMavenCentral() {
         project.repositories.mavenCentral()

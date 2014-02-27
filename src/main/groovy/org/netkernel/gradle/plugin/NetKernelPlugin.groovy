@@ -196,35 +196,43 @@ class NetKernelPlugin implements Plugin<Project> {
                 from "${project.projectDir}/src"
             }
             //Find out what classes were used to build this
-            //TODO Copy non-core jar files into the lib/ directory of the module
             doLast {
-                println ("JAVA CLASSPATH AT BUILD")
+                println ("JAVA/GROOVY CLASSPATH AT BUILD")
+                def groovySources=false
+                //println "FINDING GROOVY SOURCES"
+                project.tasks.compileGroovy.source.each { File s ->
+                   if(s.name.endsWith(".groovy"))
+                   {    groovySources=true
+                        println "FOUND GROOOOOOVY SO WILL REJECT groovy*.jar"
+                        return
+                   }
+                }
+                def jarsToPack=[]
                 project.tasks.compileJava.classpath.each { f ->
                     File fi=f
                     if(fi.absolutePath.contains("urn.com.ten60.core"))
-                    {   println "CORE ${fi.name}"
+                    {   //println "CORE ${fi.name}"
                     }
                     else if(fi.absolutePath.contains("urn.org.netkernel"))
-                    {   println "CORE ${fi.name}"
+                    {   //println "CORE ${fi.name}"
+                    }
+                    else if(groovySources && fi.absolutePath.matches(".*groovy.*\\.jar"))
+                    {   println "REJECTED GROOVY BUILD LIB ${fi.name}"
                     }
                     else
                     {   println "LIBRARY DEPENDENCY ${fi.name}"
+                        jarsToPack.add fi
                     }
                 }
-                println ("GROOVY CLASSPATH AT BUILD")
-                project.tasks.compileGroovy.classpath.each { f ->
-                    File fi=f
-                    if(fi.absolutePath.contains("urn.com.ten60.core"))
-                    {   println "CORE ${fi.name}"
-                    }
-                    else if(fi.absolutePath.contains("urn.org.netkernel"))
-                    {   println "CORE ${fi.name}"
-                    }
-                    else
-                    {   println "LIBRARY DEPENDENCY ${fi.name}"
+                println ("HERE ARE THE JARS TO PACK======>")
+                jarsToPack=project.files(jarsToPack)
+                jarsToPack.each { f -> println f.name}
+                project.copy {
+                    from jarsToPack
+                    into "${project.buildDir}/${project.name}/lib/"
+                }
+                println("MODULE IS BUILT")
 
-                    }
-                }
             }
         }
         project.tasks.moduleResources.dependsOn "module"

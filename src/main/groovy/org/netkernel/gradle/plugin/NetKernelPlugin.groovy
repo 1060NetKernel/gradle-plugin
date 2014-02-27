@@ -146,20 +146,29 @@ class NetKernelPlugin implements Plugin<Project> {
 
         switch(sourceStructure)
         {   case NETKERNELSRC:
+                def baseDir=new File(projectDir,'src/');
         		//Configure the javaCompiler
-        		def fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.java'] );
+        		def fileTree=project.fileTree(dir:baseDir, includes:['**/*.java'] );
                 //fileTree.visit { f ->  println f }
                 project.tasks.compileJava.configure {
                     source=fileTree
                 }
-
-
                 //Configure the groovyCompiler
         		fileTree=project.fileTree(dir:new File(projectDir,'src/'), includes:['**/*.groovy'] );
                 project.tasks.compileGroovy.configure {
                     source=fileTree
                 }
                 jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module.xml")
+
+                //Add any libs to classpath
+                def libDir=new File(baseDir, "lib/")
+                if(libDir.exists())
+                {   def libTree=project.fileTree(dir:libDir, includes:['**/*.jar'] );
+                    libTree.visit{ f ->
+                        println "lib/ DEPENDENCY ADDED: ${f}"
+                    }
+                    project.dependencies.add("compile", libTree)
+                }
 
                 break;
             case GRADLESRC:
@@ -200,7 +209,6 @@ class NetKernelPlugin implements Plugin<Project> {
                     }
                     else
                     {   println "LIBRARY DEPENDENCY ${fi.name}"
-
                     }
                 }
                 println ("GROOVY CLASSPATH AT BUILD")

@@ -1,0 +1,79 @@
+apply plugin: 'netkernel'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            // TODO: Default to local, but allow override
+            //url "http://maven.netkernelroc.org:8080/netkernel-maven"
+            url "http://localhost:8080/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '0.0.1'
+    }
+}
+
+//******************************************
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.2.1'
+    compile 'urn.org.netkernel:ext.system:1.41.29'
+}
+
+netkernel {
+
+    useMavenCentral()
+    //useROCRepo()
+	useLocalhostRepo()
+
+    useStandardCompileDependencies()
+
+    download {
+        ee {
+            //url = "http://localhost:8000"
+            //username = ""
+            //password = ""
+        }
+    }
+
+    /*
+    envs {
+        QA {
+            directory = "/Users/brian/qa-install"
+            supportsDaemonModules=true
+        }
+
+        SEJar {
+            directory = "/Users/brian/qa-install"
+        }
+
+        SE {
+            directory = "/Users/brian/newnkinstall"
+        }
+    }
+    */
+
+    /*
+
+    env {
+       ee {
+       }
+
+       qa {
+       }
+    }
+
+     */
+    
+/*    env {
+        name = "foo"
+        version = "5.2.1"
+        type = "SE"
+        directory = "...."
+        host = ""
+        port = ""
+    } */
+}

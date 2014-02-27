@@ -142,7 +142,7 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         println("sourceStructure="+sourceStructure)
 
-        def jarName=null
+        def moduleTarget=null
 
         switch(sourceStructure)
         {   case NETKERNELSRC:
@@ -158,7 +158,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileGroovy.configure {
                     source=fileTree
                 }
-                jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module.xml")
+                moduleTarget=moduleHelper.getModuleName("${project.projectDir}/src/module.xml")
 
                 //Add any libs to classpath
                 def libDir=new File(baseDir, "lib/")
@@ -172,14 +172,15 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
             case GRADLESRC:
-                jarName=moduleHelper.getModuleArchiveName("${project.projectDir}/src/module/module.xml")
+                moduleTarget=moduleHelper.getModuleName("${project.projectDir}/src/module/module.xml")
             break;
         }
+        println "MODULE TARGET ${moduleTarget}"
 
         println("Finished configuring srcStructure")
 
         project.task('module', type: Copy) {
-            into "${project.buildDir}/${project.name}"
+            into "${project.buildDir}/${moduleTarget}"
             from project.sourceSets.main.output
         }
         project.tasks.module.dependsOn "compileGroovy"
@@ -187,12 +188,12 @@ class NetKernelPlugin implements Plugin<Project> {
         project.task('moduleResources', type: Copy) {
             if(sourceStructure.equals(GRADLESRC))
             {
-            into "${project.buildDir}/${project.name}"
+            into "${project.buildDir}/${moduleTarget}"
             from "${project.projectDir}/src/module"
             }
             if(sourceStructure.equals(NETKERNELSRC))
             {
-                into "${project.buildDir}/${project.name}"
+                into "${project.buildDir}/${moduleTarget}"
                 from "${project.projectDir}/src"
             }
             //Find out what classes were used to build this
@@ -229,7 +230,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 jarsToPack.each { f -> println f.name}
                 project.copy {
                     from jarsToPack
-                    into "${project.buildDir}/${project.name}/lib/"
+                    into "${project.buildDir}/${moduleTarget}/lib/"
                 }
                 println("MODULE IS BUILT")
 
@@ -241,8 +242,8 @@ class NetKernelPlugin implements Plugin<Project> {
 
         project.tasks.jar.configure {
             destinationDir=project.file("${project.buildDir}/modules")
-            archiveName=jarName
-            from project.fileTree(dir:"${project.buildDir}/${project.name}")
+            archiveName=moduleTarget+".jar"
+            from project.fileTree(dir:"${project.buildDir}/${moduleTarget}")
             duplicatesStrategy 'exclude'
         }
         

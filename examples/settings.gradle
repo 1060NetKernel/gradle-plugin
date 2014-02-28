@@ -1,0 +1,6 @@
+include(
+        '01-single-module',
+        '02-nkjava-module',
+        '03-nkjava-module',
+        '04-module-mavendep'
+)

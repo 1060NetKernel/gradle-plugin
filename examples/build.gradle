@@ -1,0 +1,20 @@
+defaultTasks 'listTargets'
+
+task listTargets{
+
+            doLast{
+                        project.subprojects.each { p ->
+
+                            println p.name
+                            p.tasks.each { t -> println t}
+
+                            //This doesn't work!!!!!!!!
+                            //No idea how to use a property set in a subproject up in the root project
+                            //We need this since we'll want to use the metadata for each module
+                            //when creating and deploying a package of modules.
+                            //println p.ext['targetDir']
+
+                        }
+            }
+        }
+

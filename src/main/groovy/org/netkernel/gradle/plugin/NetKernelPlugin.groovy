@@ -211,26 +211,33 @@ class NetKernelPlugin implements Plugin<Project> {
                 def jarsToPack=[]
                 project.tasks.compileJava.classpath.each { f ->
                     File fi=f
-                    if(fi.absolutePath.contains("urn.com.ten60.core"))
+                    if(fi.absolutePath.matches(".*expanded\\.lib.*"))
+                    {   println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"
+                    }
+                    else if(fi.absolutePath.contains("urn.com.ten60.core"))
                     {   //println "CORE ${fi.name}"
                     }
                     else if(fi.absolutePath.contains("urn.org.netkernel"))
-                    {   //println "CORE ${fi.name}"
+                    {   println "REJECTED CORE LIB ${fi.name}"
                     }
                     else if(groovySources && fi.absolutePath.matches(".*groovy.*\\.jar"))
                     {   println "REJECTED GROOVY BUILD LIB ${fi.name}"
                     }
                     else
-                    {   println "LIBRARY DEPENDENCY ${fi.name}"
+                    {   println "FOUND LIBRARY DEPENDENCY ${fi.name}"
                         jarsToPack.add fi
                     }
                 }
-                println ("HERE ARE THE JARS TO PACK======>")
-                jarsToPack=project.files(jarsToPack)
-                jarsToPack.each { f -> println f.name}
-                project.copy {
-                    from jarsToPack
-                    into "${project.buildDir}/${project.ext.moduleTarget}/lib/"
+
+                if(!jarsToPack.empty)
+                {   println ("PACKING JARS IN MODULE lib/\n======>")
+                    jarsToPack=project.files(jarsToPack)
+                    jarsToPack.each { f -> println f.name}
+                    project.copy {
+                        from jarsToPack
+                        into "${project.buildDir}/${project.ext.moduleTarget}/lib/"
+                    }
+                    println ("<======")
                 }
                 println("MODULE IS BUILT")
 

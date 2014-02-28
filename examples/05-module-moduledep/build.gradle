@@ -19,11 +19,10 @@ buildscript {
 //******************************************
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.2.1'
-    //compile 'org.codehaus.groovy:groovy-all:[2.0,)'
-    compile 'urn.org.netkernel:ext.system:1.41.29'
-    //compile 'urn.org.netkernel:client-http:[2.0,)'
-    compile 'urn.org.netkernel:client.http:2.17.0'
+    //compile 'org.codehaus.groovy:groovy-all:2.2.1'
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.2.1'
+    compile group: 'urn.org.netkernel', name: 'ext.system', version: '[1.0,)'
+    compile group: 'urn.org.netkernel', name: 'client.http', version: '[2.0,)'
 }
 
 netkernel {

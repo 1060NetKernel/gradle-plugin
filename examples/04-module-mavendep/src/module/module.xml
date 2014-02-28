@@ -1,12 +1,12 @@
 <module version="2.0">
 	<meta>
 		<identity>
-			<uri>urn:org:netkernel:single:module</uri>
-			<version>1.1.1</version>
+			<uri>urn:org:netkernel:single:module:04</uri>
+			<version>2.1.1</version>
 		</identity>
 		<info>
-			<name>Single Module</name>
-			<description>Module with Src and Build Separate</description>
+			<name>Single Module 04</name>
+			<description>Module with Src and Build Separate and External Maven Build Dependency</description>
 		</info>
 	</meta>
 	<system>

@@ -2,5 +2,7 @@ include(
         '01-single-module',
         '02-nkjava-module',
         '03-nkjava-module',
-        '04-module-mavendep'
+        '04-module-mavendep',
+        '05-module-moduledep',
+        '06-module-mavenexternaljar'
 )

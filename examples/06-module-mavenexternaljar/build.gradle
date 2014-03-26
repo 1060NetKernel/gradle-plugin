@@ -6,8 +6,8 @@ buildscript {
         mavenCentral()
         maven {
             // TODO: Default to local, but allow override
-            //url "http://maven.netkernelroc.org:8080/netkernel-maven"
-            url "http://localhost:8080/netkernel-maven"
+            url "http://maven.netkernelroc.org:8080/netkernel-maven"
+            //url "http://localhost:8080/netkernel-maven"
         }
     }
 
@@ -26,8 +26,8 @@ dependencies {
 netkernel {
 
     useMavenCentral()
-    //useROCRepo()
-	useLocalhostRepo()
+    useROCRepo()
+	//useLocalhostRepo()
 
     useStandardCompileDependencies()
 

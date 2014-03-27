@@ -17,7 +17,7 @@ class NetKernelPlugin implements Plugin<Project> {
 	public static final String GRADLESRC="GRADLESRC"
 	
 	def fsHelper = new FileSystemHelper()
-    def moduleHelper = new ModuleHelper()
+    def moduleHelper = null;
     
     def buildJarInstallerExecutionConfig(def project, def type) {
         def config = new ExecutionConfig()
@@ -113,7 +113,18 @@ class NetKernelPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.apply plugin: 'groovy'
-        
+
+        //Has the user set up maven - if not then add it
+        def mavenPlugin=project.getPlugins().findPlugin('maven')
+        if(mavenPlugin==null) {
+            println "Adding Maven Plugin"
+            project.apply plugin: 'maven'
+        }
+        else
+        {   println "Found maven plugin - repository configuration responsibility accepted by user"
+        }
+
+
         def envs = project.container(ExecutionConfig)
         gatherExecutionConfigs(project, envs)
 
@@ -158,7 +169,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileGroovy.configure {
                     source=fileTree
                 }
-                project.ext.nkModuleIdentity=moduleHelper.getModuleName("${project.projectDir}/src/module.xml")
+                moduleHelper=new ModuleHelper("${project.projectDir}/src/module.xml")
 
                 //Add any libs to classpath
                 def libDir=new File(baseDir, "lib/")
@@ -172,9 +183,19 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
             case GRADLESRC:
-                project.ext.nkModuleIdentity=moduleHelper.getModuleName("${project.projectDir}/src/module/module.xml")
+                moduleHelper=new ModuleHelper("${project.projectDir}/src/module/module.xml")
             break;
         }
+        //Set up module identity and maven artifact
+        project.ext.nkModuleIdentity=moduleHelper.getModuleName()
+
+        //Set Maven Artifact name and version
+        //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
+        project.archivesBaseName=moduleHelper.getModuleURIDotted()
+        project.version=moduleHelper.getModuleVersion()
+
+
+
         println "MODULE TARGET ${project.ext.nkModuleIdentity}"
 
         println("Finished configuring srcStructure")

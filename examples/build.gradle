@@ -1,3 +1,20 @@
+allprojects
+{
+    group = 'gradle-test'
+
+    apply plugin: 'maven'
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: "file://localhost/tmp/pjrTestMavenRepo/")
+            }
+        }
+    }
+
+}
+
+/*
 defaultTasks 'listTargets'
 
 task listTargets{
@@ -14,4 +31,5 @@ task listTargets{
                         }
             }
 }
+*/
 

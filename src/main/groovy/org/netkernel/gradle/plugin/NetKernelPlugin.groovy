@@ -151,7 +151,7 @@ class NetKernelPlugin implements Plugin<Project> {
         else
         {   sourceStructure=GRADLESRC
         }
-        println("sourceStructure="+sourceStructure)
+        //println("sourceStructure="+sourceStructure)
 
         project.ext.nkModuleIdentity=null
 
@@ -176,7 +176,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 if(libDir.exists())
                 {   def libTree=project.fileTree(dir:libDir, includes:['**/*.jar'] );
                     libTree.visit{ f ->
-                        println "lib/ DEPENDENCY ADDED: ${f}"
+                        //println "lib/ DEPENDENCY ADDED: ${f}"
                     }
                     project.dependencies.add("compile", libTree)
                 }
@@ -186,6 +186,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 moduleHelper=new ModuleHelper("${project.projectDir}/src/module/module.xml")
             break;
         }
+
         //Set up module identity and maven artifact
         project.ext.nkModuleIdentity=moduleHelper.getModuleName()
 
@@ -194,11 +195,8 @@ class NetKernelPlugin implements Plugin<Project> {
         project.archivesBaseName=moduleHelper.getModuleURIDotted()
         project.version=moduleHelper.getModuleVersion()
 
-
-
-        println "MODULE TARGET ${project.ext.nkModuleIdentity}"
-
-        println("Finished configuring srcStructure")
+        //println "MODULE TARGET ${project.ext.nkModuleIdentity}"
+        //println("Finished configuring srcStructure")
 
         project.task('module', type: Copy) {
             into "${project.buildDir}/${project.ext.nkModuleIdentity}"
@@ -283,10 +281,10 @@ class NetKernelPlugin implements Plugin<Project> {
                 applyCleanAllTask(project ,c)
             }
         }
-        
-        
 
         addNetKernelConfiguration(project)
+
+
     }
     
     def addNetKernelConfiguration(Project project) {

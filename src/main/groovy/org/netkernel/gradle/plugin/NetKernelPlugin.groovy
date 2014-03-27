@@ -183,7 +183,12 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
             case GRADLESRC:
-                moduleHelper=new ModuleHelper("${project.projectDir}/src/module/module.xml")
+                if (new File("${project.projectDir}/src/module/module.xml").exists()) {
+                    moduleHelper=new ModuleHelper("${project.projectDir}/src/module/module.xml")
+                }
+                if (new File("${project.projectDir}/src/main/resources/module.xml").exists()) {
+                    moduleHelper=new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
+                }
             break;
         }
 

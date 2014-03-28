@@ -1,4 +1,5 @@
 apply plugin: 'netkernel'
+apply plugin: 'netkerneltemplates'
 
 project.group='gradle-test'
 
@@ -78,3 +79,5 @@ netkernel {
         port = ""
     } */
 }
+
+

@@ -2,4 +2,4 @@
 build/
 *.iml
 .idea
-atlassian-ide-plugin.xml
+atlassian*

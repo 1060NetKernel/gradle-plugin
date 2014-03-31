@@ -19,7 +19,12 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
         def templateExists = false
         def templateName = ''
         def moduleURN = ''
+        def moduleName = ''
+        def moduleDescription = ''
+        def moduleSpaceName = ''
+        def moduleVersion = ''
         def templateOptions = []
+        String userInput = ''
 
         def urnHelper = new URNHelper()
 
@@ -61,8 +66,16 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
             println 'No templates have been discovered from the declared dependencies.'
             return
         } else {
-            println 'Enter the name of the template for this new module:'
-            templateName = br.readLine()
+
+            // Get user supplied template name or ask user with a prompt
+            if (properties.containsKey('templateName')){
+                templateName = properties['templateName']
+            } else {
+                println 'Enter the name of the template for this new module:'
+                templateName = br.readLine()
+            }
+
+            println ""
             if (templateOptions.contains(templateName)) {
                 println "The template you selected is: $templateName"
             } else {
@@ -79,6 +92,47 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
                 moduleURN = br.readLine()
                 println "The URN for the new module is: $moduleURN"
             }
+
+            // Get user supplied module name or ask user with a prompt
+            moduleName = 'Module Name'
+            if (properties.containsKey('moduleName')){
+                userInput = properties['moduleName']
+            } else {
+                println "Enter a name for this module ($moduleName): "
+                userInput = br.readLine()
+            }
+            moduleName = userInput.length() == 0 ? moduleName : userInput
+
+            // Get user supplied module description or ask user with a prompt
+            moduleDescription = 'Module description'
+            if (properties.containsKey('moduleDescription')){
+                userInput = properties['moduleDescription']
+            } else {
+                println "Enter a description for this module ($moduleDescription):"
+                userInput = br.readLine()
+            }
+            moduleDescription = userInput.length() == 0 ? moduleDescription : userInput
+
+            // Get user supplied module space name or ask user with a prompt
+            moduleSpaceName = 'Space / Name'
+            if (properties.containsKey('moduleSpaceName')){
+                userInput = properties['moduleSpaceName']
+            } else {
+                println "Enter an ROC space name used in the Space explorer display for this module ($moduleSpaceName):"
+                userInput = br.readLine()
+            }
+            moduleSpaceName = userInput.length() == 0 ? moduleSpaceName : userInput
+
+            // Get user supplied module version or ask user with a prompt
+            moduleVersion = '1.0.0'
+            if (properties.containsKey('moduleVersion')){
+                userInput = properties['moduleVersion']
+            } else {
+                println "Enter the version number of the module ($moduleVersion):"
+                userInput = br.readLine()
+            }
+            moduleVersion = userInput.length() == 0 ? moduleVersion : userInput
+
         }
 
         // Now we have the required information to create a module
@@ -97,88 +151,40 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
 
         moduleDirectory.mkdirs()
 
-        // Our new module directory is created as is empty
-
-        // We need to search all dependent JAR files to find the modules/{template-name} specified by the user
-
+        // Search all dependent JAR files to find the modules/{template-name} specified by the user
         def startCopying = false
         project.configurations.getByName('templates').dependencies.each {
             project.configurations.getByName('templates').fileCollection(it).each {
                 File libraryJarFile = it
-                println libraryJarFile.name
                 def zipFile = new ZipFile(libraryJarFile)
                 zipFile.entries().each { zipEntry ->
                     if (startCopying && zipEntry.name.startsWith("modules/$templateName")) {
-                        println "Copying ..."
                         if (zipEntry.directory) {
                             def translatedDirectory = "${urnHelper.urnToDirectoryName(moduleURN)}/${zipEntry.name.substring("modules/$templateName/".length())}"
-                            println translatedDirectory
                             project.file(translatedDirectory).mkdirs()
                         } else {
                             def translatedFile = "${urnHelper.urnToDirectoryName(moduleURN)}/${zipEntry.name.substring("modules/$templateName/".length())}"
                             def fileContents = zipFile.getInputStream(zipEntry).text
-                            println fileContents
                             String template = fileContents
-                            template = template.replaceAll("MODULE_DESCRIPTION", "Module description")
-                            template = template.replaceAll("MODULE_VERSION", "1.0.0")
-                            template = template.replaceAll("MODULE_URN_RES_PATH_CORE", urnHelper.urnToResPath(urnHelper.urnToUrnCode(moduleURN)))
+                            template = template.replaceAll("MODULE_SPACE_NAME", moduleSpaceName)
+                            template = template.replaceAll("MODULE_DESCRIPTION", moduleDescription)
+                            template = template.replaceAll("MODULE_VERSION", moduleVersion)
+                            template = template.replaceAll("MODULE_NAME", moduleName)
+                            template = template.replaceAll("MODULE_URN_CORE_PACKAGE", urnHelper.urnToCorePackage(moduleURN))
+                            template = template.replaceAll("MODULE_URN_RES_PATH_CORE", urnHelper.urnToResPath(urnHelper.urnToUrnCore(moduleURN)))
                             template = template.replaceAll("MODULE_URN_RES_PATH", urnHelper.urnToResPath(moduleURN))
-                            template = template.replaceAll("MODULE_URN_CORE", urnHelper.urnToUrnCode(moduleURN))
+                            template = template.replaceAll("MODULE_URN_CORE", urnHelper.urnToUrnCore(moduleURN))
                             template = template.replaceAll("MODULE_URN", moduleURN)
-                            println template
                             project.file(translatedFile) << template
                         }
 
                     }
                     if (!startCopying && zipEntry.directory && zipEntry.name.startsWith("modules/$templateName")) {
                         startCopying = true
-                        println 'Start Copying...'
                     }
                 }
                 zipFile.close()
             }
         }
-
-//
-//        // Get user supplied template directory or use default
-//        String templateDirectory = /*project.*/fsHelper.gradleHomeDir() + '/netkernelroc/templates'
-//        if (properties.containsKey('templateDirectory')) {
-//            templateDirectory = properties['templateDirectory']
-//        }
-//
-//        if (!/*project.*/fsHelper.dirExists/*existsDir*/(templateDirectory)) {
-//            println "The specified template directory [${templateDirectory}] does not exist."
-//        }
-//        else {
-//            println ""
-//            println "Directory: ${templateDirectory}"
-//            String templateLibraryDirectory = templateDirectory + '/' + templateLibrary
-//            if (!/*project.*/fsHelper.dirExists/*.existsDir*/(templateLibraryDirectory)){
-//                println "The template Libary [${templateLibrary}] is not found in the template diretory"
-//            }
-//            else {
-//                println ""
-//                println "Library: ${templateLibrary}"
-//                def tlDir = new File(templateLibraryDirectory)
-//                tlDir.eachFile { file ->
-//                    if (file.name.toLowerCase().equals("readme")) {
-//                        println file.text
-//                    }
-//                }
-//                tlDir.eachDir { dir ->
-//                    println "Template: ${dir.name}"
-//                    println "-----------------------------"
-//                    dir.eachFile { file ->
-//                        if (file.name.toLowerCase().equals("readme")) {
-//                            String readme = file.text
-//                            println readme
-//                            println  ""
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
-
-
 }

@@ -7,7 +7,7 @@ import org.gradle.api.Project
  */
 class URNHelper {
 
-    def String urnToUrnCode(String urn) {
+    def String urnToUrnCore(String urn) {
       return urn.substring(0,urn.lastIndexOf(':'))
     }
 
@@ -19,7 +19,8 @@ class URNHelper {
         return 'res:/' + urn.substring(4).replaceAll(':','/')
     }
 
-
-
+    def String urnToCorePackage(String urn) {
+        return urnToUrnCore(urn).substring(4).replaceAll(':', '.')
+    }
 
 }

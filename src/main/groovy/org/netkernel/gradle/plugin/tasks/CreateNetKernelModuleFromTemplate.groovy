@@ -39,13 +39,14 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
 
         project.configurations.getByName('templates').dependencies.each {
             project.configurations.getByName('templates').fileCollection(it).each {
+                println ''
                 println '---- Template Library ----'
                 File libraryJarFile = it
                 println libraryJarFile.name
                 def zipFile = new ZipFile(libraryJarFile)
                 zipFile.entries().each {
-                    if (it.directory && it.name.startsWith('modules') && it.name.length() > 9) {
-                        templateName = it.name.split('/')[1]
+                    if (it.directory && it.name.startsWith('modules') && it.name.length() > 'modules/'.length()) {
+                        templateName = it.name.split('/')[1] // pick off the directory name
                         templateNames.add(templateName)
                         templateOptions.add(templateName)
                         templateExists = true
@@ -55,7 +56,6 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
                 templateNames.each { name ->
                     println name
                 }
-                templateNames.clear()
                 templateNames = new HashSet<String>()
             }
         }
@@ -177,7 +177,6 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
                             template = template.replaceAll("MODULE_URN", moduleURN)
                             project.file(translatedFile) << template
                         }
-
                     }
                     if (!startCopying && zipEntry.directory && zipEntry.name.startsWith("modules/$templateName")) {
                         startCopying = true

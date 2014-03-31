@@ -13,27 +13,25 @@ class ListTemplateLibrariesTask extends DefaultTask {
     void listTemplateLibraries() {
 
         def templateName = ''
-        def templateExists = false
         Set<String> templateNames = new HashSet<String>()
 
         project.configurations.getByName('templates').dependencies.each {
             project.configurations.getByName('templates').fileCollection(it).each {
+                println ''
                 println '---- Template Library ----'
                 File libraryJarFile = it
                 println libraryJarFile.name
                 def zipFile = new ZipFile(libraryJarFile)
                 zipFile.entries().each {
-                    if (it.directory && it.name.startsWith('modules') && it.name.length() > 9) {
-                        templateName = it.name.split('/')[1]
+                    if (it.directory && it.name.startsWith('modules') && it.name.length() > 'modules/'.length()) {
+                        templateName = it.name.split('/')[1] // pick off the name of the directory
                         templateNames.add(templateName)
-                        templateExists = true
                     }
                 }
                 zipFile.close()
                 templateNames.each { name ->
                     println name
                 }
-                templateNames.clear()
                 templateNames = new HashSet<String>()
             }
         }

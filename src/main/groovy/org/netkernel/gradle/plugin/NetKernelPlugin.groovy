@@ -17,7 +17,7 @@ class NetKernelPlugin implements Plugin<Project> {
 	public static final String GRADLESRC="GRADLESRC"
 	
 	def fsHelper = new FileSystemHelper()
-    def moduleHelper = null;
+    ModuleHelper moduleHelper = null;
     
     def buildJarInstallerExecutionConfig(def project, def type) {
         def config = new ExecutionConfig()

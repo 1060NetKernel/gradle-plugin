@@ -8,7 +8,7 @@ import org.netkernel.gradle.util.URNHelper
 import java.util.zip.ZipFile
 
 /**
- * Created by randolph.kahle on 3/27/14.
+ * Created by Randolph Kahle on 3/27/14.
  */
 class CreateNetKernelModuleFromTemplate extends DefaultTask {
 
@@ -24,7 +24,7 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
         def moduleSpaceName = ''
         def moduleVersion = ''
         def templateOptions = []
-        String userInput = ''
+        String userInput
 
         def urnHelper = new URNHelper()
 

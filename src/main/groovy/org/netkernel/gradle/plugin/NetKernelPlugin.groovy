@@ -130,6 +130,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
 
+        project.task('createAppositePackage', type: CreateAppositePackage){
+
+        }
+
         project.task('downloadNKSE', type: DownloadNetKernelTask) {
             downloadConfig = extension.download.se
         }

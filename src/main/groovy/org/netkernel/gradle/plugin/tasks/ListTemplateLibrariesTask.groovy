@@ -5,65 +5,37 @@ import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.netkernel.gradle.util.FileSystemHelper
 
+import java.util.zip.ZipFile
+
 class ListTemplateLibrariesTask extends DefaultTask {
 
-    @org.gradle.api.tasks.TaskAction void createNetKernelModule() {
+    @org.gradle.api.tasks.TaskAction
+    void listTemplateLibraries() {
 
-        ExtensionContainer e = project.getExtensions()
-        ExtraPropertiesExtension ep = e.getExtraProperties()
-        def properties = ep.getProperties()
+        def templateName = ''
+        def templateExists = false
+        Set<String> templateNames = new HashSet<String>()
 
-        // Get user supplied module uri or use default
-        String moduleURI = "urn:org:netkernelroc:sample"
-        if (properties.containsKey('moduleURI')) {
-            moduleURI = properties['moduleURI']
-        }
-
-        println "Module URI " + moduleURI
-
-        // Get user supplied module template or use default
-        String moduleTemplate = "simple"
-        if (properties.containsKey('moduleTemplate')) {
-            moduleTemplate = properties['moduleTemplate']
-        }
-
-        // Get user supplied template library or use default
-        String templateLibrary = "default"
-        if (properties.containsKey('templateLibrary')) {
-            templateLibrary = properties['templateLibrary']
-        }
-
-        def fsHelper = new FileSystemHelper()
-
-        // Get user supplied template directory or use default
-        String templateDirectory = /*project.*/fsHelper.gradleHomeDir() + '/netkernelroc/templates'
-        if (properties.containsKey('templateDirectory')) {
-            templateDirectory = properties['templateDirectory']
-        }
-
-        if (!/*project.*/fsHelper.dirExists/*existsDir*/(templateDirectory)) {
-            println "The specified template directory [${templateDirectory}] does not exist."
-        } else {
-            println ""
-            println "Directory: ${templateDirectory}"
-            def tDir = new File(templateDirectory)
-            tDir.eachDir { dir ->
-                if (!dir.isHidden()) {
-                    println ""
-                    println "Template Library: ${dir.name}"
-                    println "-----------------------------"
-                    dir.eachFile { file ->
-                        if (file.name.toLowerCase().equals("readme")) {
-                            String readme = file.text
-                            println readme
-                            println ""
-                        }
+        project.configurations.getByName('templates').dependencies.each {
+            project.configurations.getByName('templates').fileCollection(it).each {
+                println '---- Template Library ----'
+                File libraryJarFile = it
+                println libraryJarFile.name
+                def zipFile = new ZipFile(libraryJarFile)
+                zipFile.entries().each {
+                    if (it.directory && it.name.startsWith('modules') && it.name.length() > 9) {
+                        templateName = it.name.split('/')[1]
+                        templateNames.add(templateName)
+                        templateExists = true
                     }
-
                 }
+                zipFile.close()
+                templateNames.each { name ->
+                    println name
+                }
+                templateNames.clear()
+                templateNames = new HashSet<String>()
             }
         }
     }
-
-
 }

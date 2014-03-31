@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
 /**
  * Created by randolph.kahle on 3/27/14.
  */
-class ListTemplatesTask extends DefaultTask {
+class CreateNetKernelModuleFromTemplate extends DefaultTask {
 
 
     @org.gradle.api.tasks.TaskAction

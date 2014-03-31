@@ -7,7 +7,7 @@ import org.netkernel.gradle.util.FileSystemHelper
 
 class ListTemplateLibrariesTask extends DefaultTask {
 
-    @org.gradle.api.tasks.TaskAction void createNetKernelModules() {
+    @org.gradle.api.tasks.TaskAction void createNetKernelModule() {
 
         ExtensionContainer e = project.getExtensions()
         ExtraPropertiesExtension ep = e.getExtraProperties()

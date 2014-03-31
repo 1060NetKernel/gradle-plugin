@@ -1,5 +1,5 @@
 apply plugin: 'netkernel'
-apply plugin: 'netkerneltemplates'
+//apply plugin: 'netkerneltemplates'
 
 project.group='gradle-test'
 

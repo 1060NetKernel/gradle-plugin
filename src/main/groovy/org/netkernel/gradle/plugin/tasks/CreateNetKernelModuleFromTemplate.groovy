@@ -30,6 +30,7 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
         ExtraPropertiesExtension ep = e.getExtraProperties()
         def properties = ep.getProperties()
 
+        Set<String> templateNames = new HashSet<String>()
 
         project.configurations.getByName('templates').dependencies.each {
             project.configurations.getByName('templates').fileCollection(it).each {
@@ -40,14 +41,20 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
                 zipFile.entries().each {
                     if (it.directory && it.name.startsWith('modules') && it.name.length() > 9) {
                         templateName = it.name.split('/')[1]
-                        println templateName
+                        templateNames.add(templateName)
                         templateOptions.add(templateName)
                         templateExists = true
                     }
                 }
                 zipFile.close()
+                templateNames.each { name ->
+                    println name
+                }
+                templateNames.clear()
+                templateNames = new HashSet<String>()
             }
         }
+
 
 
         if (!templateExists) {
@@ -112,8 +119,8 @@ class CreateNetKernelModuleFromTemplate extends DefaultTask {
                             def fileContents = zipFile.getInputStream(zipEntry).text
                             println fileContents
                             String template = fileContents
-                            template = template.replaceAll("MODULE_DESCRIPTION","Module description")
-                            template = template.replaceAll("MODULE_VERSION","1.0.0")
+                            template = template.replaceAll("MODULE_DESCRIPTION", "Module description")
+                            template = template.replaceAll("MODULE_VERSION", "1.0.0")
                             template = template.replaceAll("MODULE_URN_RES_PATH_CORE", urnHelper.urnToResPath(urnHelper.urnToUrnCode(moduleURN)))
                             template = template.replaceAll("MODULE_URN_RES_PATH", urnHelper.urnToResPath(moduleURN))
                             template = template.replaceAll("MODULE_URN_CORE", urnHelper.urnToUrnCode(moduleURN))

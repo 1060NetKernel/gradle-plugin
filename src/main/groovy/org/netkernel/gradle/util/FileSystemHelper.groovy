@@ -62,4 +62,13 @@ class FileSystemHelper {
         def dir = "${gradleHomeDir()}/$dirName"
         return createDirectory(dir)
     }
+
+    def fileExists(String fileName) {
+        boolean retValue = false
+
+        def f = new File(fileName)
+        retValue = f.exists()
+        retValue
+    }
+
 }

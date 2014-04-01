@@ -1,0 +1,30 @@
+apply plugin: 'netkerneltemplates'
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven {
+    url "http://maven.netkernelroc.org:8080/netkernel-maven"
+  }
+}
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+      url "http://maven.netkernelroc.org:8080/netkernel-maven"   
+    }
+  }
+  dependencies {
+    classpath group: 'org.netkernel', name: 'gradle-plugin', version: '0.0.2'
+  }
+}
+
+dependencies {
+  templates group: 'org.netkernelroc', name: 'module-template-library', version: '[0.2.0,)'
+}
+
+

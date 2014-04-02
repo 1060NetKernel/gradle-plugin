@@ -17,7 +17,7 @@ class NetKernelPlugin implements Plugin<Project> {
 	public static final String GRADLESRC="GRADLESRC"
 	
 	def fsHelper = new FileSystemHelper()
-    def moduleHelper = null;
+    ModuleHelper moduleHelper = null;
     
     def buildJarInstallerExecutionConfig(def project, def type) {
         def config = new ExecutionConfig()
@@ -130,6 +130,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
 
+        project.task('createAppositePackage', type: CreateAppositePackage){
+
+        }
+
         project.task('downloadNKSE', type: DownloadNetKernelTask) {
             downloadConfig = extension.download.se
         }
@@ -183,10 +187,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
             case GRADLESRC:
-                if (new File("${project.projectDir}/src/module/module.xml").exists()) {
+                if (project.file("${project.projectDir}/src/module/module.xml").exists()) {
                     moduleHelper=new ModuleHelper("${project.projectDir}/src/module/module.xml")
                 }
-                if (new File("${project.projectDir}/src/main/resources/module.xml").exists()) {
+                if (project.file("${project.projectDir}/src/main/resources/module.xml").exists()) {
                     moduleHelper=new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
                 }
             break;

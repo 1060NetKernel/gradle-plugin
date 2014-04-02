@@ -1,0 +1,28 @@
+apply plugin: 'netkerneldeploy'
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "http://maven.netkernelroc.org:8080/netkernel-maven"
+    }
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernelroc.org:8080/netkernel-maven"
+        }
+    }
+    dependencies {
+        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '[0.0.3,)'
+    }
+}
+
+dependencies {
+    netkernelDeploy group: 'org.jetbrains.kotlin', name: 'kotlin-runtime', version: '0.7.271'
+}

@@ -130,6 +130,71 @@ class NetKernelPlugin implements Plugin<Project> {
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
 
+
+        //FREEZE SETUP
+
+        //BRIAN how do we parameterise this well?
+        def configName = "SE"
+        def config = project.netkernel.envs[configName]
+        def installationDir = config.directory
+        def dest = fsHelper.dirInGradleHomeDirectory("netkernel")
+        def freezeDir = fsHelper.dirInGradleHomeDirectory("netkernel/freeze")
+
+        project.task('copyBeforeFreeze', type: Copy) {
+            from installationDir
+            into freezeDir
+            include "**/*"
+        }
+
+        project.task('freezeTidy', type: FreezeTidyTask){
+            freezeDirInner=freezeDir;
+            installDirInner=installationDir;
+        }
+        project.tasks.freezeTidy.dependsOn "copyBeforeFreeze"
+
+        project.task('freezeJar', type: org.gradle.api.tasks.bundling.Jar ){
+            from freezeDir
+            destinationDir= new File(dest)
+            archiveName=  "frozen.zip"
+        }
+        project.tasks.freezeJar.dependsOn "freezeTidy"
+
+        project.task('freezeDelete', type: Delete ){
+            delete freezeDir
+        }
+        project.tasks.freezeDelete.dependsOn "freezeJar"
+
+        //BRIAN how do we maven publish?
+        /*
+        project.task('freezePublish', type: org.gradle.api.publish.maven.MavenPublication ){
+        }
+        project.tasks.freezePublish.dependsOn "freezeJar"
+        */
+
+        // THAW SETUP
+
+        //BRIAN how to we retrieve from maven?
+
+        def thawInstallationDir=installationDir+"2"
+        project.task('thawDeleteInstall', type: Delete ){
+            delete thawInstallationDir
+        }
+
+        def frozenJar=dest+"/frozen.zip";
+        project.task('thawExpand', type: Copy) {
+            from(project.zipTree(frozenJar))
+            into thawInstallationDir
+            include "**/*"
+        }
+        project.tasks.thawExpand.dependsOn "thawDeleteInstall"
+
+        project.task('thawConfigure', type: ThawConfigureTask){
+            thawDirInner=thawInstallationDir;
+        }
+        project.tasks.thawConfigure.dependsOn "thawExpand"
+
+
+
         project.task('createAppositePackage', type: CreateAppositePackage){
 
         }

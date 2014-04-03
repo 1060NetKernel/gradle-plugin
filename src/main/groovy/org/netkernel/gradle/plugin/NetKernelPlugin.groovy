@@ -281,14 +281,20 @@ class NetKernelPlugin implements Plugin<Project> {
         project.task('moduleResources', type: Copy) {
             if(sourceStructure.equals(GRADLESRC))
             {
-            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
-            from "${project.projectDir}/src/module"
+                into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+                from "${project.projectDir}/src/module"
+
+                // Include src/main/resources as module resources as well
+                into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+                from "${project.projectDir}/src/main/resources"
             }
+
             if(sourceStructure.equals(NETKERNELSRC))
             {
                 into "${project.buildDir}/${project.ext.nkModuleIdentity}"
                 from "${project.projectDir}/src"
             }
+            
             //Find out what classes were used to build this
             doLast {
                 println ("JAVA/GROOVY CLASSPATH AT BUILD")

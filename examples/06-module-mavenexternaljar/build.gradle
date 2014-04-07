@@ -21,10 +21,14 @@ buildscript {
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.2.1'
     compile 'commons-compress:commons-compress:20050911'
+    thaw 'org.netkernel:frozenInstance:1.1.1'
+}
+
+repositories {
+    mavenLocal()
 }
 
 netkernel {
-
     useMavenCentral()
     useROCRepo()
 	//useLocalhostRepo()

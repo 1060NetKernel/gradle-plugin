@@ -113,23 +113,16 @@ class NetKernelPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         project.apply plugin: 'groovy'
-
-        //Has the user set up maven - if not then add it
-        def mavenPlugin=project.getPlugins().findPlugin('maven')
-        if(mavenPlugin==null) {
-            println "Adding Maven Plugin"
-            project.apply plugin: 'maven'
-        }
-        else
-        {   println "Found maven plugin - repository configuration responsibility accepted by user"
-        }
-
+        project.apply plugin: 'maven'
 
         def envs = project.container(ExecutionConfig)
         gatherExecutionConfigs(project, envs)
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
-
+        
+        
+        project.configurations.create("freeze")
+        project.configurations.create("thaw")
 
         //FREEZE SETUP
 
@@ -139,7 +132,8 @@ class NetKernelPlugin implements Plugin<Project> {
         def installationDir = config.directory
         def dest = fsHelper.dirInGradleHomeDirectory("netkernel")
         def freezeDir = fsHelper.dirInGradleHomeDirectory("netkernel/freeze")
-
+        def thawDir = fsHelper.dirInGradleHomeDirectory("netkernel/thaw")
+        
         project.task('copyBeforeFreeze', type: Copy) {
             from installationDir
             into freezeDir
@@ -158,6 +152,51 @@ class NetKernelPlugin implements Plugin<Project> {
             archiveName=  "frozen.zip"
         }
         project.tasks.freezeJar.dependsOn "freezeTidy"
+        
+        project.artifacts {
+            freeze project.tasks.freezeJar
+        }
+        
+/*        project.task('freezePublish', type: org.gradle.api.publish.maven.tasks.PublishToMavenLocal) {
+            publication {
+                from freezeDir
+                artifact 'frozen.zip'
+            }
+        } */
+        
+        project.task('installFreeze', type: org.gradle.api.tasks.Upload ) {
+            configuration = project.configurations.freeze
+
+            repositories {
+                mavenInstaller()
+            }
+        }
+        
+        project.configure([project.tasks.installFreeze, project.tasks.uploadFreeze]) {
+            repositories.withType(org.gradle.api.artifacts.maven.MavenResolver) {
+                pom.groupId = "org.netkernel"
+                pom.version = "1.1.1"
+                pom.artifactId = "frozenInstance"
+                pom.scopeMappings.mappings.clear()
+            }
+        }
+        
+        project.task('thaw', type: Copy) {
+            onlyIf {
+                project.configurations.thaw.files.size() > 0
+            }
+            
+            doFirst {
+                if(project.configurations.thaw.files.size() != 1) {
+                    throw new org.gradle.api.InvalidUserDataException("Like Highlander, there can only be one")
+                }
+            }
+            
+            into thawDir
+            from {
+                project.zipTree(project.configurations.thaw.singleFile)
+            }
+        }
 
         project.task('freezeDelete', type: Delete ){
             delete freezeDir

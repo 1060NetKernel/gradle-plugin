@@ -31,12 +31,12 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         ExtraPropertiesExtension ep = e.getExtraProperties()
         projectProperties = ep.getProperties()
 
-        Map properties = [
-            (MODULE_DESCRIPTION): projectProperties.get("moduleDescription"),
-            (MODULE_NAME)       : projectProperties.get('moduleName'),
-            (MODULE_SPACE_NAME) : projectProperties.get('moduleSpaceName'),
-            (MODULE_URN)        : projectProperties.get('moduleUrn'),
-            (MODULE_VERSION)    : projectProperties.get('moduleVersion')
+        Map templateProperties = [
+            (MODULE_DESCRIPTION): projectProperties.get(MODULE_DESCRIPTION),
+            (MODULE_NAME)       : projectProperties.get(MODULE_NAME),
+            (MODULE_SPACE_NAME) : projectProperties.get(MODULE_SPACE_NAME),
+            (MODULE_URN)        : projectProperties.get(MODULE_URN),
+            (MODULE_VERSION)    : projectProperties.get(MODULE_VERSION)
         ]
 
         Templates templates = loadTemplates()
@@ -49,9 +49,9 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         String selectedTemplate = templateHelper.promptForValue('Enter the name of the template for this new module', null, templatesCompleter)
         assert templates.contains(selectedTemplate), "Could not find template: [${selectedTemplate}]"
 
-        properties.MODULE_URN = properties.MODULE_URN ?: templateHelper.promptForValue('Enter the URN for the new module')
+        templateProperties[MODULE_URN] = templateProperties[MODULE_URN] ?: templateHelper.promptForValue('Enter the URN for the new module')
 
-        File moduleDirectory = new File(destinationDirectory, urnHelper.urnToDirectoryName(properties.MODULE_URN))
+        File moduleDirectory = new File(destinationDirectory, urnHelper.urnToDirectoryName(templateProperties[MODULE_URN]))
         if (moduleDirectory.directory) {
             println "A module with the provided URN already exists"
             def yn = templateHelper.promptForValue('Do you want to replace this module with a newly created one from the template? (y/n)')
@@ -63,30 +63,29 @@ class CreateModuleFromTemplateTask extends DefaultTask {
             }
         }
 
-        properties.MODULE_DIRECTORY = moduleDirectory
+        templateProperties[MODULE_DIRECTORY] = moduleDirectory
 
-
-        properties.MODULE_NAME = properties.MODULE_NAME ?: templateHelper.promptForValue('Enter module name', 'Module Name')
-        properties.MODULE_DESCRIPTION = properties.MODULE_DESCRIPTION ?: templateHelper.promptForValue('Enter module description', 'Module Description')
-        properties.MODULE_SPACE_NAME = properties.MODULE_SPACE_NAME ?: templateHelper.promptForValue('Enter an ROC space name used in the Space explorer display for this module', 'Space / Name')
-        properties.MODULE_VERSION = properties.MODULE_VERSION ?: templateHelper.promptForValue('Enter the version number', '1.0.0')
+        templateProperties[MODULE_NAME] = templateProperties[MODULE_NAME] ?: templateHelper.promptForValue('Enter module name', 'Module Name')
+        templateProperties[MODULE_DESCRIPTION] = templateProperties[MODULE_DESCRIPTION] ?: templateHelper.promptForValue('Enter module description', 'Module Description')
+        templateProperties[MODULE_SPACE_NAME] = templateProperties[MODULE_SPACE_NAME] ?: templateHelper.promptForValue('Enter an ROC space name used in the Space explorer display for this module', 'Space / Name')
+        templateProperties[MODULE_VERSION] = templateProperties[MODULE_VERSION] ?: templateHelper.promptForValue('Enter the version number', '1.0.0')
 
         // Update derived properties using module urnHelper
-        properties.MODULE_URN_CORE_PACKAGE = urnHelper.urnToCorePackage(properties.MODULE_URN)
-        properties.MODULE_URN_RES_PATH_CORE = urnHelper.urnToResPath(urnHelper.urnToUrnCore(properties.MODULE_URN))
-        properties.MODULE_URN_RES_PATH = urnHelper.urnToResPath(properties.MODULE_URN)
-        properties.MODULE_URN_CORE = urnHelper.urnToUrnCore(properties.MODULE_URN)
+        templateProperties[MODULE_URN_CORE_PACKAGE] = urnHelper.urnToCorePackage(templateProperties[MODULE_URN])
+        templateProperties[MODULE_URN_RES_PATH_CORE] = urnHelper.urnToResPath(urnHelper.urnToUrnCore(templateProperties[MODULE_URN]))
+        templateProperties[MODULE_URN_RES_PATH] = urnHelper.urnToResPath(templateProperties[MODULE_URN])
+        templateProperties[MODULE_URN_CORE] = urnHelper.urnToUrnCore(templateProperties[MODULE_URN])
 
         // Now we have the required information to create a module
         println "\nReady to build module with the following values:\n"
-        properties.each { key, value ->
+        templateProperties.each { key, value ->
             printf "%30s: %s\n", key, value
         }
         println ""
 
         def yn = templateHelper.promptForValue('Go ahead and build module (y/n)?')
         if ('y' == yn.toLowerCase()) {
-            templateHelper.buildModule(templates, selectedTemplate, properties)
+            templateHelper.buildModule(templates, selectedTemplate, templateProperties)
         }
     }
 
@@ -106,8 +105,8 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         }
 
         // Load any templates from netkernel.template.dirs system property
-        if (project.property(TemplateHelper.NETKERNEL_TEMPLATE_DIRS)) {
-            templates.addDirectories(project.property(TemplateHelper.NETKERNEL_TEMPLATE_DIRS))
+        if (project.property(NETKERNEL_TEMPLATE_DIRS as String)) {
+            templates.addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
         }
 
         return templates

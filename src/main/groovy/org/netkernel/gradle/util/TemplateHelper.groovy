@@ -3,14 +3,15 @@ package org.netkernel.gradle.util
 import freemarker.template.Configuration
 import freemarker.template.DefaultObjectWrapper
 import freemarker.template.Template
+import freemarker.template.TemplateExceptionHandler
+import groovy.util.logging.Slf4j
 import jline.console.ConsoleReader
 import jline.console.completer.Completer
 
 import java.util.zip.ZipFile
 
+@Slf4j
 class TemplateHelper {
-
-    static final String NETKERNEL_TEMPLATE_DIRS = "netkernel.template.dirs"
 
     ConsoleReader consoleReader = new ConsoleReader(System.in, System.out)
     Configuration configuration
@@ -19,6 +20,7 @@ class TemplateHelper {
         configuration = new Configuration()
         configuration.objectWrapper = new DefaultObjectWrapper()
         configuration.defaultEncoding = "UTF-8"
+        configuration.templateExceptionHandler = TemplateExceptionHandler.IGNORE_HANDLER
     }
 
     String promptForValue(String prompt, String defaultValue = null, Completer completer = null) {
@@ -50,12 +52,20 @@ class TemplateHelper {
         File source = templates.getTemplateSource(selectedTemplate)
         File moduleDirectory = properties[TemplateProperty.MODULE_DIRECTORY]
 
-        moduleDirectory.mkdirs() // TODO, check response value
+        if(!moduleDirectory.mkdirs()) {
+            log.error "Could not create directory: ${moduleDirectory}"
+        }
+
+        // Need to convert TemplateProperty enum to strings for use by FreeMarker
+        Map templateProperties = [:]
+        properties.each { TemplateProperty key, value ->
+            templateProperties[key.toString()] = value
+        }
 
         if (source.directory) {
-            buildModuleFromDirectory(moduleDirectory, source, properties)
+            buildModuleFromDirectory(moduleDirectory, source, templateProperties)
         } else {
-            buildModuleFromJarFile(moduleDirectory, source, selectedTemplate, properties)
+            buildModuleFromJarFile(moduleDirectory, source, selectedTemplate, templateProperties)
         }
     }
 
@@ -118,4 +128,5 @@ class TemplateHelper {
         }
         return nonCharacter == null
     }
+
 }

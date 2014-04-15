@@ -139,4 +139,16 @@ class TemplatesSpec extends Specification {
         new File(TemplateHelperSpec.getResource("/test/templates").file)            | 'template [templates/]'
     }
 
+    def "doesn't add templates from non jar file"() {
+        setup:
+        File nonJarFile = new File(TemplatesSpec.getResource("/test/files/file.txt").file)
+
+        when:
+        templates.addFile(nonJarFile)
+
+        then:
+        templates.templates.size() == 0
+
+    }
+
 }

@@ -20,7 +20,6 @@ class Templates {
             // Find all entries directly under modules
             zipFile.entries().findAll { it.name =~ /^[^\/]*\/$/ }.each { ZipEntry entry ->
                 if (entry.directory && !entry.name.startsWith('META-INF')) {
-                    // TODO: Don't call this for the same template
                     doAddTemplate entry.name.split('/')[0], file
                 }
             }

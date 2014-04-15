@@ -1,0 +1,56 @@
+<module version="2.0">
+
+  <meta>
+    <identity>
+      <uri>${MODULE_URN}</uri>
+      <version>${MODULE_VERSION}</version>
+    </identity>
+    <info>
+      <name>${MODULE_NAME}</name>
+      <description>${MODULE_DESCRIPTION}</description>
+      <icon>${MODULE_URN_RES_PATH_CORE}/images/icon.png</icon>
+    </info>
+  </meta>
+
+  <system>
+    <dynamic/>
+  </system>
+
+  <rootspace
+      uri="${MODULE_URN}"
+      public="true"
+      name="${MODULE_SPACE_NAME} / Test">
+
+    <accessor>
+      <grammar>
+        <active>
+          <identifier>active:testExistence</identifier>
+        </active>
+      </grammar>
+      <class>${MODULE_URN_CORE_PACKAGE}.test.endpoint.ExistenceTestEndpoint</class>
+    </accessor>
+
+
+    <import>
+      <uri>${MODULE_URN_CORE}</uri>
+    </import>
+
+    <import>
+      <private/>
+      <uri>urn:org:netkernel:xml:core</uri>
+    </import>
+
+    <fileset>
+      <regex>res:/etc/system/Tests.xml</regex>
+    </fileset>
+    <fileset>
+      <regex>res:/resources/tests/testlist.xml</regex>
+    </fileset>
+
+    <fileset>
+      <regex>${MODULE_URN_RES_PATH_CORE}/images/(.*)</regex>
+      <rewrite>res:/resources/images/\$1</rewrite>
+    </fileset>
+  </rootspace>
+
+</module>

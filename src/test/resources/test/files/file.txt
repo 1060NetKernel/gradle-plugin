@@ -1,0 +1,4 @@
+This is a text file
+<xml>
+  <value>1</value>
+</xml>

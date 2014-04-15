@@ -1,0 +1,28 @@
+<module version="2.0">
+  <meta>
+    <identity>
+      <uri>urn:org:nick</uri>
+      <version>1.0.0</version>
+    </identity>
+    <info>
+      <name>Layer0 / Kotlin</name>
+      <description>Description</description>
+      <icon>res:/org/nick/images/icon.png</icon>
+    </info>
+  </meta>
+
+  <system>
+    <dynamic/>
+  </system>
+
+  <rootspace
+      uri="urn:org:nick"
+      name="Layer0 / Kotlin">
+
+    <fileset>
+      <regex>res:/org/nick/images/(.*)</regex>
+      <rewrite>res:/resources/images/$1</rewrite>
+    </fileset>
+  </rootspace>
+
+</module>

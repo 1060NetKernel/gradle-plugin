@@ -1,11 +1,14 @@
 package org.netkernel.gradle.util
 
 import groovy.util.logging.Slf4j
+import org.gradle.api.Project
 
 import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
+
+import static org.netkernel.gradle.util.TemplateProperty.NETKERNEL_TEMPLATE_DIRS
 
 @Slf4j
 class Templates {
@@ -83,6 +86,26 @@ class Templates {
 
     int size() {
         return templates.keySet().size()
+    }
+
+    void loadTemplatesForProject(Project project) {
+        /**
+         * Loads templates from both 'template' type dependencies and directories referenced in the netkernel.template.dirs
+         * property in ~/.gradle/gradle.properties.
+         */
+
+        // Load any templates referenced by declared dependency
+        project.configurations.getByName('templates').dependencies.each { dependency ->
+            project.configurations.getByName('templates').fileCollection(dependency).each { jarFile ->
+                addFile(jarFile)
+            }
+        }
+
+        // Load any templates from netkernel.template.dirs system property
+        if (project.property(NETKERNEL_TEMPLATE_DIRS as String)) {
+            addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
+        }
+
     }
 
 }

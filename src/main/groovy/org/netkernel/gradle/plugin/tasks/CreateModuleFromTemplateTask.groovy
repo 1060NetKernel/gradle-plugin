@@ -39,7 +39,8 @@ class CreateModuleFromTemplateTask extends DefaultTask {
             (MODULE_VERSION)    : projectProperties.get(MODULE_VERSION)
         ]
 
-        Templates templates = loadTemplates()
+        Templates templates = new Templates()
+        templates.loadTemplatesForProject(project)
         assert templates.size() > 0, 'No templates have been discovered from the declared dependencies or directories.'
 
         Path currentDirectory = Paths.get(".").toAbsolutePath().normalize()
@@ -86,31 +87,8 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         def yn = templateHelper.promptForValue('Go ahead and build module (y/n)?')
         if ('y' == yn.toLowerCase()) {
             templateHelper.buildModule(templates, selectedTemplate, templateProperties)
+            println "\nAll done. Your module is ready here:\n ${moduleDirectory.absolutePath}"
         }
-    }
-
-    /**
-     * Loads templates from both 'template' type dependencies and directories referenced in the netkernel.template.dirs
-     * property in ~/.gradle/gradle.properties.
-     */
-    Templates loadTemplates() {
-
-        Templates templates = new Templates()
-
-        // Load any templates referenced by declared dependency
-        project.configurations.getByName('templates').dependencies.each { dependency ->
-            project.configurations.getByName('templates').fileCollection(dependency).each { jarFile ->
-                templates.addFile(jarFile)
-            }
-        }
-
-        // Load any templates from netkernel.template.dirs system property
-        if (project.property(NETKERNEL_TEMPLATE_DIRS as String)) {
-            templates.addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
-        }
-
-        return templates
-
     }
 
 }

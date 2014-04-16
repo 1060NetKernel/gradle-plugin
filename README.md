@@ -38,8 +38,11 @@ Version Number | This is the initial module version number. For example: "0.1.0"
 
 ### Configuration
 
+Templates can be loaded by using gradle's dependency mechanism or from local folders.
+
 Example build.gradle file for creating modules:
 
+```groovy
     apply plugin: 'netkerneltemplates'
     apply plugin: 'java'
     apply plugin: 'maven'
@@ -68,10 +71,13 @@ Example build.gradle file for creating modules:
     dependencies {
       templates group: 'org.netkernelroc', name: 'module-template-library', version: '[0.2.0,)'
     }
+```
 
+Additional templates can be loaded by adding a comma separated list of directories to your ~/.gradle/gradle.properties file:
 
-
-
+```
+  netkernel.template.dirs=~/templates1, ~/templates2
+```
 
 To create a new module information such as the module's URN is required.
 

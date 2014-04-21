@@ -9,9 +9,6 @@ import org.netkernel.gradle.util.TemplateHelper
 import org.netkernel.gradle.util.Templates
 import org.netkernel.gradle.util.URNHelper
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
 import static org.netkernel.gradle.util.TemplateProperty.*
 
 /**
@@ -43,8 +40,10 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         templates.loadTemplatesForProject(project)
         assert templates.size() > 0, 'No templates have been discovered from the declared dependencies or directories.'
 
-        Path currentDirectory = Paths.get(".").toAbsolutePath().normalize()
+        File currentDirectory = new File(System.getProperty('user.dir'))
+
         String destinationDirectory = templateHelper.promptForValue('Enter destination directory', currentDirectory.toString(), new FileNameCompleter())
+        destinationDirectory = TemplateHelper.cleanupPath(destinationDirectory)
 
         StringsCompleter templatesCompleter = new StringsCompleter(templates.names)
         String selectedTemplate = templateHelper.promptForValue('Enter the name of the template for this new module', null, templatesCompleter)

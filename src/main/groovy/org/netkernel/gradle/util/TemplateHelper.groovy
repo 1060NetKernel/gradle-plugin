@@ -52,7 +52,7 @@ class TemplateHelper {
         File source = templates.getTemplateSource(selectedTemplate)
         File moduleDirectory = properties[TemplateProperty.MODULE_DIRECTORY]
 
-        if(!moduleDirectory.mkdirs()) {
+        if (!moduleDirectory.mkdirs()) {
             log.error "Could not create directory: ${moduleDirectory}"
         }
 
@@ -127,6 +127,11 @@ class TemplateHelper {
             !Character.isDefined(it.charValue())
         }
         return nonCharacter == null
+    }
+
+    // Replace references to '~/' with home directory
+    static String cleanupPath(String path) {
+        return path.trim().replaceAll('~/', "${System.getProperty("user.home")}/")
     }
 
 }

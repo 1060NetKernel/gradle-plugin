@@ -130,4 +130,16 @@ class TemplateHelperSpec extends Specification {
         '/test/files/icon.png' | false
     }
 
+    def 'cleans up path'() {
+        when:
+        String result = TemplateHelper.cleanupPath(path)
+
+        then:
+        result == expectedResult
+
+        where:
+        path | expectedResult
+        '~/development' | "${System.getProperty('user.home')}/development"
+    }
+
 }

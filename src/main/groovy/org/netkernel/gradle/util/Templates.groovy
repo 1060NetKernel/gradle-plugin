@@ -3,7 +3,6 @@ package org.netkernel.gradle.util
 import groovy.util.logging.Slf4j
 import org.gradle.api.Project
 
-import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -23,7 +22,7 @@ class Templates {
             // Find all entries directly under modules
             zipFile.entries().findAll { it.name =~ /^[^\/]*\/$/ }.each { ZipEntry entry ->
                 if (entry.directory && !entry.name.startsWith('META-INF')) {
-                    doAddTemplate entry.name.split('/')[0], file
+                    doAddTemplateSource entry.name.split('/')[0], file
                 }
             }
             zipFile.close()
@@ -34,36 +33,21 @@ class Templates {
 
     void addDirectory(File directory) {
         directory.listFiles().findAll { it.directory }.each { File dir ->
-            doAddTemplate dir.name, directory
+            doAddTemplateSource dir.name, directory
         }
     }
 
     void addDirectories(String directories) {
         String[] dirs = directories.split(',').collect { it.trim() }
         dirs.each { directory ->
-            // Replace references to '~/' with home directory
-            String sanitizedDirectory = directory.trim().replaceAll('~/', "${System.getProperty("user.home")}/")
-            File directoryFile = Paths.get(sanitizedDirectory).toAbsolutePath().toFile()
+            String sanitizedDirectory = TemplateHelper.cleanupPath(directory)
+            File directoryFile = new File(sanitizedDirectory)
             addDirectory(directoryFile)
         }
     }
 
     boolean contains(String... templateNames) {
         return templates.keySet().containsAll(templateNames)
-    }
-
-    void doAddTemplate(String templateName, File source) {
-        if (templates[templateName]) {
-
-            File originalSource = templates.remove templateName
-            String adjustedOriginalName = adjustTemplateName(templateName, originalSource)
-            String adjustedTemplateName = adjustTemplateName(templateName, source)
-
-            templates[adjustedOriginalName] = originalSource
-            templates[adjustedTemplateName] = source
-        } else {
-            templates[templateName] = source
-        }
     }
 
     String adjustTemplateName(String templateName, File source) {
@@ -79,7 +63,8 @@ class Templates {
     File getTemplateSource(String templateName) {
         File rawSource = templates[templateName]
         if (rawSource.directory) {
-            return rawSource.listFiles().find { it.name == templateName }
+            String dirName = templateName.replaceAll(' \\[.*?\\]$','')
+            return rawSource.listFiles().find { it.name == dirName }
         }
         return templates[templateName]
     }
@@ -106,6 +91,20 @@ class Templates {
             addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
         }
 
+    }
+
+    private void doAddTemplateSource(String templateName, File source) {
+        if (templates[templateName]) {
+
+            File originalSource = templates.remove templateName
+            String adjustedOriginalName = adjustTemplateName(templateName, originalSource)
+            String adjustedTemplateName = adjustTemplateName(templateName, source)
+
+            templates[adjustedOriginalName] = originalSource
+            templates[adjustedTemplateName] = source
+        } else {
+            templates[templateName] = source
+        }
     }
 
 }

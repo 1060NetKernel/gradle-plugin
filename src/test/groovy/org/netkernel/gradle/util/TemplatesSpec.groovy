@@ -76,18 +76,45 @@ class TemplatesSpec extends Specification {
         templates.getTemplateSource('cron-fulcrum') == cronFulcrumSource
     }
 
-    def 'add template handles duplicates'() {
+    def "gets templates source handling duplicates"() {
         setup:
         File templateFile = new File(TemplateHelperSpec.getResource("/test/template-library.jar").file)
         File templatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
-        templates.doAddTemplate("template", templateFile)
-        templates.doAddTemplate("template", templatesDir)
+        templates.addFile(templateFile)
+        templates.addDirectory(templatesDir)
+
+        when:
+        File source = templates.getTemplateSource('triad-core [template-library.jar]')
+
+        then:
+        source == templateFile
+
+        when:
+        source = templates.getTemplateSource('triad-core [templates/]')
+
+        then:
+        source == new File(templatesDir, 'triad-core')
+    }
+
+    def 'adds templates and handles duplicates'() {
+        setup:
+        File templateFile = new File(TemplateHelperSpec.getResource("/test/template-library.jar").file)
+        File templatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
+        templates.addFile(templateFile)
+        templates.addDirectory(templatesDir)
 
         when:
         def names = templates.names
 
         then:
-        names == ['template [template-library.jar]', 'template [templates/]'] as Set
+        names == [
+            'triad-core [template-library.jar]',
+            'triad-core [templates/]',
+            'triad-doc [template-library.jar]',
+            'triad-doc [templates/]',
+            'triad-test [template-library.jar]',
+            'triad-test [templates/]'
+        ] as Set
     }
 
     def 'gets template names'() {

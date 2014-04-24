@@ -1,0 +1,37 @@
+<module version="2.0">
+  <meta>
+    <identity>
+      <uri>${MODULE_URN}</uri>
+      <version>${MODULE_VERSION}</version>
+    </identity>
+    <info>
+      <name>${MODULE_NAME}</name>
+      <description>${MODULE_DESCRIPTION}</description>
+      <icon>${MODULE_URN_RES_PATH_CORE}/images/icon.png</icon>
+    </info>
+  </meta>
+
+  <system>
+    <dynamic/>
+  </system>
+
+  <rootspace 
+	  uri="${MODULE_URN}"
+	  public="true" 
+	  name="${MODULE_SPACE_NAME} / Documentation">
+
+    <fileset>
+      <regex>res:/etc/system/(Books|Docs).xml</regex>
+    </fileset>
+    <fileset>
+      <regex>res:/org/netkernelroc/layer0/kotlin/doc/(.*)</regex>
+      <rewrite>res:/resources/doc/\$1</rewrite>
+    </fileset>
+
+    <fileset>
+      <regex>${MODULE_URN_RES_PATH_CORE}/images/(.*)</regex>
+      <rewrite>res:/resources/images/\$1</rewrite>
+    </fileset>
+  </rootspace>
+
+</module>

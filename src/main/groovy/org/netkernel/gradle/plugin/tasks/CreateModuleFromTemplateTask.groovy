@@ -68,10 +68,11 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         templateProperties[MODULE_NAME] = templateProperties[MODULE_NAME] ?: templateHelper.promptForValue('Enter module name', 'Module Name')
         templateProperties[MODULE_DESCRIPTION] = templateProperties[MODULE_DESCRIPTION] ?: templateHelper.promptForValue('Enter module description', 'Module Description')
         templateProperties[MODULE_SPACE_NAME] = templateProperties[MODULE_SPACE_NAME] ?: templateHelper.promptForValue('Enter an ROC space name used in the Space explorer display for this module', 'Space / Name')
-        templateProperties[MODULE_VERSION] = templateProperties[MODULE_VERSION] ?: templateHelper.promptForValue('Enter the version number', '1.0.0')
+        templateProperties[MODULE_VERSION] = templateProperties[MODULE_VERSION] ?: templateHelper.promptForValue('Enter the version number', '0.0.1-SNAPSHOT')
 
         // Update derived properties using module urnHelper
         templateProperties[MODULE_URN_CORE_PACKAGE] = urnHelper.urnToCorePackage(templateProperties[MODULE_URN])
+        templateProperties[MODULE_URN_CORE_PACKAGE_PATH] = templateProperties[MODULE_URN_CORE_PACKAGE].replaceAll('\\.','/')
         templateProperties[MODULE_URN_RES_PATH_CORE] = urnHelper.urnToResPath(urnHelper.urnToUrnCore(templateProperties[MODULE_URN]))
         templateProperties[MODULE_URN_RES_PATH] = urnHelper.urnToResPath(templateProperties[MODULE_URN])
         templateProperties[MODULE_URN_CORE] = urnHelper.urnToUrnCore(templateProperties[MODULE_URN])

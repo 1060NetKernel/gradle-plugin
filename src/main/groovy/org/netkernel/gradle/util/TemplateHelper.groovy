@@ -106,12 +106,13 @@ class TemplateHelper {
         configuration.directoryForTemplateLoading = source
 
         source.eachFileRecurse { file ->
-            String newPath = file.absolutePath - source.absolutePath
-            File processedFile = new File(moduleDirectory, newPath)
+            String templatePath = file.absolutePath - source.absolutePath
+            String destinationPath = updatePath(templatePath, properties)
+            File processedFile = new File(moduleDirectory, destinationPath)
             if (file.directory) {
                 processedFile.mkdirs()
             } else if (isText(file.getText('UTF-8'))) {
-                Template template = configuration.getTemplate(newPath)
+                Template template = configuration.getTemplate(templatePath)
                 template.process(properties, processedFile.newWriter())
             } else { // Just copy over the binary file
                 processedFile.bytes = file.bytes
@@ -119,6 +120,12 @@ class TemplateHelper {
         }
 
         configuration.clearTemplateCache()
+    }
+
+    String updatePath(String path, Map properties) {
+        StringWriter writer = new StringWriter();
+        new Template(path, path, configuration).process(properties, writer);
+        return writer.toString()
     }
 
     boolean isText(String text) {

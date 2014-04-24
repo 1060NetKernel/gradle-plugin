@@ -15,6 +15,7 @@ enum TemplateProperty {
     MODULE_VERSION("moduleVersion"),
     MODULE_NAME("moduleName"),
     MODULE_URN_CORE_PACKAGE("moduleUrnCorePackage"),
+    MODULE_URN_CORE_PACKAGE_PATH("moduleUrnCorePackagePath"),
     MODULE_URN_RES_PATH_CORE("moduleUrnResPathCore"),
     MODULE_URN_RES_PATH("moduleUrnResPath"),
     MODULE_URN_CORE("moduleUrnCore"),

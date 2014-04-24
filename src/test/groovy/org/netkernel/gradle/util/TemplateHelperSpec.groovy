@@ -98,16 +98,17 @@ class TemplateHelperSpec extends Specification {
         templates.addDirectory(new File(TemplateHelperSpec.getResource("/test/templates").file))
 
         Map properties = [
-            (MODULE_DESCRIPTION)      : 'Module Description',
-            (MODULE_NAME)             : 'Module Name',
-            (MODULE_SPACE_NAME)       : 'Space / Name',
-            (MODULE_URN)              : 'urn:org:netkernel:test',
-            (MODULE_URN_CORE)         : 'urn:org:netkernel',
-            (MODULE_URN_CORE_PACKAGE) : 'org.netkernel',
-            (MODULE_URN_RES_PATH)     : 'res:/org/netkernel/test',
-            (MODULE_URN_RES_PATH_CORE): 'res:/org/netkernel',
-            (MODULE_VERSION)          : '1.0.0',
-            (MODULE_DIRECTORY)        : moduleDirectory
+            (MODULE_DESCRIPTION)          : 'Module Description',
+            (MODULE_NAME)                 : 'Module Name',
+            (MODULE_SPACE_NAME)           : 'Space / Name',
+            (MODULE_URN)                  : 'urn:org:netkernel:test',
+            (MODULE_URN_CORE)             : 'urn:org:netkernel',
+            (MODULE_URN_CORE_PACKAGE)     : 'org.netkernel',
+            (MODULE_URN_CORE_PACKAGE_PATH): 'org/netkernel',
+            (MODULE_URN_RES_PATH)         : 'res:/org/netkernel/test',
+            (MODULE_URN_RES_PATH_CORE)    : 'res:/org/netkernel',
+            (MODULE_VERSION)              : '1.0.0',
+            (MODULE_DIRECTORY)            : moduleDirectory
         ]
 
         when:
@@ -115,6 +116,7 @@ class TemplateHelperSpec extends Specification {
 
         then:
         moduleDirectory.listFiles().size() > 0
+        new File(moduleDirectory, "src/main/groovy/org/netkernel/Simple.groovy").exists()
     }
 
     def 'checks for binary file'() {
@@ -125,7 +127,7 @@ class TemplateHelperSpec extends Specification {
         textFile == expectedResult
 
         where:
-        file | expectedResult
+        file                   | expectedResult
         '/test/files/file.txt' | true
         '/test/files/icon.png' | false
     }
@@ -138,8 +140,19 @@ class TemplateHelperSpec extends Specification {
         result == expectedResult
 
         where:
-        path | expectedResult
+        path            | expectedResult
         '~/development' | "${System.getProperty('user.home')}/development"
+    }
+
+    def 'updates path'() {
+        setup:
+        String path = '/root/${modulePath}/module.xml'
+
+        when:
+        String updatedPath = templateHelper.updatePath(path, ['modulePath': 'module'])
+
+        then:
+        updatedPath == "/root/module/module.xml"
     }
 
 }

@@ -2,17 +2,18 @@ package org.netkernel.gradle.util
 
 import groovy.util.logging.Slf4j
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
-import static org.netkernel.gradle.util.TemplateProperty.NETKERNEL_TEMPLATE_DIRS
+import static TemplateProperties.NETKERNEL_TEMPLATE_DIRS
 
 @Slf4j
-class Templates {
+class ModuleTemplates {
 
-    Map templates = [:]
+    LinkedHashSet<ModuleTemplate> templates = [] as LinkedHashSet<ModuleTemplate>
 
     void addFile(File file) {
         // TODO: check to see if jar file exists and that it can be opened as a zip file
@@ -22,7 +23,7 @@ class Templates {
             // Find all entries directly under modules
             zipFile.entries().findAll { it.name =~ /^[^\/]*\/$/ }.each { ZipEntry entry ->
                 if (entry.directory && !entry.name.startsWith('META-INF')) {
-                    doAddTemplateSource entry.name.split('/')[0], file
+                    templates << new ModuleTemplate(name: entry.name.split('/')[0], source: file)
                 }
             }
             zipFile.close()
@@ -33,7 +34,7 @@ class Templates {
 
     void addDirectory(File directory) {
         directory.listFiles().findAll { it.directory }.each { File dir ->
-            doAddTemplateSource dir.name, directory
+            templates << new ModuleTemplate(name: dir.name, source: dir)
         }
     }
 
@@ -47,30 +48,38 @@ class Templates {
     }
 
     boolean contains(String... templateNames) {
-        return templates.keySet().containsAll(templateNames)
+        return templates.collect { it.name }.containsAll(templateNames)
     }
 
-    String adjustTemplateName(String templateName, File source) {
-        String adjustedTemplateName = "${templateName}"
-        adjustedTemplateName += " [${source.name}${source.directory ? '/' : ''}]"
-        return adjustedTemplateName
+
+    Collection<String> getNames() {
+        return templates.collect { it.name }
     }
 
-    Collection getNames() {
-        return templates.keySet()
+    Collection<String> getQualifiedNames() {
+        return templates.collect { it.qualifiedName }
     }
 
-    File getTemplateSource(String templateName) {
-        File rawSource = templates[templateName]
-        if (rawSource.directory) {
-            String dirName = templateName.replaceAll(' \\[.*?\\]$','')
-            return rawSource.listFiles().find { it.name == dirName }
+    ModuleTemplate getTemplate(String templateName, File source = null) {
+        ModuleTemplate result
+
+        Collection<ModuleTemplate> results = templates.findAll { it.name == templateName }
+
+        if (results.size() == 1) {
+            result = results.toArray()[0]
+        } else if (results.size() > 1 && source) {
+            result = results.find { it.source == source }
         }
-        return templates[templateName]
+
+        return result
+    }
+
+    ModuleTemplate getTemplateByQualifiedName(String qualifiedName) {
+        return templates.find { it.qualifiedName == qualifiedName }
     }
 
     int size() {
-        return templates.keySet().size()
+        return templates.size()
     }
 
     void loadTemplatesForProject(Project project) {
@@ -80,7 +89,8 @@ class Templates {
          */
 
         // Load any templates referenced by declared dependency
-        project.configurations.getByName('templates').dependencies.each { dependency ->
+        project.configurations.getByName('templates').dependencies.each { Dependency dependency ->
+            println dependency
             project.configurations.getByName('templates').fileCollection(dependency).each { jarFile ->
                 addFile(jarFile)
             }
@@ -89,21 +99,6 @@ class Templates {
         // Load any templates from netkernel.template.dirs system property
         if (project.property(NETKERNEL_TEMPLATE_DIRS as String)) {
             addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
-        }
-
-    }
-
-    private void doAddTemplateSource(String templateName, File source) {
-        if (templates[templateName]) {
-
-            File originalSource = templates.remove templateName
-            String adjustedOriginalName = adjustTemplateName(templateName, originalSource)
-            String adjustedTemplateName = adjustTemplateName(templateName, source)
-
-            templates[adjustedOriginalName] = originalSource
-            templates[adjustedTemplateName] = source
-        } else {
-            templates[templateName] = source
         }
     }
 

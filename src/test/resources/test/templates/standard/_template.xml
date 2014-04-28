@@ -1,0 +1,24 @@
+<config>
+  <properties>
+    <property>
+      <name>moduleName</name>
+      <prompt>Enter module name</prompt>
+      <default>Module name</default>
+    </property>
+    <property>
+      <name>moduleDescription</name>
+      <prompt>Enter module description</prompt>
+      <default>Module description</default>
+    </property>
+    <property>
+      <name>moduleSpaceName</name>
+      <prompt>Enter module space name</prompt>
+      <default>Space / Name</default>
+    </property>
+    <property>
+      <name>moduleVersion</name>
+      <prompt>Enter module version</prompt>
+      <default>0.0.1-SNAPSHOT</default>
+    </property>
+  </properties>
+</config>

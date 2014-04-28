@@ -2,9 +2,9 @@ package org.netkernel.gradle.util
 
 import spock.lang.Specification
 
-class TemplatesSpec extends Specification {
+class ModuleTemplatesSpec extends Specification {
 
-    Templates templates = new Templates()
+    ModuleTemplates templates = new ModuleTemplates()
 
     def "loads templates from classpath"() {
         setup:
@@ -14,7 +14,7 @@ class TemplatesSpec extends Specification {
         templates.addFile(templateFile)
 
         then:
-        templates.names == ['triad-core', 'triad-doc', 'triad-test'] as Set
+        templates.names.containsAll('triad-core', 'triad-doc', 'triad-test')
     }
 
     def "doesn't add any templates from non jar file"() {
@@ -72,11 +72,11 @@ class TemplatesSpec extends Specification {
 
         then:
         templates.contains('triad-core', 'triad-doc', 'triad-test', 'cron-fulcrum', 'http-fulcrum')
-        templates.getTemplateSource('triad-core') == templateFile
-        templates.getTemplateSource('cron-fulcrum') == cronFulcrumSource
+        templates.getTemplate('triad-core').source == templateFile
+        templates.getTemplate('cron-fulcrum').source == cronFulcrumSource
     }
 
-    def "gets templates source handling duplicates"() {
+    def "gets templates handling duplicates"() {
         setup:
         File templateFile = new File(TemplateHelperSpec.getResource("/test/template-library.jar").file)
         File templatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
@@ -84,16 +84,16 @@ class TemplatesSpec extends Specification {
         templates.addDirectory(templatesDir)
 
         when:
-        File source = templates.getTemplateSource('triad-core [template-library.jar]')
+        ModuleTemplate template = templates.getTemplate('triad-core', templateFile)
 
         then:
-        source == templateFile
+        template.source == templateFile
 
         when:
-        source = templates.getTemplateSource('triad-core [templates/]')
+        template = templates.getTemplate('triad-core', new File(templatesDir, "triad-core"))
 
         then:
-        source == new File(templatesDir, 'triad-core')
+        template.source == new File(templatesDir, 'triad-core')
     }
 
     def 'adds templates and handles duplicates'() {
@@ -107,68 +107,60 @@ class TemplatesSpec extends Specification {
         def names = templates.names
 
         then:
-        names == [
-            'triad-core [template-library.jar]',
-            'triad-core [templates/]',
-            'triad-doc [template-library.jar]',
-            'triad-doc [templates/]',
-            'triad-test [template-library.jar]',
-            'triad-test [templates/]'
-        ] as Set
+        names.containsAll('triad-core', 'triad-core', 'triad-doc', 'triad-doc', 'triad-test', 'triad-test')
     }
 
-    def 'gets template names'() {
+    def 'gets qualified template names and handles duplicates'() {
         setup:
         File templateFile = new File(TemplateHelperSpec.getResource("/test/template-library.jar").file)
-        File myTemplatesDir = new File(TemplateHelperSpec.getResource("/test/mytemplates").file)
+        File templatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
+        File templates2Dir = new File(TemplateHelperSpec.getResource("/test/templates2").file)
         templates.addFile(templateFile)
-        templates.addDirectory(myTemplatesDir)
+        templates.addDirectory(templatesDir)
+        templates.addDirectory(templates2Dir)
 
         when:
-        def names = templates.names
+        def qualifiedNames = templates.qualifiedNames
 
         then:
-        names == ['triad-core', 'triad-doc', 'triad-test', 'cron-fulcrum', 'http-fulcrum'] as Set
-
+        qualifiedNames.containsAll(
+            'triad-core [template-library.jar]',
+            'triad-doc [template-library.jar]',
+            'triad-test [template-library.jar]',
+            'standard [..test/templates/]',
+            'standard [..test/templates2/]',
+            'triad-core [..test/templates/]',
+            'triad-doc [..test/templates/]',
+            'triad-test [..test/templates/]'
+        )
     }
 
-    def 'handles duplicate template names loaded from file and directory'() {
+    def 'gets template by qualified name and handles duplicates'() {
         setup:
         File templateFile = new File(TemplateHelperSpec.getResource("/test/template-library.jar").file)
-        File myTemplatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
+        File templatesDir = new File(TemplateHelperSpec.getResource("/test/templates").file)
+        File templates2Dir = new File(TemplateHelperSpec.getResource("/test/templates2").file)
         templates.addFile(templateFile)
-        templates.addDirectory(myTemplatesDir)
+        templates.addDirectory(templatesDir)
+        templates.addDirectory(templates2Dir)
 
         when:
-        def names = templates.names
+        ModuleTemplate moduleTemplate = templates.getTemplateByQualifiedName(qualifiedName)
 
         then:
-        names == [
-            'triad-core [template-library.jar]',
-            'triad-core [templates/]',
-            'triad-doc [template-library.jar]',
-            'triad-doc [templates/]',
-            'triad-test [template-library.jar]',
-            'triad-test [templates/]'
-        ] as Set
-    }
-
-    def 'adjusts template name'() {
-        when:
-        String templateName = templates.adjustTemplateName('template', source)
-
-        then:
-        templateName == expectedName
+        moduleTemplate.name == name
+        moduleTemplate.qualifiedName == qualifiedName
 
         where:
-        source | expectedName
-        new File(TemplateHelperSpec.getResource("/test/template-library.jar").file) | 'template [template-library.jar]'
-        new File(TemplateHelperSpec.getResource("/test/templates").file)            | 'template [templates/]'
+        qualifiedName                       | name
+        'standard [..test/templates/]'      | 'standard'
+        'standard [..test/templates2/]'     | 'standard'
+        'triad-core [template-library.jar]' | 'triad-core'
     }
 
     def "doesn't add templates from non jar file"() {
         setup:
-        File nonJarFile = new File(TemplatesSpec.getResource("/test/files/file.txt").file)
+        File nonJarFile = new File(ModuleTemplatesSpec.getResource("/test/files/file.txt").file)
 
         when:
         templates.addFile(nonJarFile)
@@ -176,6 +168,25 @@ class TemplatesSpec extends Specification {
         then:
         templates.templates.size() == 0
 
+    }
+
+    def 'loads and retrieves template'() {
+        setup:
+        File templatesDir = new File(ModuleTemplatesSpec.getResource("/test/templates").file)
+
+        when:
+        templates.addDirectory(templatesDir)
+
+        and:
+        ModuleTemplate template = templates.getTemplate("standard")
+
+        then:
+        template != null
+        template.source == new File(templatesDir, "standard")
+        template.config != null
+        template.config.properties != null
+        template.config.properties.property[0].name == "moduleName"
+        template.config.properties.property[0].default == "Module Name"
     }
 
 }

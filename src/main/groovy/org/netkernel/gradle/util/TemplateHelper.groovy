@@ -48,84 +48,88 @@ class TemplateHelper {
         return value
     }
 
-    void buildModule(Templates templates, String selectedTemplate, Map properties) {
-        File source = templates.getTemplateSource(selectedTemplate)
-        File moduleDirectory = properties[TemplateProperty.MODULE_DIRECTORY]
+    void buildModule(ModuleTemplate template, TemplateProperties templateProperties) {
+        File destinationDirectory = templateProperties.destinationDirectory
 
-        if (!moduleDirectory.mkdirs()) {
-            log.error "Could not create directory: ${moduleDirectory}"
+        if (!destinationDirectory.exists() && !destinationDirectory.mkdirs()) {
+            log.error "Could not create directory: ${destinationDirectory}"
         }
 
-        // Need to convert TemplateProperty enum to strings for use by FreeMarker
-        Map templateProperties = [:]
-        properties.each { TemplateProperty key, value ->
-            templateProperties[key.toString()] = value
-        }
-
-        if (source.directory) {
-            buildModuleFromDirectory(moduleDirectory, source, templateProperties)
+        if (template.source.directory) {
+            buildModuleFromDirectory(template, templateProperties)
         } else {
-            buildModuleFromJarFile(moduleDirectory, source, selectedTemplate, templateProperties)
+            buildModuleFromJarFile(template, templateProperties)
         }
+
+        configuration.clearTemplateCache()
     }
 
-    void buildModuleFromJarFile(File moduleDirectory, File source, String selectedTemplate, Map properties) {
-        // Search all dependent JAR files to find the modules/{template-name} specified by the user
-        boolean startCopying = false
-        ZipFile zipFile = new ZipFile(source)
-
+    void buildModuleFromJarFile(ModuleTemplate moduleTemplate, TemplateProperties templateProperties) {
         configuration.setClassForTemplateLoading(this.getClass(), "/")
 
+        File destinationDirectory = templateProperties.destinationDirectory
+
+        boolean startCopying = false
+        ZipFile zipFile = new ZipFile(moduleTemplate.source)
+
         zipFile.entries().each { zipEntry ->
-            if (startCopying && zipEntry.name.startsWith(selectedTemplate)) {
-                String newPath = zipEntry.name.substring("$selectedTemplate/".length())
-                File outputFile = new File(moduleDirectory, newPath)
+            if (zipEntry.name == "${moduleTemplate.name}/${ModuleTemplate.TEMPLATE_CONFIG}") {
+                return
+            }
+            if (startCopying && zipEntry.name.startsWith(moduleTemplate.name)) {
+                String templatePath = zipEntry.name.substring("${moduleTemplate.name}/".length())
+                String destinationPath = getDestinationPath(templatePath, templateProperties)
+                File outputFile = new File(destinationDirectory, destinationPath)
                 if (zipEntry.directory) {
                     outputFile.mkdirs()
                 } else {
                     String text = zipFile.getInputStream(zipEntry).text
-                    if (isText(text)) {
+                    if (zipEntry.name.endsWith('ftl') && isText(text)) {
                         Template template = new Template(zipEntry.name, text, configuration)
-                        template.process(properties, outputFile.newWriter())
+                        template.process(templateProperties.@templateProperties, outputFile.newWriter())
                     } else {
-                        outputFile.bytes = text.bytes
+                        outputFile.bytes = zipFile.getInputStream(zipEntry).bytes
                     }
                 }
             }
-            if (!startCopying && zipEntry.directory && zipEntry.name.startsWith(selectedTemplate)) {
+            if (!startCopying && zipEntry.directory && zipEntry.name.startsWith(moduleTemplate.name)) {
                 startCopying = true
             }
         }
         zipFile.close()
-
-        configuration.clearTemplateCache()
     }
 
-    void buildModuleFromDirectory(File moduleDirectory, File source, Map properties) {
+    void buildModuleFromDirectory(ModuleTemplate template, TemplateProperties templateProperties) {
+        configuration.directoryForTemplateLoading = template.source
 
-        configuration.directoryForTemplateLoading = source
+        File destinationDirectory = templateProperties.destinationDirectory
 
-        source.eachFileRecurse { file ->
-            String templatePath = file.absolutePath - source.absolutePath
-            String destinationPath = updatePath(templatePath, properties)
-            File processedFile = new File(moduleDirectory, destinationPath)
+        template.source.eachFileRecurse { file ->
+            // Don't copy _template.xml file over
+            if (file.name == ModuleTemplate.TEMPLATE_CONFIG) {
+                return
+            }
+            String templatePath = file.absolutePath - template.source.absolutePath
+            String destinationPath = getDestinationPath(templatePath, templateProperties)
+            File processedFile = new File(destinationDirectory, destinationPath)
             if (file.directory) {
                 processedFile.mkdirs()
-            } else if (isText(file.getText('UTF-8'))) {
-                Template template = configuration.getTemplate(templatePath)
-                template.process(properties, processedFile.newWriter())
+            } else if (file.name.endsWith('ftl') && isText(file.getText('UTF-8'))) {
+                Template fmTemplate = configuration.getTemplate(templatePath)
+                fmTemplate.process(templateProperties.@templateProperties, processedFile.newWriter())
             } else { // Just copy over the binary file
                 processedFile.bytes = file.bytes
             }
         }
-
-        configuration.clearTemplateCache()
     }
 
-    String updatePath(String path, Map properties) {
+    // TODO - Address the situation where there is a freemarker .ftl file with the same base name as a regular file (e.g. file.txt & file.txt.ftl)
+    String getDestinationPath(String path, TemplateProperties templateProperties) {
         StringWriter writer = new StringWriter();
-        new Template(path, path, configuration).process(properties, writer);
-        return writer.toString()
+        new Template(path, path, configuration).process(templateProperties.@templateProperties, writer);
+
+        // Strip off .ftl extension of template to get final name
+        return writer.toString().replaceAll('\\.ftl$', '')
     }
 
     boolean isText(String text) {

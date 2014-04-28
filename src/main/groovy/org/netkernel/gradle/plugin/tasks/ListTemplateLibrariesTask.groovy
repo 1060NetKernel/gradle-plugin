@@ -1,17 +1,14 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
-import org.netkernel.gradle.util.Templates
+import org.netkernel.gradle.util.ModuleTemplates
 
 class ListTemplateLibrariesTask extends DefaultTask {
 
     @org.gradle.api.tasks.TaskAction
     void listTemplateLibraries() {
-
-        Templates templates = new Templates()
+        ModuleTemplates templates = new ModuleTemplates()
         templates.loadTemplatesForProject(project)
-
-        println "- Templates Found ------"
-        templates.templates.keySet().sort().each { println " ${it}" }
+        templates.names.sort().each { println " ${it}" }
     }
 }

@@ -1,12 +1,20 @@
 package org.netkernel.gradle.util
 
+/**
+ * TemplateProperties uses a map to store the actual properties used.  It mainly provides a collection
+ * of augmenters that can take a property and generate additional properties for use in the templates.
+ *
+ * For example, moduleUrn is a property that is used to generate a number of other properties:
+ * - moduleUrnAsPath
+ * - moduleUrnAsPackage
+ * - moduleUrnAsPackagePath
+ *
+ * Which augmenters are fired depends on the value being looked at.  Regular expressions are used to determine
+ * if an augmenter should fire.
+ */
 class TemplateProperties {
 
     static final String MODULE_URN = 'moduleUrn'
-    static final String MODULE_NAME = 'moduleName'
-    static final String MODULE_SPACE_NAME = 'moduleSpaceName'
-    static final String MODULE_DESCRIPTION = 'moduleDescription'
-    static final String MODULE_VERSION = 'moduleVersion'
     static final String DESTINATION_DIRECTORY = 'destinationDirectory'
     static final String NETKERNEL_TEMPLATE_DIRS = 'netkernel.template.dirs'
 
@@ -53,7 +61,10 @@ class TemplateProperties {
 
         Map augmentedProperties = [:]
         augmenters.each { name, augmenter ->
+            // New property name adds 'As' to make the name make more sense (e.g. moduleUrnAsPath)
             String newPropertyName = "${propertyName}As${name}"
+
+            // properties get tricky, so referencing the field directly (@templateProperties)
             if (!delegate.@templateProperties[newPropertyName]) {
                 if (propertyValue =~ augmenter[0]) {
                     augmentedProperties.put(newPropertyName, augmenter[1](propertyValue))

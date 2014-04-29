@@ -53,24 +53,34 @@ class CreateModuleFromTemplateTaskSpec extends Specification {
             assert templateProperties.moduleUrnAsPackage == 'org.netkernel.test'
             assert templateProperties.moduleUrnAsPackagePath == 'org/netkernel/test'
             assert templateProperties.moduleUrnAsResourcePath == 'res:/org/netkernel/test'
-            assert templateProperties.moduleUrnAsGroup == 'org:netkernel'
+            assert templateProperties.moduleUrnAsGroup == 'org.netkernel'
 
         }
     }
 
-    def 'selects module template'() {
+    def 'creates new module for template that has no configuration'() {
         setup:
-        ModuleTemplates moduleTemplates = new ModuleTemplates()
-        File templateFile = new File(CreateModuleFromTemplateTaskSpec.getResource("/test/template-library.jar").file)
-        File templatesDir = new File(CreateModuleFromTemplateTaskSpec.getResource("/test/templates").file)
-        moduleTemplates.addFile(templateFile)
-        moduleTemplates.addDirectory(templatesDir)
+        File workDir = new File(CreateModuleFromTemplateTaskSpec.getResource('/test/workdir').file)
 
         when:
-        CreateModuleFromTemplateTask.TemplateNamesCompleter completer = new CreateModuleFromTemplateTask.TemplateNamesCompleter(moduleTemplates)
+        createModuleFromTemplate.execute()
 
         then:
-        completer.strings.contains('standard [template-library.jar]')
+        1 * mockTemplateHelper.promptForValue('Enter destination base directory', _, _) >> workDir.absolutePath
+        1 * mockTemplateHelper.promptForValue('Enter the name of the template for this new module', _, _) >> "triad-test [..test/templates/]"
+        1 * mockTemplateHelper.promptForValue('Enter the URN for the new module') >> "urn:org:netkernel:test"
+        1 * mockTemplateHelper.promptForValue('Go ahead and build module (y/n)?') >> 'y'
+        1 * mockTemplateHelper.buildModule(_ as ModuleTemplate, _ as TemplateProperties) >> { ModuleTemplate template, TemplateProperties templateProperties ->
+            assert template.name == "triad-test"
+            assert templateProperties.moduleUrn == 'urn:org:netkernel:test'
+            assert templateProperties.destinationDirectory == workDir
+            assert templateProperties.moduleUrnAsPath == 'urn.org.netkernel.test'
+            assert templateProperties.moduleUrnAsPackage == 'org.netkernel.test'
+            assert templateProperties.moduleUrnAsPackagePath == 'org/netkernel/test'
+            assert templateProperties.moduleUrnAsResourcePath == 'res:/org/netkernel/test'
+            assert templateProperties.moduleUrnAsGroup == 'org.netkernel'
+
+        }
     }
 
 

@@ -9,17 +9,15 @@ import org.netkernel.gradle.util.ModuleTemplate
 import org.netkernel.gradle.util.ModuleTemplates
 import org.netkernel.gradle.util.TemplateHelper
 import org.netkernel.gradle.util.TemplateProperties
-import org.netkernel.gradle.util.URNHelper
-
-import static org.netkernel.gradle.util.TemplateProperties.*
 
 /**
- * Created by Randolph Kahle on 3/27/14.
+ * Creates new module(s) based on templates loaded from either a local directory or dependency declaration.
+ *
+ * @author Randolph Kahle on 3/27/14.
  */
 class CreateModuleFromTemplateTask extends DefaultTask {
 
     TemplateHelper templateHelper = new TemplateHelper()
-    URNHelper urnHelper = new URNHelper()
     Properties projectProperties
 
     @org.gradle.api.tasks.TaskAction
@@ -30,22 +28,15 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         ExtraPropertiesExtension ep = e.getExtraProperties()
         projectProperties = ep.getProperties()
 
-        TemplateProperties templateProperties = new TemplateProperties(properties: [
-            (MODULE_DESCRIPTION): projectProperties.get(MODULE_DESCRIPTION),
-            (MODULE_NAME)       : projectProperties.get(MODULE_NAME),
-            (MODULE_SPACE_NAME) : projectProperties.get(MODULE_SPACE_NAME),
-            (MODULE_URN)        : projectProperties.get(MODULE_URN),
-            (MODULE_VERSION)    : projectProperties.get(MODULE_VERSION)
-        ])
+        // TODO Come back to this and handle properties passed in from build or gradle.properties
+//        TemplateProperties templateProperties = new TemplateProperties(properties: [
+//            (MODULE_URN)        : projectProperties.get(MODULE_URN),
+//        ])
+        TemplateProperties templateProperties = new TemplateProperties()
 
         ModuleTemplates templates = new ModuleTemplates()
         templates.loadTemplatesForProject(project)
         assert templates.size() > 0, 'No templates have been discovered from the declared dependencies or directories.'
-
-        // Dump templates
-        templates.templates.each { ModuleTemplate template ->
-            println "${template.name} -> ${template.source}"
-        }
 
         File currentDirectory = new File(System.getProperty('user.dir'))
 
@@ -53,7 +44,10 @@ class CreateModuleFromTemplateTask extends DefaultTask {
         destinationDirectory = TemplateHelper.cleanupPath(destinationDirectory)
         templateProperties.destinationDirectory = new File(destinationDirectory)
 
-        TemplateNamesCompleter templateNamesCompleter = new TemplateNamesCompleter(templates)
+        // Display templates
+        templates.listTemplates(System.out)
+
+        StringsCompleter templateNamesCompleter = new StringsCompleter(templates.qualifiedNames)
         String qualifiedTemplateName = templateHelper.promptForValue('Enter the name of the template for this new module', null, templateNamesCompleter)
         ModuleTemplate moduleTemplate = templates.getTemplateByQualifiedName(qualifiedTemplateName)
         assert moduleTemplate, "Could not find template: [${qualifiedTemplateName}]"
@@ -72,9 +66,12 @@ class CreateModuleFromTemplateTask extends DefaultTask {
 //            }
 //        }
 
-        // Loop through template properties and prompt user for missing ones
-        moduleTemplate.config.'properties'.'property'.each { property ->
-            templateProperties[property.name.text()] = templateHelper.promptForValue(property.prompt.text(), property.default.text())
+        if (moduleTemplate.config) {
+            // Loop through additional properties and prompt user for values
+            // TODO Look in properties first before prompting
+            moduleTemplate.config.'properties'.'property'.each { property ->
+                templateProperties[property.name.text()] = templateHelper.promptForValue(property.prompt.text(), property.default.text())
+            }
         }
 
         // Now we have the required information to create a module
@@ -88,14 +85,6 @@ class CreateModuleFromTemplateTask extends DefaultTask {
             templateHelper.buildModule(moduleTemplate, templateProperties)
             println "\nAll done. Your module is ready here:\n ${destinationDirectory}"
         }
-    }
-
-    static class TemplateNamesCompleter extends StringsCompleter {
-
-        TemplateNamesCompleter(ModuleTemplates templates) {
-            super(templates.qualifiedNames)
-        }
-
     }
 
 }

@@ -10,6 +10,10 @@ import jline.console.completer.Completer
 
 import java.util.zip.ZipFile
 
+/**
+ * TemplateHelper is the primary class for template use.  It provides the prompt used during the
+ * gradle build as well as kicking off the actual module creation via FreeMarker.
+ */
 @Slf4j
 class TemplateHelper {
 
@@ -48,6 +52,8 @@ class TemplateHelper {
         return value
     }
 
+    // TODO: Think about moving actual module creation into a ModuleBuilder class perhaps?
+    // TODO: prompt for overwrite of existing folder during module creation
     void buildModule(ModuleTemplate template, TemplateProperties templateProperties) {
         File destinationDirectory = templateProperties.destinationDirectory
 

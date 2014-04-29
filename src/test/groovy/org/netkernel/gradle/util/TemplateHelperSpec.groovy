@@ -73,11 +73,7 @@ class TemplateHelperSpec extends Specification {
         ModuleTemplate template = templates.getTemplate('standard')
 
         TemplateProperties properties = new TemplateProperties(properties: [
-            (MODULE_DESCRIPTION)   : 'Module Description',
-            (MODULE_NAME)          : 'Module Name',
-            (MODULE_SPACE_NAME)    : 'Space / Name',
             (MODULE_URN)           : 'urn:org:netkernel:test',
-            (MODULE_VERSION)       : '1.0.0',
             (DESTINATION_DIRECTORY): destinationDirectory
         ])
 
@@ -107,11 +103,7 @@ class TemplateHelperSpec extends Specification {
         ModuleTemplate template = templates.getTemplate("standard")
 
         TemplateProperties properties = new TemplateProperties(properties: [
-            (MODULE_DESCRIPTION)   : 'Module Description',
-            (MODULE_NAME)          : 'Module Name',
-            (MODULE_SPACE_NAME)    : 'Space / Name',
             (MODULE_URN)           : 'urn:org:netkernel:test',
-            (MODULE_VERSION)       : '1.0.0-SNAPSHOT',
             (DESTINATION_DIRECTORY): destinationDirectory
         ])
 

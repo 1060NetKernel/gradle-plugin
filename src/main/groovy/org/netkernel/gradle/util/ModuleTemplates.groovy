@@ -10,6 +10,11 @@ import java.util.zip.ZipFile
 
 import static TemplateProperties.NETKERNEL_TEMPLATE_DIRS
 
+/**
+ * ModuleTemplates is a container for all of the templates loaded.  It provides some helper methods
+ * for listing templates and performs the expansion of a directory or jar file into multiple templates.
+ * A template is simply a directory contained either within a base template directory or jar file.
+ */
 @Slf4j
 class ModuleTemplates {
 
@@ -90,7 +95,6 @@ class ModuleTemplates {
 
         // Load any templates referenced by declared dependency
         project.configurations.getByName('templates').dependencies.each { Dependency dependency ->
-            println dependency
             project.configurations.getByName('templates').fileCollection(dependency).each { jarFile ->
                 addFile(jarFile)
             }
@@ -102,4 +106,11 @@ class ModuleTemplates {
         }
     }
 
+    void listTemplates(OutputStream os) {
+        os.println "\nTemplates Found"
+        templates.sort { a, b -> a.name <=> b.name }.each { ModuleTemplate moduleTemplate ->
+            os.println "  ${moduleTemplate.qualifiedName}"
+        }
+        os.println ""
+    }
 }

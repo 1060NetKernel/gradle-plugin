@@ -186,7 +186,7 @@ class ModuleTemplatesSpec extends Specification {
         template.config != null
         template.config.properties != null
         template.config.properties.property[0].name == "moduleName"
-        template.config.properties.property[0].default == "Module Name"
+        template.config.properties.property[0].default == "Module name"
     }
 
 }

@@ -9,6 +9,7 @@ class ListTemplateLibrariesTask extends DefaultTask {
     void listTemplateLibraries() {
         ModuleTemplates templates = new ModuleTemplates()
         templates.loadTemplatesForProject(project)
-        templates.names.sort().each { println " ${it}" }
+        templates.listTemplates(System.out)
+
     }
 }

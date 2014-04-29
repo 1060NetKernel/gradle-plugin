@@ -3,7 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import org.gradle.api.DefaultTask
 import org.netkernel.gradle.util.ModuleTemplates
 
-class ListTemplateLibrariesTask extends DefaultTask {
+class ListTemplatesTask extends DefaultTask {
 
     @org.gradle.api.tasks.TaskAction
     void listTemplateLibraries() {

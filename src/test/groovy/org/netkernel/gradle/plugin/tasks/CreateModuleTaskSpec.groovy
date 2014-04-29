@@ -3,30 +3,29 @@ package org.netkernel.gradle.plugin.tasks
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.util.ModuleTemplate
-import org.netkernel.gradle.util.ModuleTemplates
 import org.netkernel.gradle.util.TemplateHelper
 import org.netkernel.gradle.util.TemplateProperties
 import spock.lang.Specification
 
-class CreateModuleFromTemplateTaskSpec extends Specification {
+class CreateModuleTaskSpec extends Specification {
 
-    CreateModuleFromTemplateTask createModuleFromTemplate
+    CreateModuleTask createModuleFromTemplate
     TemplateHelper mockTemplateHelper
 
     void setup() {
         mockTemplateHelper = Mock()
-        String templateDir = CreateModuleFromTemplateTaskSpec.getResource("/test/templates").file
+        String templateDir = CreateModuleTaskSpec.getResource("/test/templates").file
 
         Project project = ProjectBuilder.builder().build()
         project.setProperty(TemplateProperties.NETKERNEL_TEMPLATE_DIRS, templateDir)
         project.configurations.create("templates")
-        createModuleFromTemplate = project.tasks.create(name: 'cmft', type: CreateModuleFromTemplateTask)
+        createModuleFromTemplate = project.tasks.create(name: 'cmft', type: CreateModuleTask)
         createModuleFromTemplate.templateHelper = mockTemplateHelper
     }
 
     def 'creates new module'() {
         setup:
-        File workDir = new File(CreateModuleFromTemplateTaskSpec.getResource("/test/workdir").file)
+        File workDir = new File(CreateModuleTaskSpec.getResource("/test/workdir").file)
 
         when:
         createModuleFromTemplate.execute()
@@ -60,7 +59,7 @@ class CreateModuleFromTemplateTaskSpec extends Specification {
 
     def 'creates new module for template that has no configuration'() {
         setup:
-        File workDir = new File(CreateModuleFromTemplateTaskSpec.getResource('/test/workdir').file)
+        File workDir = new File(CreateModuleTaskSpec.getResource('/test/workdir').file)
 
         when:
         createModuleFromTemplate.execute()

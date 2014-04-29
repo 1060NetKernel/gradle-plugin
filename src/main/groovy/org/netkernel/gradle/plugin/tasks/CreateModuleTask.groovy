@@ -15,7 +15,7 @@ import org.netkernel.gradle.util.TemplateProperties
  *
  * @author Randolph Kahle on 3/27/14.
  */
-class CreateModuleFromTemplateTask extends DefaultTask {
+class CreateModuleTask extends DefaultTask {
 
     TemplateHelper templateHelper = new TemplateHelper()
     Properties projectProperties

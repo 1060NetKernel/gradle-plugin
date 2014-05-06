@@ -3,7 +3,6 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
-import org.netkernel.gradle.nk.DownloadConfig
 import org.netkernel.gradle.nk.ExecutionConfig
 import spock.lang.Specification
 
@@ -106,6 +105,5 @@ class NetKernelExtensionSpec extends Specification {
         download.ee.url == "ee_url"
         download.ee.username == "ee_username"
         download.ee.password == "ee_password"
-
     }
 }

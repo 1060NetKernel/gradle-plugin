@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Unroll
 
 class NetKernelPluginSpec extends BasePluginSpec {
 
@@ -24,9 +25,10 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin = new NetKernelPlugin()
     }
 
-    def 'applies NetKernel plugin to basic projects'() {
+    @Unroll
+    def 'applies NetKernel plugin to sample projects #projectDirName'() {
         setup:
-        File projectDir = new File(NetKernelPluginSpec.getResource(projectDirPath).file)
+        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/${projectDirName}").file)
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
         Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
 
@@ -53,7 +55,16 @@ class NetKernelPluginSpec extends BasePluginSpec {
         project.configurations.getByName('thaw') != null
 
         where:
-        projectDirPath << ['/modules/basic_gradle_structure', '/modules/basic_netkernel_structure']
+        projectDirName << [
+            'basic_gradle_structure',
+            'basic_netkernel_structure',
+            '01-single-module',
+            '02-nkjava-module',
+            '03-nkjava-module',
+            '04-module-mavendep',
+            '05-module-moduledep',
+            '06-module-mavenexternaljar'
+        ]
     }
 
 

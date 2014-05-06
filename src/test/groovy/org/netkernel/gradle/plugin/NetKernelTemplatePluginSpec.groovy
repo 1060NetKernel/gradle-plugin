@@ -2,9 +2,8 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Specification
 
-class NetKernelTemplatePluginSpec extends Specification {
+class NetKernelTemplatePluginSpec extends BasePluginSpec {
 
     Project project
     NetKernelTemplatePlugin netKernelTemplatePlugin

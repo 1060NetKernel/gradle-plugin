@@ -1,0 +1,11 @@
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.2.1'
+}
+
+netkernel {
+    useMavenCentral()
+    useROCRepo()
+    useStandardCompileDependencies()
+}
+
+

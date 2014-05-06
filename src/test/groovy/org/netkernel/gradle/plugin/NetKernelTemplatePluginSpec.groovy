@@ -20,9 +20,8 @@ class NetKernelTemplatePluginSpec extends Specification {
 
         then:
         project.configurations.getByName('templates') != null
-        project.tasks.findAll { task ->
-            ['listTemplates','createModule'].contains(task.name)
-        }.size() == 2
+        project.tasks.findByName('listTemplates') != null
+        project.tasks.findByName('createModule') != null
     }
 
 }

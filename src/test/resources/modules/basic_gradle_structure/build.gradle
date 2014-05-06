@@ -1,3 +1,6 @@
+apply plugin: 'groovy'
+apply plugin: 'netkernel'
+
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.2.1'
 }
@@ -7,5 +10,7 @@ netkernel {
     useROCRepo()
     useStandardCompileDependencies()
 }
+
+println "Applying build file"
 
 

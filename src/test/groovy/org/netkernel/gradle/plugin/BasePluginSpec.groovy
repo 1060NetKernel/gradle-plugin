@@ -9,4 +9,8 @@ class BasePluginSpec extends Specification {
         project.tasks.findByName(taskName).dependsOn.find { it.toString() == dependencyTaskName }
     }
 
+    File file(String path) {
+        return new File(BasePluginSpec.getResource(path).file)
+    }
+
 }

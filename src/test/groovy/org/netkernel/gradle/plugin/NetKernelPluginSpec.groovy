@@ -1,5 +1,6 @@
 package org.netkernel.gradle.plugin
 
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
@@ -98,6 +99,18 @@ class NetKernelPluginSpec extends BasePluginSpec {
         // Make sure that update module xml task was created and added into the dependency chain
         project.tasks.getByName('updateModuleXmlVersion') != null
         taskDependency('moduleResources', 'updateModuleXmlVersion')
+    }
+
+    def 'fails if no module xml is found'() {
+        setup:
+        File projectDir = file('/modules/module_missing_module_xml')
+        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
+
+        when:
+        netKernelPlugin.apply(project)
+
+        then:
+        thrown(InvalidUserDataException)
     }
 
 }

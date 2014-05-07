@@ -1,5 +1,6 @@
 package org.netkernel.gradle.plugin
 
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -307,6 +308,10 @@ class NetKernelPlugin implements Plugin<Project> {
                     moduleHelper = new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
                 }
                 break;
+        }
+
+        if(!moduleHelper) {
+            throw new InvalidUserDataException("Could not find module.xml in the project.")
         }
 
         // If the project has a version specified, override the value in the module.xml

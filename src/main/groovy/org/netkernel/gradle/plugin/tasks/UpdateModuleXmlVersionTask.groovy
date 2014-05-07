@@ -17,8 +17,12 @@ class UpdateModuleXmlVersionTask extends DefaultTask {
     @TaskAction
     void updateModuleXmlVersion() {
         ModuleHelper sourceModule = new ModuleHelper(sourceModuleXml.absolutePath)
+
+        // Remove '-SNAPSHOT' from version
+        String version = project.version.replace('-SNAPSHOT', '')
+
         outputModuleXml.text = sourceModuleXml.text.replace(
-            "<version>${sourceModule.version}</version>", "<version>${project.version}</version>"
+            "<version>${sourceModule.version}</version>", "<version>${version}</version>"
         )
     }
 

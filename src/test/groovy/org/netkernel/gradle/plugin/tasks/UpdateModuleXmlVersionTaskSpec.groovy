@@ -12,7 +12,6 @@ class UpdateModuleXmlVersionTaskSpec extends Specification {
 
     void setup() {
         project = ProjectBuilder.builder().build()
-        project.version = "1.0.0"
         project.buildDir.mkdirs()
 
         File sourceModuleXml = new File(UpdateModuleXmlVersionTaskSpec.getResource('/test/sample-module.xml').file)
@@ -31,11 +30,19 @@ class UpdateModuleXmlVersionTaskSpec extends Specification {
     }
 
     def 'updates module version for placeholder module xml'() {
+        setup:
+        project.version = version
+
         when:
         updateModuleXmlVersionTask.updateModuleXmlVersion()
 
         then:
-        new XmlSlurper().parse(updateModuleXmlVersionTask.outputModuleXml).meta.identity.version.text() == '1.0.0'
+        new XmlSlurper().parse(updateModuleXmlVersionTask.outputModuleXml).meta.identity.version.text() == expectedVersion
+
+        where:
+        version          | expectedVersion
+        '1.0.0'          | '1.0.0'
+        '1.0.0-SNAPSHOT' | '1.0.0'
     }
 
 }

@@ -413,7 +413,8 @@ class NetKernelPlugin implements Plugin<Project> {
                 sourceModuleXml = project.file(moduleHelper.moduleFilePath)
                 outputModuleXml = project.file("${project.buildDir}/${project.ext.nkModuleIdentity}/module.xml")
             }
-            project.tasks.moduleResources.dependsOn 'updateModuleXmlVersion'
+            project.tasks.updateModuleXmlVersion.dependsOn 'moduleResources'
+            project.tasks.jar.dependsOn 'updateModuleXmlVersion'
         }
 
         project.tasks.jar.dependsOn 'moduleResources'

@@ -98,7 +98,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         // Make sure that update module xml task was created and added into the dependency chain
         project.tasks.getByName('updateModuleXmlVersion') != null
-        taskDependency('moduleResources', 'updateModuleXmlVersion')
+        taskDependency('updateModuleXmlVersion', 'moduleResources')
+        taskDependency('jar', 'updateModuleXmlVersion')
     }
 
     def 'fails if no module xml is found'() {

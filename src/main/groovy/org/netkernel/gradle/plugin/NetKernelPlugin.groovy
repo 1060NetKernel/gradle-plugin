@@ -400,10 +400,7 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks.moduleResources.dependsOn "module"
 
         // TODO: Rethink this for multi modules
-
         project.tasks.jar.configure {
-            destinationDir = project.file("${project.buildDir}/modules")
-            archiveName = project.ext.nkModuleIdentity + ".jar"
             from project.fileTree(dir: "${project.buildDir}/${project.ext.nkModuleIdentity}")
             duplicatesStrategy 'exclude'
         }

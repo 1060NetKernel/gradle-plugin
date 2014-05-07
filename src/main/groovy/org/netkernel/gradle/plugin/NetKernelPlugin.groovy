@@ -15,6 +15,7 @@ import org.netkernel.gradle.plugin.tasks.InitializeDaemonDirTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
+import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import org.netkernel.gradle.util.FileSystemHelper
 import org.netkernel.gradle.util.ModuleHelper
 
@@ -308,13 +309,22 @@ class NetKernelPlugin implements Plugin<Project> {
                 break;
         }
 
+        // If the project has a version specified, override the value in the module.xml
+        if(project.version == 'unspecified') {
+            project.version = moduleHelper.version
+        } else {
+            moduleHelper.version = project.version
+        }
+
+
         //Set up module identity and maven artifact
-        project.ext.nkModuleIdentity = moduleHelper.getModuleName()
+        project.ext.nkModuleIdentity = moduleHelper.name
 
         //Set Maven Artifact name and version
         //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
-        project.archivesBaseName = moduleHelper.getModuleURIDotted()
-        project.version = moduleHelper.getModuleVersion()
+        project.archivesBaseName = moduleHelper.URIDotted
+
+
 
         //println "MODULE TARGET ${project.ext.nkModuleIdentity}"
         //println("Finished configuring srcStructure")
@@ -391,6 +401,14 @@ class NetKernelPlugin implements Plugin<Project> {
             archiveName = project.ext.nkModuleIdentity + ".jar"
             from project.fileTree(dir: "${project.buildDir}/${project.ext.nkModuleIdentity}")
             duplicatesStrategy 'exclude'
+        }
+
+        if(moduleHelper.versionOverridden) {
+            project.task('updateModuleXmlVersion', type: UpdateModuleXmlVersionTask) {
+                sourceModuleXml = project.file(moduleHelper.moduleFilePath)
+                outputModuleXml = project.file("${project.buildDir}/${project.ext.nkModuleIdentity}/module.xml")
+            }
+            project.tasks.moduleResources.dependsOn 'updateModuleXmlVersion'
         }
 
         project.tasks.jar.dependsOn 'moduleResources'

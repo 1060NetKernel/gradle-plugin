@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import spock.lang.Unroll
 
 class NetKernelPluginSpec extends BasePluginSpec {
@@ -67,5 +68,36 @@ class NetKernelPluginSpec extends BasePluginSpec {
         ]
     }
 
+    def 'uses version from module.xml'() {
+        setup:
+        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/basic_gradle_structure").file)
+        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
+
+        when:
+        netKernelPlugin.apply(project)
+
+        then:
+        project.version == '1.1.1'
+        project.ext.nkModuleIdentity == "urn.org.netkernel.single.module-1.1.1"
+    }
+
+    def 'uses version from gradle project'() {
+        setup:
+        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/basic_gradle_structure").file)
+        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
+        Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
+        project.version = "1.0.0"
+
+        when:
+        netKernelPlugin.apply(project)
+
+        then:
+        project.version == '1.0.0'
+        project.ext.nkModuleIdentity == 'urn.org.netkernel.single.module-1.0.0'
+
+        // Make sure that update module xml task was created and added into the dependency chain
+        project.tasks.getByName('updateModuleXmlVersion') != null
+        taskDependency('moduleResources', 'updateModuleXmlVersion')
+    }
 
 }

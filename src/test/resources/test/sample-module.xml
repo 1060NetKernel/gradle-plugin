@@ -1,0 +1,20 @@
+<module version="2.0">
+  <meta>
+    <identity>
+      <uri>urn:org:netkernel:gradle:sample</uri>
+      <version>0.5.0</version>
+    </identity>
+    <info>
+      <name>Module Name</name>
+      <description>Module Description</description>
+      <icon>res:/icon.png</icon>
+    </info>
+  </meta>
+
+  <system>
+  </system>
+
+  <rootspace>
+  </rootspace>
+
+</module>

@@ -50,12 +50,12 @@ class NetKernelExtension {
 
     void useStandardCompileDependencies() {
         project.dependencies {
-            compile dep('netkernel.api')
-            compile dep('netkernel.impl')
-            compile dep('layer0')
-            compile dep('module.standard')
-            compile dep('cache.se')
-            compile dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
+            provided dep('netkernel.api')
+            provided dep('netkernel.impl')
+            provided dep('layer0')
+            provided dep('module.standard')
+            provided dep('cache.se')
+            provided dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
         }
     }
 

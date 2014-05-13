@@ -14,6 +14,7 @@ class NetKernelExtensionSpec extends Specification {
     void setup() {
         project = ProjectBuilder.builder().build()
         project.apply(plugin: 'java')
+        project.configurations.create('provided').extendsFrom(project.configurations.compile)
         netKernelExtension = new NetKernelExtension(project, project.container(ExecutionConfig))
     }
 
@@ -32,9 +33,9 @@ class NetKernelExtensionSpec extends Specification {
         netKernelExtension.useStandardCompileDependencies()
 
         then:
-        project.configurations.getByName('compile') != null
+        project.configurations.getByName('provided') != null
         dependencies.each { dependencyName ->
-            assert project.configurations.getByName('compile').dependencies.find { it.name == dependencyName }
+            assert project.configurations.getByName('provided').dependencies.find { it.name == dependencyName }
         }
     }
 

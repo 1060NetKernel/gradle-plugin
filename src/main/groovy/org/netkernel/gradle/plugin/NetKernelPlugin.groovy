@@ -10,6 +10,7 @@ import org.netkernel.gradle.plugin.tasks.CleanAllTask
 import org.netkernel.gradle.plugin.tasks.CreateAppositePackage
 import org.netkernel.gradle.plugin.tasks.DeployDaemonModuleTask
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
+import org.netkernel.gradle.plugin.tasks.ConfigureApposite
 import org.netkernel.gradle.plugin.tasks.FreezeTidyTask
 import org.netkernel.gradle.plugin.tasks.InitializeDaemonDirTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
@@ -241,6 +242,9 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         project.tasks.thawConfigure.dependsOn "thawExpand"
 
+        project.task('configureApposite', type: ConfigureApposite) {
+
+        }
 
 
         project.task('createAppositePackage', type: CreateAppositePackage) {

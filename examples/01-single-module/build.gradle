@@ -36,8 +36,8 @@ netkernel {
     download {
         ee {
             //url = "http://localhost:8000"
-            //username = ""
-            //password = ""
+            username = ""
+            password = ""
         }
     }
 

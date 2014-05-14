@@ -8,8 +8,6 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
-import static TemplateProperties.NETKERNEL_TEMPLATE_DIRS
-
 /**
  * ModuleTemplates is a container for all of the templates loaded.  It provides some helper methods
  * for listing templates and performs the expansion of a directory or jar file into multiple templates.
@@ -87,11 +85,11 @@ class ModuleTemplates {
         return templates.size()
     }
 
+    /**
+     * Loads templates from both 'template' type dependencies and directories referenced in the netkernel.template.dirs
+     * property in ~/.gradle/gradle.properties.
+     */
     void loadTemplatesForProject(Project project) {
-        /**
-         * Loads templates from both 'template' type dependencies and directories referenced in the netkernel.template.dirs
-         * property in ~/.gradle/gradle.properties.
-         */
 
         // Load any templates referenced by declared dependency
         project.configurations.getByName('templates').dependencies.each { Dependency dependency ->
@@ -101,8 +99,8 @@ class ModuleTemplates {
         }
 
         // Load any templates from netkernel.template.dirs system property
-        if (project.property(NETKERNEL_TEMPLATE_DIRS as String)) {
-            addDirectories(project.property(NETKERNEL_TEMPLATE_DIRS as String))
+        if (project.hasProperty(TemplateProperties.NETKERNEL_TEMPLATE_DIRS)) {
+            addDirectories(project.property(TemplateProperties.NETKERNEL_TEMPLATE_DIRS))
         }
     }
 

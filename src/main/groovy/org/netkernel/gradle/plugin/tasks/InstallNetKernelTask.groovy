@@ -36,12 +36,12 @@ class InstallNetKernelTask extends DefaultTask {
         def installationDir = config.directory
 
         println "INSTALLING TO ${installationDir}"
-        println "Exists:" + fsHelper.dirExists(installationDir)
+        println "Exists:" + fsHelper.exists(installationDir)
         println "Create:" + fsHelper.createDirectory(installationDir)
 
        try {
         //TODO: Directory already exists handling?
-        if(fsHelper.dirExists(installationDir)||
+        if(fsHelper.exists(installationDir)||
            fsHelper.createDirectory(installationDir)) {
 
             println "SUCCESS"

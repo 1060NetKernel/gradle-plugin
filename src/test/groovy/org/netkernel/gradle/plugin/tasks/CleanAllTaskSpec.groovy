@@ -17,14 +17,20 @@ class CleanAllTaskSpec extends BasePluginSpec {
 
     def 'cleans all'() {
         setup:
-        File tempFolder = new File(CleanAllTaskSpec.getResource('/test/cleanAllTempFolder').file)
+        File netKernelDir = new File(CleanAllTaskSpec.getResource('/test/workdir').file, 'deleteme')
+
+        when:
+        boolean result = netKernelDir.mkdirs()
+
+        then:
+        result == true
 
         when:
         cleanAllTask.cleanAll()
 
         then:
-        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel') >> tempFolder.absolutePath
-        !tempFolder.exists()
+        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel') >> netKernelDir.absolutePath
+        !netKernelDir.exists()
     }
 
 }

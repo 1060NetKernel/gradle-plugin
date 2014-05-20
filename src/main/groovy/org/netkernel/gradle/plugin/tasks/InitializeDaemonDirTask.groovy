@@ -18,7 +18,7 @@ class InitializeDaemonDirTask extends DefaultTask {
         
         println "Checking on ${dir}"
         
-        if(!fsHelper.dirExists(dir) && !fsHelper.createDirectory(dir)) {
+        if(!fsHelper.exists(dir) && !fsHelper.createDirectory(dir)) {
             throw new IllegalStateException("Could not create Daemon Directory: ${dir}")
         }
                 

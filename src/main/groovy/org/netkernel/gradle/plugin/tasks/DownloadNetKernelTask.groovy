@@ -60,7 +60,7 @@ class DownloadNetKernelTask extends DefaultTask {
     @TaskAction
     void downloadNetKernel() {
         def dest = fsHelper.dirInGradleHomeDirectory("netkernel/download")
-        if(!fsHelper.dirExists(dest)&&!fsHelper.createDirectory(dest)) {
+        if(!fsHelper.exists(dest)&&!fsHelper.createDirectory(dest)) {
             ant.fail("Error creating: ${dest}")
         }
 

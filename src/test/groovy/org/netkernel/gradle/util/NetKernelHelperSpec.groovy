@@ -9,7 +9,7 @@ import org.junit.Test
  * Time: 11:01 PM
  * To change this template use File | Settings | File Templates.
  */
-class NetKernelHelperTest {
+class NetKernelHelperSpec {
     @Test
     def void testRunning() {
         NetKernelHelper nkHelper = new NetKernelHelper()

@@ -1,0 +1,1 @@
+INSTALLPATH='path'

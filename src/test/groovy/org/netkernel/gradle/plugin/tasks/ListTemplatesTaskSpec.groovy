@@ -9,7 +9,7 @@ class ListTemplatesTaskSpec extends BasePluginSpec {
 
     def 'lists templates'() {
         setup:
-        ListTemplatesTask listTemplatesTask = getTask(ListTemplatesTask)
+        ListTemplatesTask listTemplatesTask = createTask(ListTemplatesTask)
         ModuleTemplates mockModuleTemplates = Mock()
 
         // Using Groovy's mock interceptor because the ModuleTemplates is created in the task action method

@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.tasks.ListTemplatesTask
 import spock.lang.Specification
 
 class BasePluginSpec extends Specification {
@@ -23,4 +24,7 @@ class BasePluginSpec extends Specification {
         _project
     }
 
+    ListTemplatesTask getTask(Class clazz) {
+        return project.tasks.create(name: clazz.name, type: clazz)
+    }
 }

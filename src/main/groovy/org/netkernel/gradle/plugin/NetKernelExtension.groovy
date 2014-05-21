@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.netkernel.gradle.nk.Download
 import org.netkernel.gradle.nk.ExecutionConfig
 
 /**

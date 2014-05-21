@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.nk.Download
 import org.netkernel.gradle.nk.ExecutionConfig
 import spock.lang.Specification
 

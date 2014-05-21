@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin
+package org.netkernel.gradle.nk
 
 import org.gradle.api.Project
 import org.netkernel.gradle.nk.DownloadConfig

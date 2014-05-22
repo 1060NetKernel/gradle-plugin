@@ -1,6 +1,7 @@
 apply {
     plugin 'groovy'
     plugin 'maven'
+    plugin 'maven-publish'
     plugin 'idea'
 }
 
@@ -22,7 +23,16 @@ sourceSets {
 }
 
 group = 'org.netkernel'
-version = '0.0.3'
+version = '0.0.5'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId 'gradle-plugin'
+            from components.java
+        }
+    }
+}
 
 dependencies {
     compile gradleApi()

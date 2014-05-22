@@ -1,5 +1,6 @@
 package org.netkernel.gradle.plugin
 
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -14,8 +15,10 @@ import org.netkernel.gradle.plugin.tasks.ConfigureApposite
 import org.netkernel.gradle.plugin.tasks.FreezeTidyTask
 import org.netkernel.gradle.plugin.tasks.InitializeDaemonDirTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
+import org.netkernel.gradle.plugin.tasks.ModuleResourcesTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
+import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import org.netkernel.gradle.util.FileSystemHelper
 import org.netkernel.gradle.util.ModuleHelper
 
@@ -127,14 +130,15 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven'
 
+        ['freeze', 'thaw', 'provided'].each { name ->
+            project.configurations.create(name)
+        }
+        project.configurations.compile.extendsFrom(project.configurations.provided)
+
         def envs = project.container(ExecutionConfig)
         gatherExecutionConfigs(project, envs)
 
         def extension = project.extensions.create("netkernel", NetKernelExtension, project, envs)
-
-
-        project.configurations.create("freeze")
-        project.configurations.create("thaw")
 
         //FREEZE SETUP
 
@@ -312,13 +316,23 @@ class NetKernelPlugin implements Plugin<Project> {
                 break;
         }
 
+        if (!moduleHelper) {
+            throw new InvalidUserDataException("Could not find module.xml in the project.")
+        }
+
+        // If the project has a version specified, override the value in the module.xml
+        if (project.version == 'unspecified') {
+            project.version = moduleHelper.version
+        } else {
+            moduleHelper.version = project.version
+        }
+
         //Set up module identity and maven artifact
-        project.ext.nkModuleIdentity = moduleHelper.getModuleName()
+        project.ext.nkModuleIdentity = moduleHelper.name
 
         //Set Maven Artifact name and version
         //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
-        project.archivesBaseName = moduleHelper.getModuleURIDotted()
-        project.version = moduleHelper.getModuleVersion()
+        project.archivesBaseName = moduleHelper.URIDotted
 
         //println "MODULE TARGET ${project.ext.nkModuleIdentity}"
         //println("Finished configuring srcStructure")
@@ -329,72 +343,32 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         project.tasks.module.dependsOn "compileGroovy"
 
-        project.task('moduleResources', type: Copy) {
+        project.task('moduleResources', type: ModuleResourcesTask) {
+            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
             if (sourceStructure.equals(GRADLESRC)) {
-                into "${project.buildDir}/${project.ext.nkModuleIdentity}"
                 from "${project.projectDir}/src/module"
-
-                // Include src/main/resources as module resources as well
-                into "${project.buildDir}/${project.ext.nkModuleIdentity}"
                 from "${project.projectDir}/src/main/resources"
             }
 
             if (sourceStructure.equals(NETKERNELSRC)) {
-                into "${project.buildDir}/${project.ext.nkModuleIdentity}"
                 from "${project.projectDir}/src"
-            }
-
-            //Find out what classes were used to build this
-            doLast {
-                println("JAVA/GROOVY CLASSPATH AT BUILD")
-                def groovySources = false
-                //println "FINDING GROOVY SOURCES"
-                project.tasks.compileGroovy.source.each { File s ->
-                    if (s.name.endsWith(".groovy")) {
-                        groovySources = true
-                        println "FOUND GROOOOOOVY SO WILL REJECT groovy*.jar"
-                        return
-                    }
-                }
-                def jarsToPack = []
-                project.tasks.compileJava.classpath.each { f ->
-                    File fi = f
-                    if (fi.absolutePath.matches(".*expanded\\.lib.*")) {
-                        println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"
-                    } else if (fi.absolutePath.contains("urn.com.ten60.core")) {   //println "CORE ${fi.name}"
-                    } else if (fi.absolutePath.contains("urn.org.netkernel")) {
-                        println "REJECTED CORE LIB ${fi.name}"
-                    } else if (groovySources && fi.absolutePath.matches(".*groovy.*\\.jar")) {
-                        println "REJECTED GROOVY BUILD LIB ${fi.name}"
-                    } else {
-                        println "FOUND LIBRARY DEPENDENCY ${fi.name}"
-                        jarsToPack.add fi
-                    }
-                }
-
-                if (!jarsToPack.empty) {
-                    println("PACKING JARS IN MODULE lib/\n======>")
-                    jarsToPack = project.files(jarsToPack)
-                    jarsToPack.each { f -> println f.name }
-                    project.copy {
-                        from jarsToPack
-                        into "${project.buildDir}/${project.ext.nkModuleIdentity}/lib/"
-                    }
-                    println("<======")
-                }
-                println("MODULE IS BUILT")
-
             }
         }
         project.tasks.moduleResources.dependsOn "module"
 
         // TODO: Rethink this for multi modules
-
         project.tasks.jar.configure {
-            destinationDir = project.file("${project.buildDir}/modules")
-            archiveName = project.ext.nkModuleIdentity + ".jar"
             from project.fileTree(dir: "${project.buildDir}/${project.ext.nkModuleIdentity}")
             duplicatesStrategy 'exclude'
+        }
+
+        if (moduleHelper.versionOverridden) {
+            project.task('updateModuleXmlVersion', type: UpdateModuleXmlVersionTask) {
+                sourceModuleXml = project.file(moduleHelper.moduleFilePath)
+                outputModuleXml = project.file("${project.buildDir}/${project.ext.nkModuleIdentity}/module.xml")
+            }
+            project.tasks.updateModuleXmlVersion.dependsOn 'moduleResources'
+            project.tasks.jar.dependsOn 'updateModuleXmlVersion'
         }
 
         project.tasks.jar.dependsOn 'moduleResources'

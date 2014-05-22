@@ -1,0 +1,5 @@
+package ${moduleUrnAsPackage}
+
+class Simple {
+
+}

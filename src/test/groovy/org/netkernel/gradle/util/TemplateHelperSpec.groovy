@@ -5,7 +5,7 @@ import jline.console.completer.Completer
 import jline.console.completer.StringsCompleter
 import spock.lang.Specification
 
-import static org.netkernel.gradle.util.TemplateProperty.*
+import static org.netkernel.gradle.util.TemplateProperties.*
 
 class TemplateHelperSpec extends Specification {
 
@@ -65,56 +65,62 @@ class TemplateHelperSpec extends Specification {
 
     def 'builds module from jar file'() {
         setup:
-        File moduleDirectory = new File(TemplateHelperSpec.getResource("/test/workdir").file, "jarmodule")
+        File destinationDirectory = new File(TemplateHelperSpec.getResource("/test/workdir").file, "moduleFromJarFile")
 
-        Templates templates = new Templates()
+        ModuleTemplates templates = new ModuleTemplates()
         templates.addFile(new File(TemplateHelperSpec.getResource("/test/template-library.jar").file))
 
-        Map properties = [
-            (MODULE_DESCRIPTION)      : 'Module Description',
-            (MODULE_NAME)             : 'Module Name',
-            (MODULE_SPACE_NAME)       : 'Space / Name',
-            (MODULE_URN)              : 'urn:org:netkernel:test',
-            (MODULE_URN_CORE)         : 'urn:org:netkernel',
-            (MODULE_URN_CORE_PACKAGE) : 'org.netkernel',
-            (MODULE_URN_RES_PATH)     : 'res:/org/netkernel/test',
-            (MODULE_URN_RES_PATH_CORE): 'res:/org/netkernel',
-            (MODULE_VERSION)          : '1.0.0',
-            (MODULE_DIRECTORY)        : moduleDirectory
-        ]
+        ModuleTemplate template = templates.getTemplate('standard')
+
+        TemplateProperties properties = new TemplateProperties(properties: [
+            (MODULE_URN)           : 'urn:org:netkernel:test',
+            (DESTINATION_DIRECTORY): destinationDirectory
+        ])
 
         when:
-        templateHelper.buildModule(templates, "triad-core", properties)
+        templateHelper.buildModule(template, properties)
 
         then:
-        moduleDirectory.listFiles().size() > 0
+        new File(destinationDirectory, "urn.org.netkernel.test/src/main/groovy/org/netkernel/test/SampleAccessor.groovy").exists()
+
+//        and:
+        // Make sure text file for no templates was not modified
+//        new File(templateDirectory, "standard/\${moduleUrnAsPath}/${unmodifiedTextPath}").text == new File(destinationDirectory, "urn.org.netkernel.test/${unmodifiedTextPath}").text
+
+
+        and: // make sure _template.xml was not copied over
+        !(new File(destinationDirectory, "_template.xml").exists())
     }
 
     def 'builds module from directory'() {
         setup:
-        File moduleDirectory = new File(TemplateHelperSpec.getResource("/test/workdir").file, "directory")
+        File destinationDirectory = new File(TemplateHelperSpec.getResource("/test/workdir").file, "moduleFromDirectory")
+        File templateDirectory = new File(TemplateHelperSpec.getResource("/test/templates").file)
 
-        Templates templates = new Templates()
-        templates.addDirectory(new File(TemplateHelperSpec.getResource("/test/templates").file))
+        ModuleTemplates templates = new ModuleTemplates()
+        templates.addDirectory(templateDirectory)
 
-        Map properties = [
-            (MODULE_DESCRIPTION)      : 'Module Description',
-            (MODULE_NAME)             : 'Module Name',
-            (MODULE_SPACE_NAME)       : 'Space / Name',
-            (MODULE_URN)              : 'urn:org:netkernel:test',
-            (MODULE_URN_CORE)         : 'urn:org:netkernel',
-            (MODULE_URN_CORE_PACKAGE) : 'org.netkernel',
-            (MODULE_URN_RES_PATH)     : 'res:/org/netkernel/test',
-            (MODULE_URN_RES_PATH_CORE): 'res:/org/netkernel',
-            (MODULE_VERSION)          : '1.0.0',
-            (MODULE_DIRECTORY)        : moduleDirectory
-        ]
+        ModuleTemplate template = templates.getTemplate("standard")
+
+        TemplateProperties properties = new TemplateProperties(properties: [
+            (MODULE_URN)           : 'urn:org:netkernel:test',
+            (DESTINATION_DIRECTORY): destinationDirectory
+        ])
+
+        String unmodifiedTextPath = "src/main/resources/resources/unmodified.txt"
 
         when:
-        templateHelper.buildModule(templates, "triad-core", properties)
+        templateHelper.buildModule(template, properties)
 
         then:
-        moduleDirectory.listFiles().size() > 0
+        new File(destinationDirectory, "urn.org.netkernel.test/src/main/groovy/org/netkernel/test/SampleAccessor.groovy").exists()
+
+        and:
+        // Make sure text file for no templates was not modified
+        new File(templateDirectory, "standard/\${moduleUrnAsPath}/${unmodifiedTextPath}").text == new File(destinationDirectory, "urn.org.netkernel.test/${unmodifiedTextPath}").text
+
+        and: // make sure _template.xml was not copied over
+        !(new File(destinationDirectory, "_template.xml").exists())
     }
 
     def 'checks for binary file'() {
@@ -125,7 +131,7 @@ class TemplateHelperSpec extends Specification {
         textFile == expectedResult
 
         where:
-        file | expectedResult
+        file                   | expectedResult
         '/test/files/file.txt' | true
         '/test/files/icon.png' | false
     }
@@ -138,8 +144,26 @@ class TemplateHelperSpec extends Specification {
         result == expectedResult
 
         where:
-        path | expectedResult
+        path            | expectedResult
         '~/development' | "${System.getProperty('user.home')}/development"
+    }
+
+    def 'gets destination path'() {
+        setup:
+        TemplateProperties properties = new TemplateProperties()
+        properties.modulePath = "module"
+
+        when:
+        String updatedPath = templateHelper.getDestinationPath(path, properties)
+
+        then:
+        updatedPath == expectedPath
+
+        where:
+        path                                 | expectedPath
+        '/root/${modulePath}/module.xml.ftl' | '/root/module/module.xml'
+        '/root/${modulePath}/module.xml'     | '/root/module/module.xml'
+        '/root/${modulePath}/${modulePath}'  | '/root/module/module'
     }
 
 }

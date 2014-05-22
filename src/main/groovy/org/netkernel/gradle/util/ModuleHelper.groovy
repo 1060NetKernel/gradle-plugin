@@ -1,32 +1,45 @@
 package org.netkernel.gradle.util
 
+import groovy.util.slurpersupport.GPathResult
+
 class ModuleHelper {
 
-    def moduleInfo
+    GPathResult moduleInfo
+    String moduleFilePath
+    String version
+    boolean versionOverridden = false
 
-    def ModuleHelper(def moduleFile)
-    {   moduleInfo = new XmlSlurper().parse(moduleFile)
+    ModuleHelper(String moduleFilePath) {
+        this.moduleFilePath = moduleFilePath
+        moduleInfo = new XmlSlurper().parse(moduleFilePath)
     }
 
-    def getModuleArchiveName() {
-        return getModuleName() +".jar"
+    String getArchiveName() {
+        return name + ".jar"
     }
 
-    def getModuleName() {
-
-        def moduleVersion = getModuleVersion()
-        def fileName = getModuleURIDotted()
-
-        return "${fileName}-${moduleVersion}"
+    String getName() {
+        return "${URIDotted}-${getVersion()}"
     }
 
-    def getModuleURIDotted()
-    {   return getModuleURI().replaceAll(':', '.')
+    String getURIDotted() {
+        return getURI().replaceAll(':', '.')
     }
-    def getModuleURI()
-    {   return moduleInfo.meta.identity.uri.text()
+
+    String getURI() {
+        return moduleInfo.meta.identity.uri.text()
     }
-    def getModuleVersion()
-    {   return moduleInfo.meta.identity.version.text()
+
+    String getVersion() {
+        if (version) {
+            return version
+        } else {
+            return moduleInfo.meta.identity.version.text()
+        }
+    }
+
+    void setVersion(String version) {
+        this.version = version
+        this.versionOverridden = true
     }
 }

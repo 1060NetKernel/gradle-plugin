@@ -1,0 +1,3 @@
+This is a file that shouldn't be processed as a freemarker template because we may want to do fun stuff like:
+
+${moduleUrnCorePackagePath}

@@ -1,6 +1,6 @@
 package org.netkernel.gradle.plugin.tasks
 
-import org.netkernel.gradle.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.BasePluginSpec
 
 class InitializeDaemonDirTaskSpec extends BasePluginSpec {

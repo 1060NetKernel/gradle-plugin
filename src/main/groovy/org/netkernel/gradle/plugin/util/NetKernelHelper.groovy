@@ -1,8 +1,8 @@
-package org.netkernel.gradle.util
+package org.netkernel.gradle.plugin.util
 
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
-import org.netkernel.gradle.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 
 /**
  * A helper class for interacting with a NetKernel instance.

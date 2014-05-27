@@ -1,7 +1,7 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
-import org.netkernel.gradle.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
  * Created by tab on 02/04/2014.

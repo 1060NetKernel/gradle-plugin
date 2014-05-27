@@ -4,7 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.util.ModuleHelper
+import org.netkernel.gradle.plugin.util.ModuleHelper
 
 class UpdateModuleXmlVersionTask extends DefaultTask {
 

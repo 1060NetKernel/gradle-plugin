@@ -1,4 +1,4 @@
-package org.netkernel.gradle.util
+package org.netkernel.gradle.plugin.util
 
 /**
  * A helper class for interacting with the file systems.

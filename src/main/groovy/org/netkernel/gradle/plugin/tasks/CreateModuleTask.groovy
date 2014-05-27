@@ -5,10 +5,10 @@ import jline.console.completer.StringsCompleter
 import org.gradle.api.DefaultTask
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.ExtraPropertiesExtension
-import org.netkernel.gradle.util.ModuleTemplate
-import org.netkernel.gradle.util.ModuleTemplates
-import org.netkernel.gradle.util.TemplateHelper
-import org.netkernel.gradle.util.TemplateProperties
+import org.netkernel.gradle.plugin.util.ModuleTemplate
+import org.netkernel.gradle.plugin.util.ModuleTemplates
+import org.netkernel.gradle.plugin.util.TemplateHelper
+import org.netkernel.gradle.plugin.util.TemplateProperties
 
 /**
  * Creates new module(s) based on templates loaded from either a local directory or dependency declaration.

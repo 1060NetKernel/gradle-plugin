@@ -24,9 +24,9 @@ import org.apache.tools.ant.BuildEvent
 import org.apache.tools.ant.BuildListener
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.nk.DownloadConfig
-import org.netkernel.gradle.util.FileSystemHelper
-import org.netkernel.gradle.util.PropertyHelper
+import org.netkernel.gradle.plugin.nk.DownloadConfig
+import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.PropertyHelper
 import org.netkernel.layer0.util.Utils
 
 //Imports for Apache Client used in NKEE download

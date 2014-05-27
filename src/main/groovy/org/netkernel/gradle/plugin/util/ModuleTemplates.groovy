@@ -1,4 +1,4 @@
-package org.netkernel.gradle.util
+package org.netkernel.gradle.plugin.util
 
 import groovy.util.logging.Slf4j
 import org.gradle.api.Project

@@ -1,4 +1,4 @@
-package org.netkernel.gradle.nk
+package org.netkernel.gradle.plugin.nk
 /**
  * The details about a desired NetKernel execution.
  */

@@ -3,7 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import groovy.mock.interceptor.MockFor
 import org.gradle.api.Project
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.util.ModuleTemplates
+import org.netkernel.gradle.plugin.util.ModuleTemplates
 
 class ListTemplatesTaskSpec extends BasePluginSpec {
 

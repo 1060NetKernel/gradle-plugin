@@ -2,8 +2,8 @@ package org.netkernel.gradle.plugin.tasks
 import groovyx.net.http.Method
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.util.FileSystemHelper
-import org.netkernel.gradle.util.NetKernelHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.NetKernelHelper
 /**
  *
  */

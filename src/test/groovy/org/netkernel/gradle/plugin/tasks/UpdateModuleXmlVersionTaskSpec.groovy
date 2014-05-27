@@ -2,7 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.netkernel.gradle.util.ModuleHelper
+import org.netkernel.gradle.plugin.util.ModuleHelper
 import spock.lang.Specification
 
 class UpdateModuleXmlVersionTaskSpec extends Specification {

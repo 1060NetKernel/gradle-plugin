@@ -1,10 +1,10 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
-import org.netkernel.gradle.nk.DownloadConfig
+import org.netkernel.gradle.plugin.nk.DownloadConfig
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.util.FileSystemHelper
-import org.netkernel.gradle.util.PropertyHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.PropertyHelper
 
 class DownloadNetKernelTaskSpec extends BasePluginSpec {
 

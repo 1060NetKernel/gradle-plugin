@@ -1,4 +1,4 @@
-package org.netkernel.gradle.nk
+package org.netkernel.gradle.plugin.nk
 
 import com.ten60.netkernel.cache.se.representation2.ConcurrentCache
 import org.netkernel.container.impl.Kernel

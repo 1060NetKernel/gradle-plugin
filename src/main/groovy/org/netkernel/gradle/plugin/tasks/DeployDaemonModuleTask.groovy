@@ -2,7 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 import groovy.xml.MarkupBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 class DeployDaemonModuleTask extends DefaultTask {
     def FileSystemHelper fsHelper = new FileSystemHelper()

@@ -1,11 +1,11 @@
-package org.netkernel.gradle.util
+package org.netkernel.gradle.plugin.util
 
 import jline.console.ConsoleReader
 import jline.console.completer.Completer
 import jline.console.completer.StringsCompleter
 import spock.lang.Specification
 
-import static org.netkernel.gradle.util.TemplateProperties.*
+import static org.netkernel.gradle.plugin.util.TemplateProperties.*
 
 class TemplateHelperSpec extends Specification {
 

@@ -1,4 +1,4 @@
-package org.netkernel.gradle.nk
+package org.netkernel.gradle.plugin.nk
 
 /**
  * An enum of NetKernel releases.

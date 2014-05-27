@@ -1,8 +1,8 @@
 package org.netkernel.gradle.plugin.tasks
 
-import org.netkernel.gradle.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.util.NetKernelHelper
+import org.netkernel.gradle.plugin.util.NetKernelHelper
 
 class StartNetKernelTaskSpec extends BasePluginSpec {
 

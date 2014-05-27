@@ -2,7 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 class CleanAllTask extends DefaultTask {
     FileSystemHelper fsHelper = new FileSystemHelper()

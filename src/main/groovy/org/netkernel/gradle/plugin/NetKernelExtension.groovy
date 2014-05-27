@@ -2,8 +2,8 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
-import org.netkernel.gradle.nk.Download
-import org.netkernel.gradle.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.nk.Download
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 
 /**
  *  Manage configuration for the NetKernel plugin.

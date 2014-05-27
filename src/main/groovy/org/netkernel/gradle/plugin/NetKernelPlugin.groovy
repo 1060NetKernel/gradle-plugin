@@ -5,8 +5,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
-import org.netkernel.gradle.nk.ExecutionConfig
-import org.netkernel.gradle.nk.ReleaseType
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.nk.ReleaseType
 import org.netkernel.gradle.plugin.tasks.CleanAllTask
 import org.netkernel.gradle.plugin.tasks.CreateAppositePackage
 import org.netkernel.gradle.plugin.tasks.DeployDaemonModuleTask
@@ -19,8 +19,8 @@ import org.netkernel.gradle.plugin.tasks.ModuleResourcesTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
-import org.netkernel.gradle.util.FileSystemHelper
-import org.netkernel.gradle.util.ModuleHelper
+import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.ModuleHelper
 
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.

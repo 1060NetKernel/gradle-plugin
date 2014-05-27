@@ -1,4 +1,4 @@
-package org.netkernel.gradle.util
+package org.netkernel.gradle.plugin.util
 
 /**
  * TemplateProperties uses a map to store the actual properties used.  It mainly provides a collection

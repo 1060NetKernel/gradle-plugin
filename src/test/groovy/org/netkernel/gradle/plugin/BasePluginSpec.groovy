@@ -3,10 +3,12 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
-import org.netkernel.gradle.plugin.tasks.ListTemplatesTask
 import spock.lang.Specification
 
-class BasePluginSpec extends Specification {
+/**
+ * BasePluginSpec provides helper methods used by concrete tests.
+ */
+abstract class BasePluginSpec extends Specification {
 
     Project _project
 
@@ -19,7 +21,7 @@ class BasePluginSpec extends Specification {
     }
 
     Project getProject() {
-        if(!_project) {
+        if (!_project) {
             _project = ProjectBuilder.builder().build()
         }
         _project
@@ -29,7 +31,7 @@ class BasePluginSpec extends Specification {
         return project.tasks.create(name: clazz.name, type: clazz)
     }
 
-    URL getResource(String name){
+    URL getResource(String name) {
         return BasePluginSpec.getResource(name)
     }
 

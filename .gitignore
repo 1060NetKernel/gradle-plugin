@@ -3,3 +3,4 @@ build/
 *.iml
 .idea
 atlassian*
+.DS_Store

@@ -1,0 +1,35 @@
+package examples.basic_netkernel_structure
+
+apply plugin: 'netkernel'
+
+project.group='gradle-test'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            // TODO: Default to local, but allow override
+            url "http://maven.netkernel.org:8080/netkernel-maven"
+            //url "http://localhost:8080/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '[0.0.1,)'
+    }
+}
+
+//******************************************
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.2.1'
+}
+
+netkernel {
+    useMavenCentral()
+    useROCRepo()
+    useStandardCompileDependencies()
+}
+
+

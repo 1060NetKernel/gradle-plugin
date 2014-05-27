@@ -3,7 +3,6 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import spock.lang.Unroll
 
 class NetKernelPluginSpec extends BasePluginSpec {
@@ -30,7 +29,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
     @Unroll
     def 'applies NetKernel plugin to sample projects #projectDirName'() {
         setup:
-        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/${projectDirName}").file)
+        File projectDir = file("/examples/${projectDirName}")
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
         Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
 
@@ -71,7 +70,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     def 'uses version from module.xml'() {
         setup:
-        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/basic_gradle_structure").file)
+        File projectDir = file('/examples/basic_gradle_structure')
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
 
         when:
@@ -84,7 +83,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     def 'uses version from gradle project'() {
         setup:
-        File projectDir = new File(NetKernelPluginSpec.getResource("/modules/basic_gradle_structure").file)
+        File projectDir = file('/examples/basic_gradle_structure')
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
         Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
         project.version = "1.0.0"
@@ -104,7 +103,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     def 'fails if no module xml is found'() {
         setup:
-        File projectDir = file('/modules/module_missing_module_xml')
+        File projectDir = file('/examples/module_missing_module_xml')
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
 
         when:

@@ -1,11 +1,10 @@
 package org.netkernel.gradle.plugin.tasks
 
-import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.BasePluginSpec
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.util.NetKernelHelper
 
 class StartNetKernelTaskSpec extends BasePluginSpec {
-
 
     def 'start netkernel'() {
         setup:

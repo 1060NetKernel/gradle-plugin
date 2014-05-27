@@ -36,4 +36,5 @@ class BasePluginSpec extends Specification {
     File getResourceAsFile(String name) {
         return new File(getResource(name).file)
     }
+
 }

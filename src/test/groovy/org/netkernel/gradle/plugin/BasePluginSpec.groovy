@@ -28,4 +28,12 @@ class BasePluginSpec extends Specification {
     Task createTask(Class clazz) {
         return project.tasks.create(name: clazz.name, type: clazz)
     }
+
+    URL getResource(String name){
+        return BasePluginSpec.getResource(name)
+    }
+
+    File getResourceAsFile(String name) {
+        return new File(getResource(name).file)
+    }
 }

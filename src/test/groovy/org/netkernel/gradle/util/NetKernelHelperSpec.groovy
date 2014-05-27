@@ -1,18 +1,49 @@
 package org.netkernel.gradle.util
 
-import org.junit.Test
+import org.netkernel.gradle.plugin.BasePluginSpec
 
-/**
- * Created with IntelliJ IDEA.
- * User: brian
- * Date: 10/21/13
- * Time: 11:01 PM
- * To change this template use File | Settings | File Templates.
- */
-class NetKernelHelperSpec {
-    @Test
-    def void testRunning() {
-        NetKernelHelper nkHelper = new NetKernelHelper()
-        println "Is NetKernel running: " + nkHelper.isNetKernelRunning()
+class NetKernelHelperSpec extends BasePluginSpec {
+
+    NetKernelHelper netKernelHelper
+
+    void setup() {
+        netKernelHelper = new NetKernelHelper()
     }
+
+//    def 'is netkernel running'() {
+//        when:
+//        boolean result = netKernelHelper.isNetKernelRunning()
+//
+//        then:
+//        result == false
+//    }
+//
+////    def 'is netkernel installed'() {
+////        when:
+////        boolean result = netKernelHelper.isNetKernelInstalled()
+////
+////        then:
+////        result == false
+////    }
+//
+//
+//    def 'starts netkernel'() {
+//        setup:
+//        ExecutionConfig executionConfig = new ExecutionConfig('name')
+//        executionConfig.mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
+//
+//        when:
+//        netKernelHelper.startNetKernel(executionConfig)
+//
+//        then:
+//        netKernelHelper.isNetKernelRunning() == true
+//    }
+//
+//    def 'where is netkernel installed'() {
+//        when:
+//        String result = netKernelHelper.whereIsNetKernelInstalled()
+//
+//        then:
+//        result != null
+//    }
 }

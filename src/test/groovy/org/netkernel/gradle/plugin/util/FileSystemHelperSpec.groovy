@@ -16,6 +16,12 @@ class FileSystemHelperSpec extends Specification {
         then:
         result == expectedResult
 
+        when:
+        result = fileSystemHelper.exists(file)
+
+        then:
+        result == expectedResult
+
         where:
         path                             | expectedResult
         '/gradleHomeDirectory'           | true
@@ -25,7 +31,7 @@ class FileSystemHelperSpec extends Specification {
 
     def 'gets gradle home dir'() {
         expect:
-        fileSystemHelper.gradleHomeDir().endsWith('/.gradle')
+        fileSystemHelper.gradleHomeDir().absolutePath.endsWith('/.gradle')
     }
 
     def 'creates directories'() {
@@ -48,16 +54,16 @@ class FileSystemHelperSpec extends Specification {
     def 'retrieves directory in gradle home directory'() {
         setup:
         File gradleHome = new File(FileSystemHelperSpec.getResource('/test/gradleHomeDirectory').file)
-        fileSystemHelper.@_gradleHome = gradleHome.absolutePath
+        fileSystemHelper.@_gradleHome = gradleHome
 
         expect:
-        fileSystemHelper.dirInGradleHomeDirectory('netkernel') == new File(gradleHome, 'netkernel').absolutePath
+        fileSystemHelper.dirInGradleHomeDirectory('netkernel') == new File(gradleHome, 'netkernel')
     }
 
     def 'directory exists in gradle home directory'() {
         setup:
         File gradleHome = new File(FileSystemHelperSpec.getResource('/test/gradleHomeDirectory').file)
-        fileSystemHelper.@_gradleHome = gradleHome.absolutePath
+        fileSystemHelper.@_gradleHome = gradleHome
 
         expect:
         fileSystemHelper.dirExistsInGradleHomeDirectory('netkernel')
@@ -66,17 +72,13 @@ class FileSystemHelperSpec extends Specification {
     def 'creates directory in gradle home directory'() {
         setup:
         File gradleHome = new File(FileSystemHelperSpec.getResource('/test/gradleHomeDirectory').file)
-        fileSystemHelper.@_gradleHome = gradleHome.absolutePath
+        fileSystemHelper.@_gradleHome = gradleHome
 
         when:
         fileSystemHelper.createDirInGradleHomeDirectory('hello')
 
         then:
         gradleHome.listFiles().find { it.name == 'hello' }
-    }
-
-    def 'determines if file exists'() {
-
     }
 
 }

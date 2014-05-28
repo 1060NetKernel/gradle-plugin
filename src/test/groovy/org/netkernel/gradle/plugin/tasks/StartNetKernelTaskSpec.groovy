@@ -9,7 +9,7 @@ class StartNetKernelTaskSpec extends BasePluginSpec {
     def 'start netkernel'() {
         setup:
         ExecutionConfig config = new ExecutionConfig('name')
-        config.directory = 'directory'
+        config.directory = file '/test/startNetKernelTaskSpec/directory'
 
         String configName = "config"
         project.netkernel = [envs: [(configName): config]]

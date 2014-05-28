@@ -53,14 +53,14 @@ class DownloadNetKernelTask extends DefaultTask {
     String filePrefix
 
     //Helpers
-    def fsHelper = new FileSystemHelper()
-    def propHelper = new PropertyHelper()
+    def fileSystemHelper = new FileSystemHelper()
+    def propertyHelper = new PropertyHelper()
 
     @TaskAction
     void downloadNetKernel() {
-        def dest = fsHelper.dirInGradleHomeDirectory("netkernel/download")
-        if (!fsHelper.exists(dest) && !fsHelper.createDirectory(dest)) {
-            ant.fail("Error creating: ${dest}")
+        File destinationDirectory = fileSystemHelper.dirInGradleHomeDirectory("netkernel/download")
+        if (!destinationDirectory.exists() && !destinationDirectory.mkdirs()) {
+            ant.fail("Error creating: ${destinationDirectory}")
         }
 
         //Set base parameters
@@ -76,19 +76,19 @@ class DownloadNetKernelTask extends DefaultTask {
 
         switch (release) {
             case NKSE:
-                downloadNKSEImpl("${baseURL}/${releaseDir}/${filePrefix}-${version}.jar", dest)
+                downloadNKSEImpl("${baseURL}/${releaseDir}/${filePrefix}-${version}.jar", destinationDirectory)
                 break;
             case NKEE:
-                def username = propHelper.findProjectProperty(project, "nkeeUsername",
+                def username = propertyHelper.findProjectProperty(project, "nkeeUsername",
                     downloadConfig.username)
-                def password = propHelper.findProjectProperty(project, "nkeePassword",
+                def password = propertyHelper.findProjectProperty(project, "nkeePassword",
                     downloadConfig.password)
 
                 if (!username || !password) {
                     ant.fail("Downloading NKEE requires a username and password")
                 }
 
-                downloadNKEEImpl("${filePrefix}-${version}.jar", dest, username, password)
+                downloadNKEEImpl("${filePrefix}-${version}.jar", destinationDirectory, username, password)
                 break;
             default:
                 ant.fail("Unknown NetKernel version!")

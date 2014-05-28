@@ -19,8 +19,8 @@ class DownloadNetKernelTaskSpec extends BasePluginSpec {
         downloadConfig = new DownloadConfig()
 
         downloadNetKernelTask = createTask(DownloadNetKernelTask)
-        downloadNetKernelTask.fsHelper = mockFileSystemHelper
-        downloadNetKernelTask.propHelper = mockPropertyHelper
+        downloadNetKernelTask.fileSystemHelper = mockFileSystemHelper
+        downloadNetKernelTask.propertyHelper = mockPropertyHelper
         downloadNetKernelTask.downloadConfig = downloadConfig
 
     }
@@ -38,8 +38,8 @@ class DownloadNetKernelTaskSpec extends BasePluginSpec {
         downloadNetKernelTask.downloadNetKernel()
 
         then:
-        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel/download') >> downloadDirectory.absolutePath
-        1 * mockFileSystemHelper.exists(downloadDirectory.absolutePath) >> true
+        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel/download') >> downloadDirectory
+//        1 * mockFileSystemHelper.exists(downloadDirectory.absolutePath) >> true
         (0..1) * mockPropertyHelper.findProjectProperty(_ as Project, 'nkeeUsername', 'username') >> 'username'
         (0..1) * mockPropertyHelper.findProjectProperty(_ as Project, 'nkeePassword', 'password') >> 'password'
         new File(downloadDirectory, resultantJarFileName).exists()

@@ -17,10 +17,10 @@ class CleanAllTaskSpec extends BasePluginSpec {
 
     def 'cleans all'() {
         setup:
-        File netKernelDir = new File(CleanAllTaskSpec.getResource('/test/workdir').file, 'deleteme')
+        File netKernelDirectory = new File(CleanAllTaskSpec.getResource('/test/workdir').file, 'deleteme')
 
         when:
-        boolean result = netKernelDir.mkdirs()
+        boolean result = netKernelDirectory.mkdirs()
 
         then:
         result == true
@@ -29,8 +29,8 @@ class CleanAllTaskSpec extends BasePluginSpec {
         cleanAllTask.cleanAll()
 
         then:
-        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel') >> netKernelDir.absolutePath
-        !netKernelDir.exists()
+        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel') >> netKernelDirectory
+        !netKernelDirectory.exists()
     }
 
 }

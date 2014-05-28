@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Unroll
 
@@ -111,6 +112,19 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         thrown(InvalidUserDataException)
+    }
+
+    def 'copyBeforeFreeze task initialized properly'() {
+        setup:
+        File projectDir = file('/examples/basic_gradle_structure')
+        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
+        netKernelPlugin.apply(project)
+
+        when:
+        Copy copyBeforeFreeze = project.tasks.getByName('copyBeforeFreeze')
+
+        then:
+        copyBeforeFreeze.getIncludes() == ['**/*'] as Set
     }
 
 }

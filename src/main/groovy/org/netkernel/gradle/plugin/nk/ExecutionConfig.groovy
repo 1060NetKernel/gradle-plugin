@@ -14,7 +14,7 @@ class ExecutionConfig {
     def frontEndPort
     def backEndPort
     def release
-    def directory
+    File directory
     def installJar
     def mode
     def supportsDaemonModules

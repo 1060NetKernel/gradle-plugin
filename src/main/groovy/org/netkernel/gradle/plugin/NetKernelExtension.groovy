@@ -4,21 +4,31 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.netkernel.gradle.plugin.nk.Download
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
+import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
  *  Manage configuration for the NetKernel plugin.
  */
 class NetKernelExtension {
 
+    FileSystemHelper fileSystemHelper = new FileSystemHelper()
+
     final Download download
     final NamedDomainObjectContainer<ExecutionConfig> envs
 
+    // Properties moved from primary plugin
+    final String configName
+//    final File _installationDirectory
+//    final File _freezeDirectory
+
+
     private Project project
 
-    NetKernelExtension(Project project, envs) {
+    NetKernelExtension(Project project, NamedDomainObjectContainer<ExecutionConfig> envs, String configName) {
         this.project = project
         this.download = new Download(project)
         this.envs = envs
+        this.configName = configName
     }
 
     def download(Closure closure) {
@@ -58,6 +68,14 @@ class NetKernelExtension {
             provided dep('cache.se')
             provided dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
         }
+    }
+
+    File getInstallationDirectory() {
+        return envs[configName].directory
+    }
+
+    File getFreezeDirectory() {
+        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/freeze')
     }
 
 

@@ -6,7 +6,7 @@ package org.netkernel.gradle.plugin.util
 class FileSystemHelper {
 
     // Added for test purposes
-    String _gradleHome
+    File _gradleHome
 
     /**
      * Check whether the specified directory exists or not.
@@ -16,18 +16,29 @@ class FileSystemHelper {
      * @return true if directory exists, false otherwise
      */
     boolean exists(String filename) {
-        new File(filename)?.exists()
+        return exists(new File(filename))
+    }
+
+    /**
+     * Checks whether the file exists or not. Used internally by this class.
+     *
+     * @param filename directory or file to check for existence
+     *
+     * @return true if directory exists, false otherwise
+     */
+    boolean exists(File file) {
+        return file?.exists()
     }
 
     /**
      * Get the Gradle Home directory for this user.
      * @return the current user's Gradle home dir
      */
-    def gradleHomeDir() {
+    File gradleHomeDir() {
         if (_gradleHome) {
             return _gradleHome
         } else {
-            return "${System.properties['user.home']}/.gradle"
+            return new File("${System.properties['user.home']}/.gradle")
         }
     }
 
@@ -54,22 +65,27 @@ class FileSystemHelper {
     /**
      * Retrieve the name of the specified directory in relation
      * to the user's Gradle home directory.
-     * @param dirName
-     * @return
      */
-    String dirInGradleHomeDirectory(def dirName) {
-        "${gradleHomeDir()}/$dirName"
+    File dirInGradleHomeDirectory(String directoryName) {
+        new File(gradleHomeDir(), directoryName)
     }
 
-    boolean dirExistsInGradleHomeDirectory(def dirName) {
-        return exists(dirInGradleHomeDirectory(dirName))
+    /**
+     * Checks whether the file exists in the gradle home directory or not.
+     *
+     * @param directoryName
+     *
+     * @return true if the directory exists; false otherwise
+     */
+    boolean dirExistsInGradleHomeDirectory(String directoryName) {
+        return exists(dirInGradleHomeDirectory(directoryName))
     }
 
     /**
      * Create the specified directory in the user's Gradle Home directory.
      */
-    boolean createDirInGradleHomeDirectory(def dirName) {
-        def dir = "${gradleHomeDir()}/$dirName"
+    boolean createDirInGradleHomeDirectory(String directoryName) {
+        def dir = "${gradleHomeDir()}/$directoryName"
         return createDirectory(dir)
     }
 

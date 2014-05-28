@@ -5,9 +5,8 @@ import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.nk.Download
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
-import spock.lang.Specification
 
-class NetKernelExtensionSpec extends Specification {
+class NetKernelExtensionSpec extends BasePluginSpec {
 
     Project project
     NetKernelExtension netKernelExtension
@@ -16,7 +15,15 @@ class NetKernelExtensionSpec extends Specification {
         project = ProjectBuilder.builder().build()
         project.apply(plugin: 'java')
         project.configurations.create('provided').extendsFrom(project.configurations.compile)
-        netKernelExtension = new NetKernelExtension(project, project.container(ExecutionConfig))
+        netKernelExtension = new NetKernelExtension(project, project.container(ExecutionConfig), 'test')
+        netKernelExtension.fileSystemHelper.@_gradleHome = file '/test/gradleHomeDirectory'
+
+
+        netKernelExtension.envs {
+            test {
+                directory = file('/test/gradleHomeDirectory/netkernel/freeze')
+            }
+        }
     }
 
     def 'creates netkernel extension'() {
@@ -65,23 +72,28 @@ class NetKernelExtensionSpec extends Specification {
     }
 
     def 'configures environment object'() {
+        setup:
+        File devDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/dev')
+        File qaDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/qa')
+        File prodDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/prod')
+
         when:
         netKernelExtension.envs {
             dev {
-                directory = "/opt/netkernel/dev"
+                directory = devDirectory
             }
             qa {
-                directory = "/opt/netkernel/qa"
+                directory = qaDirectory
             }
             prod {
-                directory = "/opt/netkernel/prod"
+                directory = prodDirectory
             }
         }
 
         then:
-        netKernelExtension.envs.dev.directory == "/opt/netkernel/dev"
-        netKernelExtension.envs.qa.directory == "/opt/netkernel/qa"
-        netKernelExtension.envs.prod.directory == "/opt/netkernel/prod"
+        netKernelExtension.envs.dev.directory == devDirectory
+        netKernelExtension.envs.qa.directory == qaDirectory
+        netKernelExtension.envs.prod.directory == prodDirectory
     }
 
     def 'configures download object'() {
@@ -107,5 +119,27 @@ class NetKernelExtensionSpec extends Specification {
         download.ee.url == "ee_url"
         download.ee.username == "ee_username"
         download.ee.password == "ee_password"
+    }
+
+    def 'gets installation directory'() {
+        setup:
+        File expectedInstallationDirectory = file '/test/gradleHomeDirectory/netkernel/freeze'
+
+        when:
+        File installationDirectory = netKernelExtension.installationDirectory
+
+        then:
+        installationDirectory == expectedInstallationDirectory
+    }
+
+    def 'gets freeze directory'() {
+        setup:
+        File expectedFreezeDirectory = file '/test/gradleHomeDirectory/netkernel/freeze'
+
+        when:
+        File freezeDirectory = netKernelExtension.freezeDirectory
+
+        then:
+        freezeDirectory == expectedFreezeDirectory
     }
 }

@@ -78,5 +78,19 @@ class NetKernelExtension {
         return fileSystemHelper.dirInGradleHomeDirectory('netkernel/freeze')
     }
 
+    File getDestinationDirectory() {
+        return fileSystemHelper.dirInGradleHomeDirectory('netkernel')
+    }
 
+    File getThawDirectory() {
+        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/thaw')
+    }
+
+    File getThawInstallationDirectory() {
+        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/thawInstallation')
+    }
+
+    File getFrozenArchiveFile() {
+        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/download/frozen.zip')
+    }
 }

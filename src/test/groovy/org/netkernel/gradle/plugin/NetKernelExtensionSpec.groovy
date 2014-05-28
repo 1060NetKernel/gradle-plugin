@@ -21,7 +21,7 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
         netKernelExtension.envs {
             test {
-                directory = file('/test/gradleHomeDirectory/netkernel/freeze')
+                directory = file '/test/gradleHomeDirectory/netkernel/installation'
             }
         }
     }
@@ -121,25 +121,33 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         download.ee.password == "ee_password"
     }
 
-    def 'gets installation directory'() {
+    def 'gets directories'() {
         setup:
-        File expectedInstallationDirectory = file '/test/gradleHomeDirectory/netkernel/freeze'
+        File expectedDirectory = file(path)
 
         when:
-        File installationDirectory = netKernelExtension.installationDirectory
+        File directory = netKernelExtension."${directoryName}"
 
         then:
-        installationDirectory == expectedInstallationDirectory
+        directory == expectedDirectory
+
+        where:
+        directoryName               | path
+        'destinationDirectory'      | '/test/gradleHomeDirectory/netkernel'
+        'freezeDirectory'           | '/test/gradleHomeDirectory/netkernel/freeze'
+        'installationDirectory'     | '/test/gradleHomeDirectory/netkernel/installation'
+        'thawDirectory'             | '/test/gradleHomeDirectory/netkernel/thaw'
+        'thawInstallationDirectory' | '/test/gradleHomeDirectory/netkernel/thawInstallation'
     }
 
-    def 'gets freeze directory'() {
+    def 'gets frozen archive file'() {
         setup:
-        File expectedFreezeDirectory = file '/test/gradleHomeDirectory/netkernel/freeze'
+        File expectedFrozenArchiveFile = file '/test/gradleHomeDirectory/netkernel/download/frozen.zip'
 
         when:
-        File freezeDirectory = netKernelExtension.freezeDirectory
+        File frozenArchiveFile = netKernelExtension.frozenArchiveFile
 
         then:
-        freezeDirectory == expectedFreezeDirectory
+        frozenArchiveFile == expectedFrozenArchiveFile
     }
 }

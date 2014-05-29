@@ -11,8 +11,8 @@ import org.gradle.api.tasks.bundling.Jar
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.nk.ReleaseType
 import org.netkernel.gradle.plugin.tasks.CleanAllTask
-import org.netkernel.gradle.plugin.tasks.ConfigureApposite
-import org.netkernel.gradle.plugin.tasks.CreateAppositePackage
+import org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask
+import org.netkernel.gradle.plugin.tasks.CreateAppositePackageTask
 import org.netkernel.gradle.plugin.tasks.DeployDaemonModuleTask
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.FreezeTidyTask
@@ -47,18 +47,9 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven'
 
-        // Move this guy out
-        def configName = "SE"
 
-        ['freeze', 'thaw', 'provided'].each { name ->
-            project.configurations.create(name)
-        }
-        project.configurations.compile.extendsFrom(project.configurations.provided)
 
-        def envs = project.container(ExecutionConfig)
-        gatherExecutionConfigs(project, envs)
-
-        netKernel = project.extensions.create("netkernel", NetKernelExtension, project, envs, configName)
+        configureProject()
 
         //FREEZE SETUP
 
@@ -96,55 +87,20 @@ class NetKernelPlugin implements Plugin<Project> {
 //            delete thawInstallationDir
 //        }
 
-//        def frozenJar = new File(dest, "frozen.zip")
-//        project.task('thawExpand', type: Copy) {
-//            from(project.zipTree(frozenJar))
-//            into thawInstallationDir
-//            include "**/*"
-//        }
-
-
-//        project.task('thawConfigure', type: ThawConfigureTask) {
-//            thawDirInner = thawInstallationDir
-//        }
-
-
-        project.task('configureApposite', type: ConfigureApposite) {
-
-        }
-
-
-        project.task('createAppositePackage', type: CreateAppositePackage) {
-
-        }
-
-        project.task('downloadNKSE', type: DownloadNetKernelTask) {
-            downloadConfig = netKernel.download.se
-        }
-
-        project.task('downloadNKEE', type: DownloadNetKernelTask) {
-            downloadConfig = netKernel.download.ee
-            // TODO: Discuss with 1060
-            releaseDir = 'ee'
-            release = DownloadNetKernelTask.NKEE
-        }
-
         // Module-specific tasks
 
-        def sourceStructure
-        def projectDir = project.projectDir
-        if (new File(projectDir, "src/module.xml").exists()) {
-            sourceStructure = NETKERNELSRC
+        File projectDirectory = project.projectDir
+        if (new File(project.projectDir, "src/module.xml").exists()) {
+            netKernel.sourceStructure = NetKernelExtension.SourceStructure.NETKERNEL
         } else {
-            sourceStructure = GRADLESRC
+            netKernel.sourceStructure = NetKernelExtension.SourceStructure.GRADLE
         }
-        //println("sourceStructure="+sourceStructure)
 
         project.ext.nkModuleIdentity = null
 
-        switch (sourceStructure) {
-            case NETKERNELSRC:
-                def baseDir = new File(projectDir, 'src/')
+        switch (netKernel.sourceStructure) {
+            case NetKernelExtension.SourceStructure.NETKERNEL:
+                def baseDir = new File(projectDirectory, 'src/')
                 //Configure the javaCompiler
                 def fileTree = project.fileTree(dir: baseDir, includes: ['**/*.java'])
                 //fileTree.visit { f ->  println f }
@@ -152,7 +108,7 @@ class NetKernelPlugin implements Plugin<Project> {
                     source = fileTree
                 }
                 //Configure the groovyCompiler
-                fileTree = project.fileTree(dir: new File(projectDir, 'src/'), includes: ['**/*.groovy'])
+                fileTree = project.fileTree(dir: new File(projectDirectory, 'src/'), includes: ['**/*.groovy'])
                 project.tasks.compileGroovy.configure {
                     source = fileTree
                 }
@@ -169,7 +125,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
 
                 break;
-            case GRADLESRC:
+            case NetKernelExtension.SourceStructure.GRADLE:
                 if (project.file("${project.projectDir}/src/module/module.xml").exists()) {
                     moduleHelper = new ModuleHelper("${project.projectDir}/src/module/module.xml")
                 }
@@ -200,23 +156,8 @@ class NetKernelPlugin implements Plugin<Project> {
         //println "MODULE TARGET ${project.ext.nkModuleIdentity}"
         //println("Finished configuring srcStructure")
 
-        project.task('module', type: Copy) {
-            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
-            from project.sourceSets.main.output
-        }
 
 
-        project.task('moduleResources', type: ModuleResourcesTask) {
-            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
-            if (sourceStructure.equals(GRADLESRC)) {
-                from "${project.projectDir}/src/module"
-                from "${project.projectDir}/src/main/resources"
-            }
-
-            if (sourceStructure.equals(NETKERNELSRC)) {
-                from "${project.projectDir}/src"
-            }
-        }
 
         // TODO: Rethink this for multi modules
         project.tasks.jar.configure {
@@ -235,16 +176,16 @@ class NetKernelPlugin implements Plugin<Project> {
 
 
 
+
+        configureTasks()
+        setupTaskDependencies()
+
         project.afterEvaluate {
-            project.netkernel.envs.each { c ->
+            netKernel.envs.each { c ->
                 installExecutionConfigTasks(project, c)
                 applyCleanAllTask(project, c)
             }
         }
-
-        configureTasks()
-        setupTaskDependencies()
-        configureProject()
     }
 
 
@@ -323,6 +264,62 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         } */
 
+        project.tasks.create(
+            name: CONFIGURE_APPOSITE,
+            group: netKernelGroupName,
+            type: ConfigureAppositeTask,
+            description: 'Configures apposite repository'
+        )
+
+        project.tasks.create(
+            name: CREATE_APPOSITE_PACKAGE,
+            group: netKernelGroupName,
+            type: CreateAppositePackageTask,
+            description: 'Creates apposite package'
+        )
+
+        project.tasks.create(
+            name: DOWNLOAD_NKSE,
+            group: netKernelGroupName,
+            type: DownloadNetKernelTask,
+            description: "Downloads NetKernel Standard Edition"
+        )
+
+        project.tasks.create(
+            name: DOWNLOAD_NKEE,
+            group: netKernelGroupName,
+            type: DownloadNetKernelTask,
+            description: "Downloads NetKernel Enterprise Edition"
+        )
+
+        project.tasks.create(
+            name: MODULE,
+            group: netKernelGroupName,
+            type: Copy,
+            description: "Copies built classes to build folder"
+        )
+
+        project.tasks.create(
+            name: MODULE_RESOURCES,
+            group: netKernelGroupName,
+            type: ModuleResourcesTask,
+            description: 'Copies module resources (module.xml, etc.) to build folder'
+        )
+
+    }
+
+    void configureProject() {
+        // TODO -  Move this guy out
+        def configName = "SE"
+
+        ['freeze', 'thaw', 'provided'].each { name ->
+            project.configurations.create(name)
+        }
+        project.configurations.compile.extendsFrom(project.configurations.provided)
+
+        def envs = project.container(ExecutionConfig)
+        gatherExecutionConfigs(project, envs)
+        netKernel = project.extensions.create("netkernel", NetKernelExtension, project, envs, configName)
     }
 
     void configureTasks() {
@@ -380,13 +377,39 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks[THAW_CONFIGURE].configure {
             thawDirInner netKernel.thawInstallationDirectory
         }
+
+        project.tasks[DOWNLOAD_NKSE].configure {
+            downloadConfig = netKernel.download.se
+        }
+
+        project.tasks[DOWNLOAD_NKEE].configure {
+            downloadConfig = netKernel.download.ee
+            // TODO: Discuss with 1060
+            releaseDir = 'ee'
+            release = DownloadNetKernelTask.NKEE
+        }
+
+        project.tasks[MODULE].configure {
+            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+            from project.sourceSets.main.output
+        }
+
+        project.tasks[MODULE_RESOURCES].configure {
+            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+            if (netKernel.sourceStructure == NetKernelExtension.SourceStructure.GRADLE) {
+                from "${project.projectDir}/src/module"
+                from "${project.projectDir}/src/main/resources"
+            } else {
+                from "${project.projectDir}/src"
+            }
+        }
     }
 
-    void configureProject() {
+//    void configureProject() {
 //        project.artifacts {
 //            freeze project.tasks[FREEZE_JAR].outputs
 //        }
-    }
+//    }
 
     void setupTaskDependencies() {
         project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
@@ -491,7 +514,6 @@ class NetKernelPlugin implements Plugin<Project> {
                 break;
         }
     }
-
 
 
 }

@@ -8,7 +8,7 @@ import org.gradle.api.tasks.TaskAction
  * A task to download a version of NetKernel.
  */
 
-class ConfigureApposite extends DefaultTask {
+class ConfigureAppositeTask extends DefaultTask {
     // Static Defaults
     static def DISTRIBUTION_URL = 'http://localhost:1060'
 

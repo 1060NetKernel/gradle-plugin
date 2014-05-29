@@ -5,7 +5,7 @@ import org.gradle.api.DefaultTask
 /**
  * Created by randolph.kahle on 3/31/14.
  */
-class CreateAppositePackage extends DefaultTask {
+class CreateAppositePackageTask extends DefaultTask {
 
     @org.gradle.api.tasks.TaskAction
     void createAppositePackage() {

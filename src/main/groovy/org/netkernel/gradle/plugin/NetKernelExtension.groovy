@@ -11,10 +11,15 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
  */
 class NetKernelExtension {
 
+    enum SourceStructure {
+        NETKERNEL, GRADLE
+    }
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
 
     final Download download
     final NamedDomainObjectContainer<ExecutionConfig> envs
+
+    SourceStructure sourceStructure
 
     // Properties moved from primary plugin
     final String configName

@@ -14,6 +14,10 @@ final class TaskName {
     static final String INSTALL_FREEZE = 'installFreeze'
     static final String UPLOAD_FREEZE = 'uploadFreeze'
     static final String THAW = 'thaw'
+    static final String CONFIGURE_APPOSITE = 'configureApposite'
+    static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
+    static final String DOWNLOAD_NKSE = 'downloadNKSE'
+    static final String DOWNLOAD_NKEE = 'downloadNKEE'
 
 
     // Tasks from gradle

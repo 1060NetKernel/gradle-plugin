@@ -1,5 +1,6 @@
 package org.netkernel.gradle.plugin.tasks
 
+// TODO - Change back into enum
 final class TaskName {
 
     // NetKernel Plugin Tasks
@@ -18,6 +19,7 @@ final class TaskName {
     static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
     static final String DOWNLOAD_NKSE = 'downloadNKSE'
     static final String DOWNLOAD_NKEE = 'downloadNKEE'
+    static final String UPDATE_MODULE_XML_VERSION = 'updateModuleXmlVersion'
 
 
     // Tasks from gradle

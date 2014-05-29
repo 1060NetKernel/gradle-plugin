@@ -33,7 +33,6 @@ import static org.netkernel.gradle.plugin.tasks.TaskName.*
 class NetKernelPlugin implements Plugin<Project> {
 
     def fsHelper = new FileSystemHelper()
-    ModuleHelper moduleHelper = null;
 
     Project project
     NetKernelExtension netKernel
@@ -41,81 +40,14 @@ class NetKernelPlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
 
+        // TODO - Do we always want to apply groovy & maven plugins?  What about other languages like kotlin, scala, etc.?
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven'
 
         configureProject()
         createTasks()
-
-        project.ext.nkModuleIdentity = null
-
-        switch (netKernel.sourceStructure) {
-            case NetKernelExtension.SourceStructure.NETKERNEL:
-                def baseDir = new File(project.projectDir, 'src/')
-                //Configure the javaCompiler
-                def fileTree = project.fileTree(dir: baseDir, includes: ['**/*.java'])
-                //fileTree.visit { f ->  println f }
-                project.tasks.compileJava.configure {
-                    source = fileTree
-                }
-                //Configure the groovyCompiler
-                fileTree = project.fileTree(dir: new File(project.projectDir, 'src/'), includes: ['**/*.groovy'])
-                project.tasks.compileGroovy.configure {
-                    source = fileTree
-                }
-                moduleHelper = new ModuleHelper("${project.projectDir}/src/module.xml")
-
-                //Add any libs to classpath
-                def libDir = new File(baseDir, "lib/")
-                if (libDir.exists()) {
-                    def libTree = project.fileTree(dir: libDir, includes: ['**/*.jar'])
-                    libTree.visit { f ->
-                        //println "lib/ DEPENDENCY ADDED: ${f}"
-                    }
-                    project.dependencies.add("compile", libTree)
-                }
-
-                break;
-            case NetKernelExtension.SourceStructure.GRADLE:
-                if (project.file("${project.projectDir}/src/module/module.xml").exists()) {
-                    moduleHelper = new ModuleHelper("${project.projectDir}/src/module/module.xml")
-                }
-                if (project.file("${project.projectDir}/src/main/resources/module.xml").exists()) {
-                    moduleHelper = new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
-                }
-                break;
-        }
-
-        if (!moduleHelper) {
-            throw new InvalidUserDataException("Could not find module.xml in the project.")
-        }
-
-        // If the project has a version specified, override the value in the module.xml
-        if (project.version == 'unspecified') {
-            project.version = moduleHelper.version
-        } else {
-            moduleHelper.version = project.version
-        }
-
-        //Set up module identity and maven artifact
-        project.ext.nkModuleIdentity = moduleHelper.name
-
-        //Set Maven Artifact name and version
-        //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
-        project.archivesBaseName = moduleHelper.URIDotted
-
-        if (moduleHelper.versionOverridden) {
-            project.task('updateModuleXmlVersion', type: UpdateModuleXmlVersionTask) {
-                sourceModuleXml = project.file(moduleHelper.moduleFilePath)
-                outputModuleXml = project.file("${project.buildDir}/${project.ext.nkModuleIdentity}/module.xml")
-            }
-            project.tasks.updateModuleXmlVersion.dependsOn 'moduleResources'
-            project.tasks.jar.dependsOn 'updateModuleXmlVersion'
-        }
-
         configureTasks()
         createTaskDependencies()
-
         postProjectConfiguration()
     }
 
@@ -148,6 +80,59 @@ class NetKernelPlugin implements Plugin<Project> {
         //        project.artifacts {
 //            freeze project.tasks[FREEZE_JAR].outputs
 //        }
+
+        switch (netKernel.sourceStructure) {
+            case NetKernelExtension.SourceStructure.NETKERNEL:
+                def baseDir = new File(project.projectDir, 'src/')
+                //Configure the javaCompiler
+                def fileTree = project.fileTree(dir: baseDir, includes: ['**/*.java'])
+                //fileTree.visit { f ->  println f }
+                project.tasks.compileJava.configure {
+                    source = fileTree
+                }
+                //Configure the groovyCompiler
+                fileTree = project.fileTree(dir: new File(project.projectDir, 'src/'), includes: ['**/*.groovy'])
+                project.tasks.compileGroovy.configure {
+                    source = fileTree
+                }
+                netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/module.xml")
+
+                //Add any libs to classpath
+                def libDir = new File(baseDir, "lib/")
+                if (libDir.exists()) {
+                    def libTree = project.fileTree(dir: libDir, includes: ['**/*.jar'])
+                    libTree.visit { f ->
+                        //println "lib/ DEPENDENCY ADDED: ${f}"
+                    }
+                    project.dependencies.add("compile", libTree)
+                }
+
+                break;
+            case NetKernelExtension.SourceStructure.GRADLE:
+                if (project.file("${project.projectDir}/src/module/module.xml").exists()) {
+                    netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/module/module.xml")
+                }
+                if (project.file("${project.projectDir}/src/main/resources/module.xml").exists()) {
+                    netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
+                }
+                break;
+        }
+
+        if (!netKernel.moduleHelper) {
+            throw new InvalidUserDataException("Could not find module.xml in the project.")
+        }
+
+        // If the project has a version specified, override the value in the module.xml
+        if (project.version == 'unspecified') {
+            project.version = netKernel.moduleHelper.version
+        } else {
+            netKernel.moduleHelper.version = project.version
+        }
+
+
+        //Set Maven Artifact name and version
+        //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
+        project.archivesBaseName = netKernel.moduleHelper.URIDotted
     }
 
     /**
@@ -195,6 +180,8 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
 
+        createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
+        project.tasks[UPDATE_MODULE_XML_VERSION].setEnabled(netKernel.moduleHelper.versionOverridden)
     }
 
     /**
@@ -272,12 +259,12 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         configureTask(MODULE) {
-            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+            into "${project.buildDir}/${netKernel.moduleHelper.name}"
             from project.sourceSets.main.output
         }
 
         configureTask(MODULE_RESOURCES) {
-            into "${project.buildDir}/${project.ext.nkModuleIdentity}"
+            into "${project.buildDir}/${netKernel.moduleHelper.name}"
             if (netKernel.sourceStructure == NetKernelExtension.SourceStructure.GRADLE) {
                 from "${project.projectDir}/src/module"
                 from "${project.projectDir}/src/main/resources"
@@ -288,9 +275,15 @@ class NetKernelPlugin implements Plugin<Project> {
 
         // TODO: Rethink for multi modules
         configureTask(JAR) {
-            from project.fileTree(dir: "${project.buildDir}/${project.ext.nkModuleIdentity}")
+            from project.fileTree(dir: "${project.buildDir}/${netKernel.moduleHelper.name}")
             duplicatesStrategy 'exclude'
         }
+
+        configureTask(UPDATE_MODULE_XML_VERSION) {
+            sourceModuleXml = project.file(netKernel.moduleHelper.moduleFilePath)
+            outputModuleXml = project.file("${project.buildDir}/${netKernel.moduleHelper.name}/module.xml")
+        }
+
     }
 
     /**
@@ -305,6 +298,8 @@ class NetKernelPlugin implements Plugin<Project> {
         project.tasks[MODULE].dependsOn COMPILE_GROOVY
         project.tasks[MODULE_RESOURCES].dependsOn MODULE
         project.tasks[JAR].dependsOn MODULE_RESOURCES
+        project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
+        project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
     }
 
     /**

@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.netkernel.gradle.plugin.nk.Download
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.util.ModuleHelper
 
 /**
  *  Manage configuration for the NetKernel plugin.
@@ -14,7 +15,9 @@ class NetKernelExtension {
     enum SourceStructure {
         NETKERNEL, GRADLE
     }
+
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
+    ModuleHelper moduleHelper
 
     final Download download
     final NamedDomainObjectContainer<ExecutionConfig> envs
@@ -23,8 +26,6 @@ class NetKernelExtension {
 
     // Properties moved from primary plugin
     final String configName
-//    final File _installationDirectory
-//    final File _freezeDirectory
 
 
     private Project project
@@ -98,4 +99,5 @@ class NetKernelExtension {
     File getFrozenArchiveFile() {
         return fileSystemHelper.dirInGradleHomeDirectory('netkernel/download/frozen.zip')
     }
+
 }

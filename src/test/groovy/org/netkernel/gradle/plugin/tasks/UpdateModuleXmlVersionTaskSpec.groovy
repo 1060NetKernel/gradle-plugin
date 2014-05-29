@@ -1,30 +1,27 @@
 package org.netkernel.gradle.plugin.tasks
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.BasePluginSpec
+import org.netkernel.gradle.plugin.NetKernelExtension
 import org.netkernel.gradle.plugin.util.ModuleHelper
-import spock.lang.Specification
 
-class UpdateModuleXmlVersionTaskSpec extends Specification {
+class UpdateModuleXmlVersionTaskSpec extends BasePluginSpec {
 
-    Project project
     UpdateModuleXmlVersionTask updateModuleXmlVersionTask
 
     void setup() {
-        project = ProjectBuilder.builder().build()
-        project.buildDir.mkdirs()
-
-        File sourceModuleXml = new File(UpdateModuleXmlVersionTaskSpec.getResource('/test/sample-module.xml').file)
+        File sourceModuleXml = file '/test/sample-module.xml'
         ModuleHelper moduleHelper = new ModuleHelper(sourceModuleXml.absolutePath)
 
-        project.ext.nkModuleIdentity = moduleHelper.name
+        project.extensions.create('netkernel', NetKernelExtension, project, null, null)
 
-        File outputDir = new File("${project.buildDir}/${project.ext.nkModuleIdentity}")
+        project.extensions.netkernel.moduleHelper = moduleHelper
+
+        File outputDir = new File("${project.buildDir}/${moduleHelper.name}")
         outputDir.mkdirs()
 
         File outputModuleXml = new File(outputDir, "module.xml")
 
-        updateModuleXmlVersionTask = project.tasks.create(name: 'updateModuleXml', type: UpdateModuleXmlVersionTask)
+        updateModuleXmlVersionTask = createTask(UpdateModuleXmlVersionTask)
         updateModuleXmlVersionTask.sourceModuleXml = sourceModuleXml
         updateModuleXmlVersionTask.outputModuleXml = outputModuleXml
     }

@@ -79,7 +79,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         project.version == '1.1.1'
-        project.ext.nkModuleIdentity == "urn.org.netkernel.single.module-1.1.1"
+        project.extensions.netkernel.moduleHelper.name == "urn.org.netkernel.single.module-1.1.1"
     }
 
     def 'uses version from gradle project'() {
@@ -94,7 +94,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         project.version == '1.0.0'
-        project.ext.nkModuleIdentity == 'urn.org.netkernel.single.module-1.0.0'
+        project.extensions.netkernel.moduleHelper.name == 'urn.org.netkernel.single.module-1.0.0'
 
         // Make sure that update module xml task was created and added into the dependency chain
         project.tasks.getByName('updateModuleXmlVersion') != null

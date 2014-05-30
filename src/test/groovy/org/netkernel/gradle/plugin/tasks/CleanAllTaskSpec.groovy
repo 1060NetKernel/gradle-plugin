@@ -1,36 +1,32 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 
 class CleanAllTaskSpec extends BasePluginSpec {
 
     CleanAllTask cleanAllTask
-    FileSystemHelper mockFileSystemHelper
+    ExecutionConfig executionConfig
 
     void setup() {
-        mockFileSystemHelper = Mock()
+        executionConfig = new ExecutionConfig('test')
 
         cleanAllTask = project.tasks.create(name: 'cleanAll', type: CleanAllTask)
-        cleanAllTask.fsHelper = mockFileSystemHelper
+        cleanAllTask.executionConfig = executionConfig
     }
 
     def 'cleans all'() {
         setup:
-        File netKernelDirectory = new File(CleanAllTaskSpec.getResource('/test/workdir').file, 'deleteme')
-
-        when:
-        boolean result = netKernelDirectory.mkdirs()
-
-        then:
-        result == true
+        File parentDirectory = file '/test/cleanAllTaskSpec'
+        File deleteMeDirectory = new File(parentDirectory, 'deleteMe')
+        deleteMeDirectory.mkdirs()
+        executionConfig.directory = deleteMeDirectory
 
         when:
         cleanAllTask.cleanAll()
 
         then:
-        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel') >> netKernelDirectory
-        !netKernelDirectory.exists()
+        !deleteMeDirectory.exists()
     }
 
 }

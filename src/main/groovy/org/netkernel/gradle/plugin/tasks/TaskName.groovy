@@ -4,26 +4,25 @@ package org.netkernel.gradle.plugin.tasks
 final class TaskName {
 
     // NetKernel Plugin Tasks
+    static final String CONFIGURE_APPOSITE = 'configureApposite'
     static final String COPY_BEFORE_FREEZE = 'copyBeforeFreeze'
-    static final String FREEZE_TIDY = 'freezeTidy'
-    static final String FREEZE_JAR = 'freezeJar'
+    static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
+    static final String DOWNLOAD_NKEE = 'downloadNKEE'
+    static final String DOWNLOAD_NKSE = 'downloadNKSE'
     static final String FREEZE_DELETE = 'freezeDelete'
-    static final String THAW_EXPAND = 'thawExpand'
+    static final String FREEZE_JAR = 'freezeJar'
+    static final String FREEZE_TIDY = 'freezeTidy'
+    static final String INSTALL_FREEZE = 'installFreeze'
+    static final String MODULE = 'module'
+    static final String MODULE_RESOURCES = 'moduleResources'
+    static final String THAW = 'thaw'
     static final String THAW_CONFIGURE = 'thawConfigure'
     static final String THAW_DELETE_INSTALL = 'thawDeleteInstall'
-    static final String MODULE_RESOURCES = 'moduleResources'
-    static final String INSTALL_FREEZE = 'installFreeze'
-    static final String UPLOAD_FREEZE = 'uploadFreeze'
-    static final String THAW = 'thaw'
-    static final String CONFIGURE_APPOSITE = 'configureApposite'
-    static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
-    static final String DOWNLOAD_NKSE = 'downloadNKSE'
-    static final String DOWNLOAD_NKEE = 'downloadNKEE'
+    static final String THAW_EXPAND = 'thawExpand'
     static final String UPDATE_MODULE_XML_VERSION = 'updateModuleXmlVersion'
-
+    static final String UPLOAD_FREEZE = 'uploadFreeze'
 
     // Tasks from gradle
-    static final String MODULE = 'module'
     static final String COMPILE_GROOVY = 'compileGroovy'
     static final String JAR = 'jar'
 

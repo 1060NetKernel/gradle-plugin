@@ -11,7 +11,8 @@ import org.netkernel.gradle.plugin.util.NetKernelHelper
  */
 @Slf4j
 class StartNetKernelTask extends DefaultTask {
-    def NetKernelHelper nkHelper = new NetKernelHelper()
+
+    NetKernelHelper nkHelper = new NetKernelHelper()
 
     @Input
     String configName
@@ -25,6 +26,7 @@ class StartNetKernelTask extends DefaultTask {
         while (!nkHelper.isNetKernelRunning()) {
             log.info "."
             sleep(500)
+            // TODO - Think about timeout here
         }
     }
 }

@@ -29,4 +29,8 @@ class ExecutionConfig {
         this.backEndPort = 1060
         this.release = ReleaseType.CURRENT_MAJOR_RELEASE
     }
+
+    URL getBackendFulcrum() {
+        return new URL("${url}:${backEndPort}")
+    }
 }

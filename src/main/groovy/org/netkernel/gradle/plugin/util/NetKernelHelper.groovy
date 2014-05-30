@@ -1,16 +1,19 @@
 package org.netkernel.gradle.plugin.util
 
+import groovy.util.logging.Slf4j
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
+import org.apache.http.HttpResponse
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
 
 /**
  * A helper class for interacting with a NetKernel instance.
  */
+@Slf4j
 class NetKernelHelper {
     static String BEF = 'http://localhost:1060'
 
-    def FileSystemHelper fileSystemHelper = new FileSystemHelper()
+    FileSystemHelper fileSystemHelper = new FileSystemHelper()
 
     /**
      * Issue the specified request to a running NetKernel instance via
@@ -21,20 +24,19 @@ class NetKernelHelper {
      * @param argMap
      * @return
      */
-    def issueRequest(String url, Method method, def argMap) {
-        def client = new RESTClient(url)
+    def issueRequest(String url, Method method, Map argMap) {
         def retValue = false
-        def resp
 
         try {
-            resp = client."${method.toString().toLowerCase()}"(argMap)
-            retValue = resp.status == 200
+            HttpResponse response = new RESTClient(url)."${method.toString().toLowerCase()}"(argMap)
+            retValue = response.statusLine.statusCode == 200
         } catch (Throwable t) {
             //TODO: How to log/handle?
         }
         retValue
     }
 
+    // TODO - This should be parameterized to accept ExecutionConfig, or perhaps an instance of this class per ExecutionConfig
     def isNetKernelRunning() {
         def result = issueRequest(BEF, Method.GET, [path: '/'])
         result
@@ -68,8 +70,8 @@ class NetKernelHelper {
                     break;
             }
             def proc = process.redirectErrorStream(true)
-                    .directory(new File(workingDir))
-                    .start()
+                .directory(workingDir)
+                .start()
             /* Debug when process couldn't be found - this feeds forked process stdout into Gradle stdout
             def procis=proc.getInputStream()
             Utils.pipe(procis, System.out)
@@ -78,6 +80,22 @@ class NetKernelHelper {
         } else {
             println "Not starting NetKernel because it is already running on that port"
             // TODO: Throw exception? Ignore?
+        }
+    }
+
+    void stopNetKernel(ExecutionConfig executionConfig) {
+        if (isNetKernelRunning()) {
+            if (issueRequest(executionConfig.backendFulcrum, Method.POST,
+                [path: '/tools/shutdown', query: [confirm: '1', action2: 'force']])) {
+                while (isNetKernelRunning()) {
+                    log.info "Waiting for NetKernel to shutdown..."
+                    Thread.sleep(500)
+                }
+            } else {
+                log.error "Error occurred trying to shutdown NetKernel at ${executionConfig.backendFulcrum}"
+            }
+        } else {
+            log.info "NetKernel at ${executionConfig.backendFulcrum} is not running"
         }
     }
 
@@ -104,10 +122,10 @@ class NetKernelHelper {
 
     def isNetKernelInstalled() {
         def retValue = false
-        def instanceFile = "${fileSystemHelper.gradleHomeDir()}/netkernel/instances"
+        File instanceFile = fileSystemHelper.dirInGradleHomeDirectory('netkernel/instances')
 
-        if (fileSystemHelper.fileExists(instanceFile)) {
-            retValue = (fileSystemHelper.readFileContents(instanceFile).size() >= 1)
+        if (instanceFile.exists()) {
+            retValue = instanceFile.text.size() >= 1
         }
 
         retValue

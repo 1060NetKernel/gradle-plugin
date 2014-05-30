@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.maven.MavenResolver
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
@@ -20,6 +21,7 @@ import org.netkernel.gradle.plugin.tasks.InitializeDaemonDirTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ModuleResourcesTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
+import org.netkernel.gradle.plugin.tasks.StopNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import org.netkernel.gradle.plugin.util.FileSystemHelper
@@ -48,7 +50,7 @@ class NetKernelPlugin implements Plugin<Project> {
         createTasks()
         configureTasks()
         createTaskDependencies()
-        postProjectConfiguration()
+        afterEvaluate()
     }
 
     /**
@@ -69,7 +71,6 @@ class NetKernelPlugin implements Plugin<Project> {
         gatherExecutionConfigs(project, envs)
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project, envs, configName)
 
-        File projectDirectory = project.projectDir
         if (new File(project.projectDir, "src/module.xml").exists()) {
             netKernel.sourceStructure = NetKernelExtension.SourceStructure.NETKERNEL
         } else {
@@ -129,7 +130,6 @@ class NetKernelPlugin implements Plugin<Project> {
             netKernel.moduleHelper.version = project.version
         }
 
-
         //Set Maven Artifact name and version
         //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
         project.archivesBaseName = netKernel.moduleHelper.URIDotted
@@ -141,25 +141,41 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTasks() {
 
+//        createTask(CLEAN_SE_JAR, CleanDownloadedJarTask, 'Removes downloaded SE jar')
+
+        createTask(CONFIGURE_APPOSITE, ConfigureAppositeTask, 'Configures apposite repository')
+
         createTask(COPY_BEFORE_FREEZE, Copy, 'Copies NetKernel installation into freeze directory')
 
-        createTask(FREEZE_TIDY, FreezeTidyTask, 'Cleans up copied NetKernel instance during freeze')
+        createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
-        createTask(FREEZE_JAR, Jar, 'Creates zip file of frozen NetKernel instance')
+        createTask(DOWNLOAD_NKEE, DownloadNetKernelTask, "Downloads NetKernel Enterprise Edition")
 
-        createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository")
-
-        createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory")
-        project.tasks[THAW].setEnabled(project.configurations.thaw.files.size() == 1)
+        createTask(DOWNLOAD_NKSE, DownloadNetKernelTask, "Downloads NetKernel Standard Edition")
 
         createTask(FREEZE_DELETE, Delete, "Deletes frozen NetKernel instance")
 
-        // TODO - Figure out what this task is doing...
+        createTask(FREEZE_JAR, Jar, 'Creates zip file of frozen NetKernel instance')
+
+        createTask(FREEZE_TIDY, FreezeTidyTask, 'Cleans up copied NetKernel instance during freeze')
+
+        createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository")
+
+        createTask(MODULE, Copy, "Copies built classes to build folder")
+
+        createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
+
+        createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory")
+            .setEnabled(project.configurations.thaw.files.size() == 1)
+
+        createTask(THAW_CONFIGURE, ThawConfigureTask, "Thaws configuration for NetKernel instance")
+
         createTask(THAW_DELETE_INSTALL, Delete, "Deletes thawed installation directory")
 
         createTask(THAW_EXPAND, Copy, "Expands thawed NetKernel instance into thaw installation directory")
 
-        createTask(THAW_CONFIGURE, ThawConfigureTask, "Thaws configuration for NetKernel instance")
+        createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
+            .setEnabled(netKernel.moduleHelper.versionOverridden)
 
         /*        project.task('freezePublish', type: org.gradle.api.publish.maven.tasks.PublishToMavenLocal) {
             publication {
@@ -168,20 +184,6 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         } */
 
-        createTask(CONFIGURE_APPOSITE, ConfigureAppositeTask, 'Configures apposite repository')
-
-        createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
-
-        createTask(DOWNLOAD_NKSE, DownloadNetKernelTask, "Downloads NetKernel Standard Edition")
-
-        createTask(DOWNLOAD_NKEE, DownloadNetKernelTask, "Downloads NetKernel Enterprise Edition")
-
-        createTask(MODULE, Copy, "Copies built classes to build folder")
-
-        createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
-
-        createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
-        project.tasks[UPDATE_MODULE_XML_VERSION].setEnabled(netKernel.moduleHelper.versionOverridden)
     }
 
     /**
@@ -290,22 +292,24 @@ class NetKernelPlugin implements Plugin<Project> {
      * Creates task dependencies.
      */
     void createTaskDependencies() {
-        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
-        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
+
         project.tasks[FREEZE_DELETE].dependsOn FREEZE_JAR
-        project.tasks[THAW_EXPAND].dependsOn THAW_DELETE_INSTALL
-        project.tasks[THAW_CONFIGURE].dependsOn THAW_EXPAND
+        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
+        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
+        project.tasks[JAR].dependsOn MODULE_RESOURCES
+        project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
         project.tasks[MODULE].dependsOn COMPILE_GROOVY
         project.tasks[MODULE_RESOURCES].dependsOn MODULE
-        project.tasks[JAR].dependsOn MODULE_RESOURCES
+        project.tasks[THAW_CONFIGURE].dependsOn THAW_EXPAND
+        project.tasks[THAW_EXPAND].dependsOn THAW_DELETE_INSTALL
         project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
-        project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
+
     }
 
     /**
      * Final configuration for the project happens here.
      */
-    void postProjectConfiguration() {
+    void afterEvaluate() {
         project.afterEvaluate {
             netKernel.envs.each { c ->
                 installExecutionConfigTasks(project, c)
@@ -360,12 +364,18 @@ class NetKernelPlugin implements Plugin<Project> {
 
     def installExecutionConfigTasks(def project, ExecutionConfig config) {
         def startNKJarName = "start${config.name}"
+        def stopNKJarName = "stop${config.name}"
         def installNKJarName = "install${config.name}"
 
         switch (config.mode) {
             case ExecutionConfig.Mode.NETKERNEL_INSTALL:
 
                 project.task(startNKJarName, type: StartNetKernelTask) {
+                    configName = config.name
+                }
+
+                createTask(stopNKJarName, StopNetKernelTask, "Stops NetKernel for ${config.name} configuration.")
+                configureTask(stopNKJarName) {
                     configName = config.name
                 }
 
@@ -379,8 +389,14 @@ class NetKernelPlugin implements Plugin<Project> {
                 break;
             case ExecutionConfig.Mode.NETKERNEL_FULL:
                 def startNKName = "start${config.name}"
+                String stopNKName = "stop${config.name}"
 
                 project.task(startNKName, type: StartNetKernelTask) {
+                    configName = config.name
+                }
+
+                createTask(stopNKName, StopNetKernelTask, "Stops NetKernel for ${config.name} configuration.")
+                configureTask(stopNKJarName) {
                     configName = config.name
                 }
 
@@ -415,7 +431,7 @@ class NetKernelPlugin implements Plugin<Project> {
      * @param type class defining type of task
      * @param description description of what task does
      */
-    private void createTask(String name, Class type, String description) {
+    private Task createTask(String name, Class type, String description) {
         project.tasks.create(
             name: name,
             group: "NetKernel",

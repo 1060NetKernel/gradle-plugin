@@ -1,8 +1,10 @@
 package org.netkernel.gradle.plugin
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import spock.lang.Specification
 
 /**
@@ -37,6 +39,11 @@ abstract class BasePluginSpec extends Specification {
 
     File getResourceAsFile(String name) {
         return new File(getResource(name).file)
+    }
+
+    void executionConfig(Closure closure) {
+        NamedDomainObjectContainer<ExecutionConfig> envs = project.container(ExecutionConfig).configure(closure)
+        project.extensions.create('netkernel', NetKernelExtension, project, envs, null)
     }
 
 }

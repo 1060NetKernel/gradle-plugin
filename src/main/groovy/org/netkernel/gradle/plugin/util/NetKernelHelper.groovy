@@ -11,21 +11,22 @@ import org.netkernel.gradle.plugin.nk.ExecutionConfig
  */
 @Slf4j
 class NetKernelHelper {
-    static String BEF = 'http://localhost:1060'
+    static URL BEF = new URL('http://localhost:1060')
 
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
 
     /**
-     * Issue the specified request to a running NetKernel instance via
-     * HTTP.
+     * Issue the specified request to a running NetKernel instance via HTTP.  The arguments supplied
+     * are passed onto the {@link groovyx.net.http.RESTClient}.
      *
-     * @param url
-     * @param method
-     * @param argMap
-     * @return
+     * @param url typically the backend fulcrum URL, but can be any URL
+     * @param method http method (get, post, etc.)
+     * @param argMap arguments passed to RESTClient
+     *
+     * @return true if request returns 200; false otherwise
      */
-    def issueRequest(String url, Method method, Map argMap) {
-        def retValue = false
+    boolean issueRequest(URL url, Method method, Map argMap) {
+        boolean retValue = false
 
         try {
             HttpResponse response = new RESTClient(url)."${method.toString().toLowerCase()}"(argMap)
@@ -33,13 +34,18 @@ class NetKernelHelper {
         } catch (Throwable t) {
             //TODO: How to log/handle?
         }
-        retValue
+
+        return retValue
     }
 
+    /**
+     * Issues a simple GET request to a NetKernel instance to see if it is running.
+     *
+     * @return true if NetKernel is running; false otherwise
+     */
     // TODO - This should be parameterized to accept ExecutionConfig, or perhaps an instance of this class per ExecutionConfig
-    def isNetKernelRunning() {
-        def result = issueRequest(BEF, Method.GET, [path: '/'])
-        result
+    boolean isNetKernelRunning() {
+        return issueRequest(BEF, Method.GET, [path: '/'])
     }
 
     /**
@@ -83,6 +89,11 @@ class NetKernelHelper {
         }
     }
 
+    /**
+     * Stops a NetKernel instance.  The ExecutionConfig provides the URL for the backend port.
+     *
+     * @param executionConfig details about an instance of NetKernel
+     */
     void stopNetKernel(ExecutionConfig executionConfig) {
         if (isNetKernelRunning()) {
             if (issueRequest(executionConfig.backendFulcrum, Method.POST,

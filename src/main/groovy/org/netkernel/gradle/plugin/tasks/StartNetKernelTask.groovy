@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.util.NetKernelHelper
 
 /**
@@ -12,18 +13,16 @@ import org.netkernel.gradle.plugin.util.NetKernelHelper
 @Slf4j
 class StartNetKernelTask extends DefaultTask {
 
-    NetKernelHelper nkHelper = new NetKernelHelper()
-
     @Input
-    String configName
+    NetKernelInstance netKernelInstance
 
     @TaskAction
     def start() {
-        log.info "Starting NetKernel in ${project.netkernel.envs[configName].directory}"
-        nkHelper.startNetKernel(project.netkernel.envs[configName])
+        log.info "Starting NetKernel instance ${netKernelInstance}"
+        netKernelInstance.start()
 
         log.info "Waiting for NetKernel to start..."
-        while (!nkHelper.isNetKernelRunning()) {
+        while (!netKernelInstance.isRunning()) {
             log.info "."
             sleep(500)
             // TODO - Think about timeout here

@@ -58,7 +58,7 @@ class DownloadNetKernelTask extends DefaultTask {
 
     @TaskAction
     void downloadNetKernel() {
-        File destinationDirectory = fileSystemHelper.dirInGradleHomeDirectory("netkernel/download")
+        File destinationDirectory = fileSystemHelper.fileInGradleHome("netkernel/download")
         if (!destinationDirectory.exists() && !destinationDirectory.mkdirs()) {
             ant.fail("Error creating: ${destinationDirectory}")
         }

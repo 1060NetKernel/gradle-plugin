@@ -2,10 +2,11 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.netkernel.gradle.plugin.model.Module
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.nk.Download
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
-import org.netkernel.gradle.plugin.util.ModuleHelper
 
 /**
  *  Manage configuration for the NetKernel plugin.
@@ -17,10 +18,13 @@ class NetKernelExtension {
     }
 
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
-    ModuleHelper moduleHelper
+    Module module
 
     final Download download
     final NamedDomainObjectContainer<ExecutionConfig> envs
+
+    // NetKernel instances
+    NamedDomainObjectContainer<NetKernelInstance> instances
 
     SourceStructure sourceStructure
 
@@ -43,6 +47,10 @@ class NetKernelExtension {
 
     def envs(Closure closure) {
         envs.configure(closure)
+    }
+
+    def instances(Closure closure) {
+        instances.configure(closure)
     }
 
     org.gradle.api.artifacts.Dependency dep(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
@@ -77,27 +85,27 @@ class NetKernelExtension {
     }
 
     File getInstallationDirectory() {
-        return envs[configName].directory
+        return instances[configName].location
     }
 
     File getFreezeDirectory() {
-        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/freeze')
+        return fileSystemHelper.fileInGradleHome('netkernel/freeze')
     }
 
     File getDestinationDirectory() {
-        return fileSystemHelper.dirInGradleHomeDirectory('netkernel')
+        return fileSystemHelper.fileInGradleHome('netkernel')
     }
 
     File getThawDirectory() {
-        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/thaw')
+        return fileSystemHelper.fileInGradleHome('netkernel/thaw')
     }
 
     File getThawInstallationDirectory() {
-        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/thawInstallation')
+        return fileSystemHelper.fileInGradleHome('netkernel/thawInstallation')
     }
 
     File getFrozenArchiveFile() {
-        return fileSystemHelper.dirInGradleHomeDirectory('netkernel/download/frozen.zip')
+        return fileSystemHelper.fileInGradleHome('netkernel/download/frozen.zip')
     }
 
 }

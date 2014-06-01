@@ -21,7 +21,7 @@ class FreezeTidyTaskSpec extends BasePluginSpec {
         freezeTidyTask.freeze()
 
         then:
-        !new File(expandDir,'empty.txt').exists()
+        !new File(expandDir, 'empty.txt').exists()
         ['etc/license', 'package-cache', 'log'].each { path ->
             assert !(new File(freezeDirInner, path).exists())
         }

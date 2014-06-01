@@ -24,7 +24,7 @@ class ModuleResourcesTaskSpec extends BasePluginSpec {
         moduleResourcesTask.processModuleResources()
 
         then:
-        File libDir = new File("${project.buildDir}/${project.extensions.netkernel.moduleHelper.name}/lib")
+        File libDir = new File("${project.buildDir}/${project.extensions.netkernel.module.name}/lib")
         libDir.listFiles().size() == 1
         libDir.listFiles().find { it.name == "sample-compile-dependency.jar" }
     }

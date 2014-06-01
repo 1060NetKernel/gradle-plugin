@@ -57,7 +57,7 @@ class FileSystemHelperSpec extends Specification {
         fileSystemHelper.@_gradleHome = gradleHome
 
         expect:
-        fileSystemHelper.dirInGradleHomeDirectory('netkernel') == new File(gradleHome, 'netkernel')
+        fileSystemHelper.fileInGradleHome('netkernel') == new File(gradleHome, 'netkernel')
     }
 
     def 'directory exists in gradle home directory'() {

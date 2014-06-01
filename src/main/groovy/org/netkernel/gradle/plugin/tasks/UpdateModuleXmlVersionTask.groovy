@@ -4,7 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.plugin.util.ModuleHelper
+import org.netkernel.gradle.plugin.model.Module
 
 class UpdateModuleXmlVersionTask extends DefaultTask {
 
@@ -16,7 +16,7 @@ class UpdateModuleXmlVersionTask extends DefaultTask {
 
     @TaskAction
     void updateModuleXmlVersion() {
-        ModuleHelper sourceModule = new ModuleHelper(sourceModuleXml.absolutePath)
+        Module sourceModule = new Module(sourceModuleXml)
 
         // Remove '-SNAPSHOT' from version
         String version = project.version.replace('-SNAPSHOT', '')

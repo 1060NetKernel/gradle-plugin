@@ -66,8 +66,18 @@ class FileSystemHelper {
      * Retrieve the name of the specified directory in relation
      * to the user's Gradle home directory.
      */
-    File dirInGradleHomeDirectory(String directoryName) {
-        new File(gradleHomeDir(), directoryName)
+//    @Deprecated
+//    File dirInGradleHomeDirectory(String directoryName) {
+//        new File(gradleHomeDir(), directoryName)
+//    }
+
+
+    /**
+     * Retrieve the name of the specified file in relation to the user's gradle
+     * home directory.
+     */
+    File fileInGradleHome(String fileName) {
+        new File(gradleHomeDir(), fileName)
     }
 
     /**
@@ -78,7 +88,7 @@ class FileSystemHelper {
      * @return true if the directory exists; false otherwise
      */
     boolean dirExistsInGradleHomeDirectory(String directoryName) {
-        return exists(dirInGradleHomeDirectory(directoryName))
+        return exists(fileInGradleHome(directoryName))
     }
 
     /**

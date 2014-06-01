@@ -1,8 +1,8 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
-import org.netkernel.gradle.plugin.nk.DownloadConfig
 import org.netkernel.gradle.plugin.BasePluginSpec
+import org.netkernel.gradle.plugin.nk.DownloadConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 import org.netkernel.gradle.plugin.util.PropertyHelper
 
@@ -38,7 +38,7 @@ class DownloadNetKernelTaskSpec extends BasePluginSpec {
         downloadNetKernelTask.downloadNetKernel()
 
         then:
-        1 * mockFileSystemHelper.dirInGradleHomeDirectory('netkernel/download') >> downloadDirectory
+        1 * mockFileSystemHelper.fileInGradleHome('netkernel/download') >> downloadDirectory
 //        1 * mockFileSystemHelper.exists(downloadDirectory.absolutePath) >> true
         (0..1) * mockPropertyHelper.findProjectProperty(_ as Project, 'nkeeUsername', 'username') >> 'username'
         (0..1) * mockPropertyHelper.findProjectProperty(_ as Project, 'nkeePassword', 'password') >> 'password'

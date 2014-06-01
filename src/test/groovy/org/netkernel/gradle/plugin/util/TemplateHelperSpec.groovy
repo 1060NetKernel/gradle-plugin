@@ -5,7 +5,8 @@ import jline.console.completer.Completer
 import jline.console.completer.StringsCompleter
 import spock.lang.Specification
 
-import static org.netkernel.gradle.plugin.util.TemplateProperties.*
+import static org.netkernel.gradle.plugin.util.TemplateProperties.getDESTINATION_DIRECTORY
+import static org.netkernel.gradle.plugin.util.TemplateProperties.getMODULE_URN
 
 class TemplateHelperSpec extends Specification {
 

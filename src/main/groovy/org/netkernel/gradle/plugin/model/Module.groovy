@@ -1,17 +1,17 @@
-package org.netkernel.gradle.plugin.util
+package org.netkernel.gradle.plugin.model
 
 import groovy.util.slurpersupport.GPathResult
 
-class ModuleHelper {
+class Module {
 
+    File moduleFile
     GPathResult moduleInfo
-    String moduleFilePath
     String version
     boolean versionOverridden = false
 
-    ModuleHelper(String moduleFilePath) {
-        this.moduleFilePath = moduleFilePath
-        moduleInfo = new XmlSlurper().parse(moduleFilePath)
+    Module(File moduleFile) {
+        this.moduleFile = moduleFile
+        moduleInfo = new XmlSlurper().parse(moduleFile)
     }
 
     String getArchiveName() {
@@ -42,4 +42,5 @@ class ModuleHelper {
         this.version = version
         this.versionOverridden = true
     }
+
 }

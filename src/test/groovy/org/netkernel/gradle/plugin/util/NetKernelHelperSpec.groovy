@@ -8,6 +8,7 @@ import org.netkernel.gradle.plugin.BasePluginSpec
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import spock.lang.Ignore
 
+@Ignore
 class NetKernelHelperSpec extends BasePluginSpec {
 
     NetKernelHelper netKernelHelper

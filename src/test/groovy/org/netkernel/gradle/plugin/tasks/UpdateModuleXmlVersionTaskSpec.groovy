@@ -2,7 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.netkernel.gradle.plugin.BasePluginSpec
 import org.netkernel.gradle.plugin.NetKernelExtension
-import org.netkernel.gradle.plugin.util.ModuleHelper
+import org.netkernel.gradle.plugin.model.Module
 
 class UpdateModuleXmlVersionTaskSpec extends BasePluginSpec {
 
@@ -10,13 +10,13 @@ class UpdateModuleXmlVersionTaskSpec extends BasePluginSpec {
 
     void setup() {
         File sourceModuleXml = file '/test/sample-module.xml'
-        ModuleHelper moduleHelper = new ModuleHelper(sourceModuleXml.absolutePath)
+        Module module = new Module(sourceModuleXml)
 
         project.extensions.create('netkernel', NetKernelExtension, project, null, null)
 
-        project.extensions.netkernel.moduleHelper = moduleHelper
+        project.extensions.netkernel.module = module
 
-        File outputDir = new File("${project.buildDir}/${moduleHelper.name}")
+        File outputDir = new File("${project.buildDir}/${module.name}")
         outputDir.mkdirs()
 
         File outputModuleXml = new File(outputDir, "module.xml")

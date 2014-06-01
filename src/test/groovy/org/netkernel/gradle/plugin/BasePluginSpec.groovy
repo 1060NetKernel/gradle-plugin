@@ -1,5 +1,9 @@
 package org.netkernel.gradle.plugin
 
+import org.apache.http.HttpResponse
+import org.apache.http.ProtocolVersion
+import org.apache.http.entity.StringEntity
+import org.apache.http.message.BasicHttpResponse
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -44,6 +48,12 @@ abstract class BasePluginSpec extends Specification {
     void executionConfig(Closure closure) {
         NamedDomainObjectContainer<ExecutionConfig> envs = project.container(ExecutionConfig).configure(closure)
         project.extensions.create('netkernel', NetKernelExtension, project, envs, null)
+    }
+
+    HttpResponse response(int statusCode, String text = "") {
+        HttpResponse response = new BasicHttpResponse(new ProtocolVersion('http', 1, 1), statusCode, "")
+        response.entity = new StringEntity(text)
+        return response
     }
 
 }

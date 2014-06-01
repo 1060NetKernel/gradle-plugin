@@ -1,6 +1,7 @@
 package org.netkernel.gradle.plugin
 
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -9,8 +10,10 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Upload
 import org.gradle.api.tasks.bundling.Jar
+import org.netkernel.gradle.plugin.model.Edition
+import org.netkernel.gradle.plugin.model.Module
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.nk.ExecutionConfig
-import org.netkernel.gradle.plugin.nk.ReleaseType
 import org.netkernel.gradle.plugin.tasks.CleanAllTask
 import org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask
 import org.netkernel.gradle.plugin.tasks.CreateAppositePackageTask
@@ -25,7 +28,6 @@ import org.netkernel.gradle.plugin.tasks.StopNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import org.netkernel.gradle.plugin.util.FileSystemHelper
-import org.netkernel.gradle.plugin.util.ModuleHelper
 
 import static org.netkernel.gradle.plugin.tasks.TaskName.*
 
@@ -59,7 +61,7 @@ class NetKernelPlugin implements Plugin<Project> {
      * be it NetKernel or gradle.
      */
     void configureProject() {
-        // TODO -  Move this guy out
+        // TODO -  Move this to a properties file
         def configName = "SE"
 
         ['freeze', 'thaw', 'provided'].each { name ->
@@ -68,8 +70,10 @@ class NetKernelPlugin implements Plugin<Project> {
         project.configurations.compile.extendsFrom(project.configurations.provided)
 
         def envs = project.container(ExecutionConfig)
-        gatherExecutionConfigs(project, envs)
+//        gatherExecutionConfigs(project, envs)
+
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project, envs, configName)
+        netKernel.instances = createNetKernelInstances()
 
         if (new File(project.projectDir, "src/module.xml").exists()) {
             netKernel.sourceStructure = NetKernelExtension.SourceStructure.NETKERNEL
@@ -96,7 +100,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileGroovy.configure {
                     source = fileTree
                 }
-                netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/module.xml")
+                netKernel.module = new Module(project.file('src/module.xml'))
 
                 //Add any libs to classpath
                 def libDir = new File(baseDir, "lib/")
@@ -110,29 +114,29 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
             case NetKernelExtension.SourceStructure.GRADLE:
-                if (project.file("${project.projectDir}/src/module/module.xml").exists()) {
-                    netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/module/module.xml")
+                if (project.file('src/module/module.xml').exists()) {
+                    netKernel.module = new Module(project.file('src/module/module.xml'))
                 }
-                if (project.file("${project.projectDir}/src/main/resources/module.xml").exists()) {
-                    netKernel.moduleHelper = new ModuleHelper("${project.projectDir}/src/main/resources/module.xml")
+                if (project.file('src/main/resources/module.xml').exists()) {
+                    netKernel.module = new Module(project.file('src/main/resources/module.xml'))
                 }
                 break;
         }
 
-        if (!netKernel.moduleHelper) {
+        if (!netKernel.module) {
             throw new InvalidUserDataException("Could not find module.xml in the project.")
         }
 
         // If the project has a version specified, override the value in the module.xml
         if (project.version == 'unspecified') {
-            project.version = netKernel.moduleHelper.version
+            project.version = netKernel.module.version
         } else {
-            netKernel.moduleHelper.version = project.version
+            netKernel.module.version = project.version
         }
 
         //Set Maven Artifact name and version
         //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
-        project.archivesBaseName = netKernel.moduleHelper.URIDotted
+        project.archivesBaseName = netKernel.module.URIDotted
     }
 
     /**
@@ -175,7 +179,7 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(THAW_EXPAND, Copy, "Expands thawed NetKernel instance into thaw installation directory")
 
         createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
-            .setEnabled(netKernel.moduleHelper.versionOverridden)
+            .setEnabled(netKernel.module.versionOverridden)
 
         /*        project.task('freezePublish', type: org.gradle.api.publish.maven.tasks.PublishToMavenLocal) {
             publication {
@@ -188,7 +192,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
     /**
      * Any custom configuration for the tasks is done here.  Specific data needed by the tasks
-     * is provided by the backing model class ({@see NetKernelExtension})
+     * is provided by the backing model classes (e.g. {@see NetKernelExtension})
      */
     void configureTasks() {
 
@@ -261,12 +265,12 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         configureTask(MODULE) {
-            into "${project.buildDir}/${netKernel.moduleHelper.name}"
+            into "${project.buildDir}/${netKernel.module.name}"
             from project.sourceSets.main.output
         }
 
         configureTask(MODULE_RESOURCES) {
-            into "${project.buildDir}/${netKernel.moduleHelper.name}"
+            into "${project.buildDir}/${netKernel.module.name}"
             if (netKernel.sourceStructure == NetKernelExtension.SourceStructure.GRADLE) {
                 from "${project.projectDir}/src/module"
                 from "${project.projectDir}/src/main/resources"
@@ -277,13 +281,13 @@ class NetKernelPlugin implements Plugin<Project> {
 
         // TODO: Rethink for multi modules
         configureTask(JAR) {
-            from project.fileTree(dir: "${project.buildDir}/${netKernel.moduleHelper.name}")
+            from project.fileTree(dir: "${project.buildDir}/${netKernel.module.name}")
             duplicatesStrategy 'exclude'
         }
 
         configureTask(UPDATE_MODULE_XML_VERSION) {
-            sourceModuleXml = project.file(netKernel.moduleHelper.moduleFilePath)
-            outputModuleXml = project.file("${project.buildDir}/${netKernel.moduleHelper.name}/module.xml")
+            sourceModuleXml = netKernel.module.moduleFile
+            outputModuleXml = project.file("${project.buildDir}/${netKernel.module.name}/module.xml")
         }
 
     }
@@ -307,59 +311,90 @@ class NetKernelPlugin implements Plugin<Project> {
     }
 
     /**
-     * Final configuration for the project happens here.
+     * Final configuration for the project happens here.  Additionally, tasks are created for starting
+     * and stopping the specified instances in the build file.
      */
     void afterEvaluate() {
         project.afterEvaluate {
-            netKernel.envs.each { c ->
-                installExecutionConfigTasks(project, c)
-                applyCleanAllTask(project, c)
+            netKernel.instances.each { NetKernelInstance instance ->
+                createNetKernelInstanceTasks(instance)
+                applyCleanAllTask(instance)
             }
+//            netKernel.envs.each { c ->
+//                installExecutionConfigTasks(project, c)
+//            }
         }
     }
 
+//    def buildJarInstallerExecutionConfig(def project, def type) {
+//        def config = new ExecutionConfig()
+//
+//        project.configure(config, {
+//            name = "${type}Jar"
+//            relType = type
+//            release = ReleaseType.CURRENT_MAJOR_RELEASE
+//            directory = fsHelper.fileInGradleHome("netkernel/install/${type}-${release}")
+//            installJar = "1060-NetKernel-${type}-${release}.jar"
+//            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
+//        })
+//
+//        config
+//    }
+//
+//    def buildInstalledExecutionConfig(def project, def type) {
+//        def config = new ExecutionConfig()
+//
+//        project.configure(config, {
+//            name = "${type}"
+//            relType = type
+//            release = ReleaseType.CURRENT_MAJOR_RELEASE
+//            directory = fsHelper.fileInGradleHome("netkernel/install/${type}-${release}")
+//            supportsDaemonModules = true
+//        })
+//
+//        config
+//    }
 
-    def buildJarInstallerExecutionConfig(def project, def type) {
-        def config = new ExecutionConfig()
+//    def gatherExecutionConfigs(def project, def envs) {
+//        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKSE))
+//        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKEE))
+//        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKSE))
+//        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKEE))
+//    }
 
-        project.configure(config, {
-            name = "${type}Jar"
-            relType = type
-            release = ReleaseType.CURRENT_MAJOR_RELEASE
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/${type}-${release}")
-            installJar = "1060-NetKernel-${type}-${release}.jar"
-            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
-        })
-
-        config
-    }
-
-    def buildInstalledExecutionConfig(def project, def type) {
-        def config = new ExecutionConfig()
-
-        project.configure(config, {
-            name = "${type}"
-            relType = type
-            release = ReleaseType.CURRENT_MAJOR_RELEASE
-            directory = fsHelper.dirInGradleHomeDirectory("netkernel/install/${type}-${release}")
-            supportsDaemonModules = true
-        })
-
-        config
-    }
-
-    def gatherExecutionConfigs(def project, def envs) {
-        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKSE))
-        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKEE))
-        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKSE))
-        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKEE))
-    }
-
+    // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?
     def applyCleanAllTask(def project, ExecutionConfig config) {
         project.task("cleanAll${config.name}", type: CleanAllTask)
             {
                 executionConfig = config
             }
+    }
+
+    /**
+     * Creates start/stop tasks and install task for the jar distribution.
+     *
+     * @param instance instance of NetKernel
+     */
+    void createNetKernelInstanceTasks(NetKernelInstance instance) {
+
+        String startTaskName = "start${instance.name}"
+        String stopTaskName = "stop${instance.name}"
+        String installTaskName = "install${config.name}"
+
+        createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance})")
+        createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance})")
+
+        configureTask(startTaskName) {
+            netKernelInstance = instance
+        }
+
+        configureTask(stopTaskName) {
+            netKernelInstance = instance
+        }
+
+        project.tasks[startTaskName].dependsOn
+
+
     }
 
     def installExecutionConfigTasks(def project, ExecutionConfig config) {
@@ -422,6 +457,48 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 break;
         }
+    }
+
+    /**
+     * Creates enumeration of possible NetKernel instances. This is done by looping through each edition and
+     * constructing a NetKernelInstance for each one.
+     *
+     * @return internal gradle collection containing NetKernel instances
+     */
+    NamedDomainObjectContainer<NetKernelInstance> createNetKernelInstances() {
+        NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
+
+        Edition.values().each { Edition edition ->
+
+            File jarLocation = fsHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Edition.CURRENT_MAJOR_RELEASE}.jar")
+            File expandedLocation = fsHelper.fileInGradleHome("netkernel/install/${edition}-${Edition.CURRENT_MAJOR_RELEASE}")
+
+            instances.add createNetKernelInstance(edition, jarLocation)
+            instances.add createNetKernelInstance(edition, expandedLocation)
+        }
+
+        return instances
+    }
+
+    /**
+     * Creates a NetKernelInstance reference
+     *
+     * @param location location of netkernel instance (directory or jar file location)
+     *
+     * @return initialized NetKernelInstance
+     */
+    NetKernelInstance createNetKernelInstance(Edition edition, File location) {
+        // TODO - Reevaluate how the name is constructed
+        String name = "${edition}${location.name.endsWith(".jar") ? 'jar' : ''}"
+
+        return new NetKernelInstance(
+            name: name,
+            edition: edition,
+            url: new URL('http://localhost'),
+            backendPort: 1060,
+            frontendPort: 8080,
+            location: location
+        )
     }
 
     /**

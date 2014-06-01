@@ -1,9 +1,12 @@
 package org.netkernel.gradle.plugin
 
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.model.Edition
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 import spock.lang.Unroll
 
 class NetKernelPluginSpec extends BasePluginSpec {
@@ -32,7 +35,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
         setup:
         File projectDir = file("/examples/${projectDirName}")
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
-        Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
+        Closure assertTaskDependency = super.assertTaskDependencyClosure.curry(project)
 
         when:
         netKernelPlugin.apply(project)
@@ -43,14 +46,14 @@ class NetKernelPluginSpec extends BasePluginSpec {
         }
 
         // Assert task dependencies
-        taskDependency('moduleResources', 'module')
-        taskDependency('module', 'compileGroovy')
-        taskDependency('jar', 'moduleResources')
-        taskDependency('freezeTidy', 'copyBeforeFreeze')
-        taskDependency('freezeJar', 'freezeTidy')
-        taskDependency('freezeDelete', 'freezeJar')
-        taskDependency('thawExpand', 'thawDeleteInstall')
-        taskDependency('thawConfigure', 'thawExpand')
+        assertTaskDependency('moduleResources', 'module')
+        assertTaskDependency('module', 'compileGroovy')
+        assertTaskDependency('jar', 'moduleResources')
+        assertTaskDependency('freezeTidy', 'copyBeforeFreeze')
+        assertTaskDependency('freezeJar', 'freezeTidy')
+        assertTaskDependency('freezeDelete', 'freezeJar')
+        assertTaskDependency('thawExpand', 'thawDeleteInstall')
+        assertTaskDependency('thawConfigure', 'thawExpand')
 
         // Assert added configurations
         project.configurations.getByName('freeze') != null
@@ -79,14 +82,14 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         project.version == '1.1.1'
-        project.extensions.netkernel.moduleHelper.name == "urn.org.netkernel.single.module-1.1.1"
+        project.extensions.netkernel.module.name == "urn.org.netkernel.single.module-1.1.1"
     }
 
     def 'uses version from gradle project'() {
         setup:
         File projectDir = file('/examples/basic_gradle_structure')
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
-        Closure taskDependency = super.assertTaskDependencyClosure.curry(project)
+        Closure assertTaskDependency = super.assertTaskDependencyClosure.curry(project)
         project.version = "1.0.0"
 
         when:
@@ -94,12 +97,12 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         project.version == '1.0.0'
-        project.extensions.netkernel.moduleHelper.name == 'urn.org.netkernel.single.module-1.0.0'
+        project.extensions.netkernel.module.name == 'urn.org.netkernel.single.module-1.0.0'
 
         // Make sure that update module xml task was created and added into the dependency chain
         project.tasks.getByName('updateModuleXmlVersion') != null
-        taskDependency('updateModuleXmlVersion', 'moduleResources')
-        taskDependency('jar', 'updateModuleXmlVersion')
+        assertTaskDependency('updateModuleXmlVersion', 'moduleResources')
+        assertTaskDependency('jar', 'updateModuleXmlVersion')
     }
 
     def 'fails if no module xml is found'() {
@@ -125,6 +128,40 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         copyBeforeFreeze.getIncludes() == ['**/*'] as Set
+    }
+
+    def 'creates single netkernel instance reference'() {
+        setup:
+        File location = file path
+        Edition edition = Edition.STANDARD
+
+        when:
+        NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition, location)
+
+        then:
+        instance.name == name
+        instance.edition == edition
+        instance.url == new URL('http://localhost')
+        instance.backendPort == 1060
+        instance.frontendPort == 8080
+        instance.location == location
+
+        where:
+        path                                                    | name
+        '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar' | 'SEjar'
+        '/test/NetKernelPluginSpec/install/EE-5.2.1'            | 'SE'
+    }
+
+    def 'creates netkernel instance references'() {
+        setup:
+        netKernelPlugin.project = project
+
+        when:
+        NamedDomainObjectContainer<NetKernelInstance> instances = netKernelPlugin.createNetKernelInstances()
+
+        then:
+        instances != null
+        instances['SE'] != null
     }
 
 }

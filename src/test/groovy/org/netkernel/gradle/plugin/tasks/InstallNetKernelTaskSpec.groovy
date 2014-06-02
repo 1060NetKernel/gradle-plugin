@@ -1,27 +1,18 @@
 package org.netkernel.gradle.plugin.tasks
 
-import groovyx.net.http.Method
-import org.gradle.api.UnknownDomainObjectException
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.plugin.util.NetKernelHelper
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 
 class InstallNetKernelTaskSpec extends BasePluginSpec {
 
     InstallNetKernelTask installNetKernelTask
-    NetKernelHelper mockNetKernelHelper
+    NetKernelInstance mockNetKernelInstance
 
     void setup() {
-        mockNetKernelHelper = Mock()
+        mockNetKernelInstance = Mock()
 
         installNetKernelTask = createTask(InstallNetKernelTask)
-        installNetKernelTask.configName = 'test'
-        installNetKernelTask.nkHelper = mockNetKernelHelper
-
-        executionConfig {
-            test {
-                directory = file '/test/installNetKernelTaskSpec'
-            }
-        }
+        installNetKernelTask.netKernelInstance = mockNetKernelInstance
     }
 
     def 'installs netkernel successfully'() {
@@ -29,19 +20,7 @@ class InstallNetKernelTaskSpec extends BasePluginSpec {
         installNetKernelTask.installNK()
 
         then:
-        2 * mockNetKernelHelper.isNetKernelRunning() >>> [true, false]
-        2 * mockNetKernelHelper.issueRequest(NetKernelHelper.BEF, Method.POST, _ as Map) >> true
-    }
-
-    def 'throws exception if no config is found'() {
-        setup:
-        installNetKernelTask.configName = 'notfound'
-
-        when:
-        installNetKernelTask.installNK()
-
-        then:
-        thrown(UnknownDomainObjectException)
+        1 * mockNetKernelInstance.install()
     }
 
 }

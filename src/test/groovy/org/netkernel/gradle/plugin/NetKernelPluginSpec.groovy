@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.NetKernelInstance
-import spock.lang.Unroll
+import org.netkernel.gradle.plugin.model.Release
 
 class NetKernelPluginSpec extends BasePluginSpec {
 
@@ -30,7 +30,6 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin = new NetKernelPlugin()
     }
 
-    @Unroll
     def 'applies NetKernel plugin to sample projects #projectDirName'() {
         setup:
         File projectDir = file("/examples/${projectDirName}")
@@ -134,13 +133,15 @@ class NetKernelPluginSpec extends BasePluginSpec {
         setup:
         File location = file path
         Edition edition = Edition.STANDARD
+        String version = Release.CURRENT_MAJOR_RELEASE
 
         when:
         NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition, location)
 
         then:
         instance.name == name
-        instance.edition == edition
+        instance.release.version == version
+        instance.release.edition == edition
         instance.url == new URL('http://localhost')
         instance.backendPort == 1060
         instance.frontendPort == 8080
@@ -162,6 +163,31 @@ class NetKernelPluginSpec extends BasePluginSpec {
         then:
         instances != null
         instances['SE'] != null
+    }
+
+    def 'creates netkernel instance tasks'() {
+        setup:
+        netKernelPlugin.project = project
+
+        NetKernelInstance netKernelInstance = new NetKernelInstance(
+            name: 'test',
+            location: file(location),
+            installationDirectory: file(installationDirectory)
+        )
+
+        when:
+        netKernelPlugin.createNetKernelInstanceTasks(netKernelInstance)
+
+        then:
+        taskNames.each { taskName ->
+            assert project.tasks.findByName(taskName) != null
+            assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
+        }
+
+        where:
+        location                                                | installationDirectory                        | taskNames
+        '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar' | '/test/NetKernelPluginSpec/install/SE-5.2.1' | ['starttest', 'stoptest', 'installtest']
+        '/test/NetKernelPluginSpec/install/EE-5.2.1'            | null                                         | ['starttest', 'stoptest']
     }
 
 }

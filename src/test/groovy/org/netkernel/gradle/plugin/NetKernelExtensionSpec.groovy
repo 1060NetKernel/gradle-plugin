@@ -5,7 +5,6 @@ import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.nk.Download
-import org.netkernel.gradle.plugin.nk.ExecutionConfig
 
 class NetKernelExtensionSpec extends BasePluginSpec {
 
@@ -16,19 +15,18 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         project = ProjectBuilder.builder().build()
         project.apply(plugin: 'java')
         project.configurations.create('provided').extendsFrom(project.configurations.compile)
-        netKernelExtension = new NetKernelExtension(project, project.container(ExecutionConfig), 'test')
+        netKernelExtension = new NetKernelExtension(project)
         netKernelExtension.fileSystemHelper.@_gradleHome = file '/test/gradleHomeDirectory'
         netKernelExtension.instances = project.container(NetKernelInstance)
 
-
-        netKernelExtension.envs {
-            test {
-                directory = file '/test/gradleHomeDirectory/netkernel/installation'
-            }
-        }
+//        netKernelExtension.envs {
+//            test {
+//                directory = file '/test/gradleHomeDirectory/netkernel/installation'
+//            }
+//        }
 
         netKernelExtension.instances {
-            test {
+            SE {
                 location = file '/test/gradleHomeDirectory/netkernel/installation'
             }
         }
@@ -79,29 +77,29 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         project.repositories.find { it.name == 'maven' }.url as String == 'http://localhost:8080/netkernel-maven'
     }
 
-    def 'configures environment object'() {
+    def 'configures instances'() {
         setup:
         File devDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/dev')
         File qaDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/qa')
         File prodDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/prod')
 
         when:
-        netKernelExtension.envs {
+        netKernelExtension.instances {
             dev {
-                directory = devDirectory
+                location = devDirectory
             }
             qa {
-                directory = qaDirectory
+                location = qaDirectory
             }
             prod {
-                directory = prodDirectory
+                location = prodDirectory
             }
         }
 
         then:
-        netKernelExtension.envs.dev.directory == devDirectory
-        netKernelExtension.envs.qa.directory == qaDirectory
-        netKernelExtension.envs.prod.directory == prodDirectory
+        netKernelExtension.instances['dev'].location == devDirectory
+        netKernelExtension.instances['qa'].location == qaDirectory
+        netKernelExtension.instances['prod'].location == prodDirectory
     }
 
     def 'configures download object'() {

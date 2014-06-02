@@ -5,7 +5,6 @@ import org.gradle.api.Project
 import org.netkernel.gradle.plugin.model.Module
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.nk.Download
-import org.netkernel.gradle.plugin.nk.ExecutionConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
@@ -21,7 +20,7 @@ class NetKernelExtension {
     Module module
 
     final Download download
-    final NamedDomainObjectContainer<ExecutionConfig> envs
+//    final NamedDomainObjectContainer<ExecutionConfig> envs
 
     // NetKernel instances
     NamedDomainObjectContainer<NetKernelInstance> instances
@@ -29,25 +28,25 @@ class NetKernelExtension {
     SourceStructure sourceStructure
 
     // Properties moved from primary plugin
-    final String configName
+    final String instanceName = 'SE'
 
 
     private Project project
 
-    NetKernelExtension(Project project, NamedDomainObjectContainer<ExecutionConfig> envs, String configName) {
+    NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
-        this.envs = envs
-        this.configName = configName
+//        this.envs = envs
+//        this.configName = configName
     }
 
     def download(Closure closure) {
         project.configure(download, closure)
     }
 
-    def envs(Closure closure) {
-        envs.configure(closure)
-    }
+//    def envs(Closure closure) {
+//        envs.configure(closure)
+//    }
 
     def instances(Closure closure) {
         instances.configure(closure)
@@ -85,7 +84,7 @@ class NetKernelExtension {
     }
 
     File getInstallationDirectory() {
-        return instances[configName].location
+        return instances[instanceName].location
     }
 
     File getFreezeDirectory() {

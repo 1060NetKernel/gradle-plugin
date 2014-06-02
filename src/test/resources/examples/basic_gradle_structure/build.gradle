@@ -12,7 +12,3 @@ netkernel {
     useROCRepo()
     useStandardCompileDependencies()
 }
-
-println "Applying build file"
-
-

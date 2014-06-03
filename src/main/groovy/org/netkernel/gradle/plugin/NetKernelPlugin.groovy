@@ -41,7 +41,7 @@ class NetKernelPlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
 
-        // TODO - Do we always want to apply groovy & maven plugins?  What about other languages like kotlin, scala, etc.?
+        // TODO - Do we always want to apply the groovy plugin?  What about other languages like kotlin, scala, etc.?
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven'
 
@@ -58,16 +58,10 @@ class NetKernelPlugin implements Plugin<Project> {
      * be it NetKernel or gradle.
      */
     void configureProject() {
-        // TODO -  Move this to a properties file
-        def configName = "SE"
-
         ['freeze', 'thaw', 'provided'].each { name ->
             project.configurations.create(name)
         }
         project.configurations.compile.extendsFrom(project.configurations.provided)
-
-//        def envs = project.container(ExecutionConfig)
-//        gatherExecutionConfigs(project, envs)
 
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project)
         netKernel.instances = createNetKernelInstances()
@@ -150,9 +144,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
-        createTask(DOWNLOAD_NKEE, DownloadNetKernelTask, "Downloads NetKernel Enterprise Edition")
-
-        createTask(DOWNLOAD_NKSE, DownloadNetKernelTask, "Downloads NetKernel Standard Edition")
+        // Create download task for each edition of NK
+        Edition.values().each { Edition edition ->
+            createTask("download${edition}", DownloadNetKernelTask, "Downloads NetKernel ${edition} edition")
+        }
 
         createTask(FREEZE_DELETE, Delete, "Deletes frozen NetKernel instance")
 
@@ -250,15 +245,22 @@ class NetKernelPlugin implements Plugin<Project> {
             thawDirInner netKernel.thawInstallationDirectory
         }
 
-        configureTask(DOWNLOAD_NKSE) {
+
+        configureTask(DOWNLOAD_SE) {
             downloadConfig = netKernel.download.se
+            release = new Release(Edition.STANDARD)
+            destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+//            destinationFile =
         }
 
-        configureTask(DOWNLOAD_NKEE) {
+        configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
-            // TODO: Discuss with 1060
-            releaseDir = 'ee'
-            release = DownloadNetKernelTask.NKEE
+            release = new Release(Edition.ENTERPRISE)
+            destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+//            destinationFile =
+//            // TODO: Discuss with 1060
+//            releaseDir = 'ee'
+//            release = DownloadNetKernelTask.NKEE
         }
 
         configureTask(MODULE) {
@@ -313,9 +315,7 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void afterEvaluate() {
         project.afterEvaluate {
-            netKernel.instances.each { NetKernelInstance instance ->
-                createNetKernelInstanceTasks(instance)
-            }
+            createNetKernelInstanceTasks()
         }
     }
 
@@ -356,7 +356,16 @@ class NetKernelPlugin implements Plugin<Project> {
 //    }
 
     /**
-     * Creates start/stop tasks and install task for the jar distribution.
+     * Creates instance tasks for each NetKernelInstance
+     */
+    void createNetKernelInstanceTasks() {
+        netKernel.instances.each { NetKernelInstance instance ->
+            createNetKernelInstanceTasks(instance)
+        }
+    }
+
+    /**
+     * Creates start/stop tasks and install task for the instance of NK.
      *
      * @param instance instance of NetKernel
      */
@@ -385,14 +394,17 @@ class NetKernelPlugin implements Plugin<Project> {
 //                }
 //        }
 
-        if (instance.canInstall()) {
-            createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})")
-            configureTask(installTaskName) {
-                netKernelInstance = instance
-            }
-            // TODO - Figure out task dependencies for instance tasks
-//            project.tasks[installTaskName]
+//        if (instance.canInstall()) {
+        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
+        configureTask(installTaskName) {
+            netKernelInstance = instance
         }
+
+//        project.tasks[installTaskName].dependsOn "downloadNK${instance.release.edition}"
+//        project.tasks[startTaskName].dependsOn installTaskName
+        // TODO - Figure out task dependencies for instance tasks
+//            project.tasks[installTaskName]
+//        }
 
 //        project.tasks[startTaskName].dependsOn
 
@@ -472,11 +484,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
         Edition.values().each { Edition edition ->
 
-            File jarLocation = fsHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Release.CURRENT_MAJOR_RELEASE}.jar")
-            File expandedLocation = fsHelper.fileInGradleHome("netkernel/install/${edition}-${Release.CURRENT_MAJOR_RELEASE}")
+            File location = fsHelper.fileInGradleHome("netkernel/install/${edition}-${Release.CURRENT_MAJOR_RELEASE}")
+            File jarFileLocation = fsHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Release.CURRENT_MAJOR_RELEASE}.jar")
 
-            instances.add createNetKernelInstance(edition, jarLocation, expandedLocation)
-            instances.add createNetKernelInstance(edition, expandedLocation)
+            instances.add createNetKernelInstance(edition, location, jarFileLocation)
         }
 
         return instances
@@ -485,13 +496,15 @@ class NetKernelPlugin implements Plugin<Project> {
     /**
      * Creates a NetKernelInstance reference
      *
+     * @param edition Edition of NetKernel (SE or EE)
      * @param location location of netkernel instance (directory or jar file location)
+     * @param jarFileLocation location of NetKernel distribution
      *
      * @return initialized NetKernelInstance
      */
-    NetKernelInstance createNetKernelInstance(Edition edition, File location, File installationDirectory = null) {
+    NetKernelInstance createNetKernelInstance(Edition edition, File location, File jarFileLocation) {
         // TODO - Reevaluate how the name is constructed
-        String name = "${edition}${location.name.endsWith(".jar") ? 'jar' : ''}"
+        String name = "${edition}"
 
         NetKernelInstance instance = new NetKernelInstance(
             name: name,
@@ -500,7 +513,7 @@ class NetKernelPlugin implements Plugin<Project> {
             backendPort: 1060,
             frontendPort: 8080,
             location: location,
-            installationDirectory: installationDirectory
+            jarFileLocation: jarFileLocation
         )
 
         return instance

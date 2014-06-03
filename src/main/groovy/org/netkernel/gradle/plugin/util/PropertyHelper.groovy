@@ -13,8 +13,8 @@ class PropertyHelper {
      * @param p
      * @param propertyName
      */
-    def findProjectProperty(Project p, String propertyName, String defaultValue) {
-        def retValue = p.hasProperty(propertyName) ? p.getProperties().get(propertyName) : null
+    String findProjectProperty(Project p, String propertyName, String defaultValue) {
+        String retValue = p.hasProperty(propertyName) ? p.getProperties().get(propertyName) : null
 
         if(retValue == null) {
             retValue = System.properties[propertyName]

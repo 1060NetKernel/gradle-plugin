@@ -102,32 +102,22 @@ class NetKernelInstanceSpec extends BasePluginSpec {
         response(SC_NOT_FOUND)         | ''
     }
 
-    def 'can deploy module'() {
+    def 'deploys module'() {
         setup:
-        netKernelInstance.location = file location
+        Module module = new Module(file('/test/NetKernelInstanceSpec/module/module.xml'))
 
         when:
-        boolean result = netKernelInstance.canDeployModule()
+        netKernelInstance.deploy(module)
 
         then:
-        result == expectedResult
-
-        where:
-        location                             | expectedResult
-        '/test/NetKernelInstanceSpec/se'     | true
-        '/test/NetKernelInstanceSpec/se.jar' | false
-    }
-
-
-    def 'deploys module'() {
-
+        true
     }
 
     def 'undeploys module'() {
 
     }
 
-    def "doesn't install netkernel for directory instance"() {
+    def "doesn't install netkernel for instance that is already installed"() {
         setup:
         netKernelInstance.location = file '/test/NetKernelInstanceSpec/se'
 
@@ -140,8 +130,8 @@ class NetKernelInstanceSpec extends BasePluginSpec {
 
     def 'installs netkernel'() {
         setup:
-        netKernelInstance.location = file '/test/NetKernelInstanceSpec/se.jar'
-        netKernelInstance.installationDirectory = file '/test/NetKernelInstanceSpec/installation/se'
+        netKernelInstance.location = file '/test/NetKernelInstanceSpec/installation', 'se'
+        netKernelInstance.jarFileLocation = file '/test/NetKernelInstanceSpec/se.jar'
 
         when:
         netKernelInstance.install()

@@ -9,13 +9,10 @@ class UpdateModuleXmlVersionTaskSpec extends BasePluginSpec {
     UpdateModuleXmlVersionTask updateModuleXmlVersionTask
 
     void setup() {
-
-
-
         File sourceModuleXml = file '/test/sample-module.xml'
         Module module = new Module(sourceModuleXml)
 
-        project.extensions.create('netkernel', NetKernelExtension, project)
+        createNetKernelExtension()
 
         project.extensions.netkernel.module = module
 

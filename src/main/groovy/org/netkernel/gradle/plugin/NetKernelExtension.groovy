@@ -28,6 +28,7 @@ class NetKernelExtension {
     SourceStructure sourceStructure
 
     // Properties moved from primary plugin
+    // TODO -  Move this to a properties file
     final String instanceName = 'SE'
 
 

@@ -8,6 +8,9 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
+import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
+import org.netkernel.gradle.plugin.tasks.TaskName
+import spock.lang.Ignore
 
 class NetKernelPluginSpec extends BasePluginSpec {
 
@@ -15,8 +18,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
     Set<String> providedTaskNames = [
         'copyBeforeFreeze',
         'createAppositePackage',
-        'downloadNKEE',
-        'downloadNKSE',
+        'downloadEE',
+        'downloadSE',
         'freezeDelete',
         'freezeJar',
         'freezeTidy',
@@ -129,28 +132,35 @@ class NetKernelPluginSpec extends BasePluginSpec {
         copyBeforeFreeze.getIncludes() == ['**/*'] as Set
     }
 
+    @Ignore
+    def 'download SE configured'() {
+        setup:
+        Project project = project '/examples/basic_gradle_structure'
+        netKernelPlugin.apply(project)
+        DownloadNetKernelTask downloadNetKernelTask = project.tasks.getByName(TaskName.DOWNLOAD_SE)
+
+        expect:
+        downloadNetKernelTask.destinationFile != null
+    }
+
     def 'creates single netkernel instance reference'() {
         setup:
-        File location = file path
+        File location = file '/test/NetKernelPluginSpec/install/EE-5.2.1'
+        File jarFileLocation = file '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar'
         Edition edition = Edition.STANDARD
         String version = Release.CURRENT_MAJOR_RELEASE
 
         when:
-        NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition, location)
+        NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition, location, jarFileLocation)
 
         then:
-        instance.name == name
+        instance.name == 'SE'
         instance.release.version == version
         instance.release.edition == edition
         instance.url == new URL('http://localhost')
         instance.backendPort == 1060
         instance.frontendPort == 8080
         instance.location == location
-
-        where:
-        path                                                    | name
-        '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar' | 'SEjar'
-        '/test/NetKernelPluginSpec/install/EE-5.2.1'            | 'SE'
     }
 
     def 'creates netkernel instance references'() {
@@ -165,15 +175,18 @@ class NetKernelPluginSpec extends BasePluginSpec {
         instances['SE'] != null
     }
 
-    def 'creates netkernel instance tasks'() {
+    def 'creates netkernel instance tasks for SE Edition'() {
         setup:
         netKernelPlugin.project = project
 
         NetKernelInstance netKernelInstance = new NetKernelInstance(
-            name: 'test',
-            location: file(location),
-            installationDirectory: file(installationDirectory)
+            name: 'SE',
+            release: new Release(Edition.STANDARD),
+            location: file('/test/NetKernelPluginSpec/install/SE-5.2.1'),
+            jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
         )
+
+        Set<String> taskNames = ['startSE', 'stopSE', 'installSE']
 
         when:
         netKernelPlugin.createNetKernelInstanceTasks(netKernelInstance)
@@ -183,11 +196,23 @@ class NetKernelPluginSpec extends BasePluginSpec {
             assert project.tasks.findByName(taskName) != null
             assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
         }
+    }
 
-        where:
-        location                                                | installationDirectory                        | taskNames
-        '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar' | '/test/NetKernelPluginSpec/install/SE-5.2.1' | ['starttest', 'stoptest', 'installtest']
-        '/test/NetKernelPluginSpec/install/EE-5.2.1'            | null                                         | ['starttest', 'stoptest']
+    def 'creates netkernel instance tasks for EE & SE Edition'() {
+        setup:
+        createNetKernelExtension()
+        netKernelPlugin.project = project
+        Set<String> taskNames = ['startSE', 'stopSE', 'startEE', 'stopEE']
+        project.extensions.getByName('netkernel').instances = netKernelPlugin.createNetKernelInstances()
+        netKernelPlugin.netKernel = project.extensions.getByName('netkernel')
+
+        when:
+        netKernelPlugin.createNetKernelInstanceTasks()
+
+        then:
+        taskNames.each { String name ->
+            assert project.tasks.findByName(name) != null
+        }
     }
 
 }

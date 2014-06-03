@@ -27,11 +27,26 @@ abstract class BasePluginSpec extends Specification {
         return new File(BasePluginSpec.getResource(path).file)
     }
 
+    File file(String parentPath, String path) {
+        File parent = file(parentPath)
+        return new File(parent, path)
+    }
+
     Project getProject() {
         if (!_project) {
             _project = ProjectBuilder.builder().build()
+//            _project.extensions.create('netkernel', NetKernelExtension, _project)
         }
         _project
+    }
+
+    Project project(String projectPath) {
+        File projectDir = file(projectPath)
+        return ProjectBuilder.builder().withProjectDir(projectDir).build()
+    }
+
+    void createNetKernelExtension() {
+        project.extensions.create('netkernel', NetKernelExtension, project)
     }
 
     Task createTask(Class clazz) {
@@ -49,6 +64,10 @@ abstract class BasePluginSpec extends Specification {
 //    void executionConfig(Closure closure) {
 //        NamedDomainObjectContainer<ExecutionConfig> envs = project.container(ExecutionConfig).configure(closure)
 //        project.extensions.create('netkernel', NetKernelExtension, project, envs, null)
+//    }
+
+//    NetKernelExtension createNetKernelExtension() {
+//        return project.extensions.create('netkernel', NetKernelExtension)
 //    }
 
     HttpResponse response(int statusCode, String text = "") {

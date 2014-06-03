@@ -1,17 +1,22 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
-import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.gradle.api.tasks.Input
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 
 /**
  * Created by randolph.kahle on 4/1/14.
  */
 class DeployToNetKernelTask extends DefaultTask {
 
-    def FileSystemHelper fileSystemHelper = new FileSystemHelper()
+//    def FileSystemHelper fileSystemHelper = new FileSystemHelper()
+
+    @Input
+    NetKernelInstance netKernelInstance
 
     @org.gradle.api.tasks.TaskAction
     void deployToNetKernel() {
+        netKernelInstance.deploy(project.netkernel.module)
 
 //        println 'Hi! I am happy to deploy your modules to NetKernel'
 //

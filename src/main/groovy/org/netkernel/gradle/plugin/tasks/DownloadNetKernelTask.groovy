@@ -23,81 +23,56 @@ import org.apache.http.protocol.HttpContext
 import org.apache.tools.ant.BuildEvent
 import org.apache.tools.ant.BuildListener
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.netkernel.gradle.plugin.model.Edition
+import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.nk.DownloadConfig
-import org.netkernel.gradle.plugin.util.FileSystemHelper
 import org.netkernel.gradle.plugin.util.PropertyHelper
 import org.netkernel.layer0.util.Utils
 
-//Imports for Apache Client used in NKEE download
-/*
- * A task to download a version of NetKernel.
+/**
+ * A task to download a version of NetKernel.  This is used to download both the SE & EE Editions.
  */
-
 class DownloadNetKernelTask extends DefaultTask {
-    // Static Defaults
-    static def DISTRIBUTION_URL = 'http://apposite.netkernel.org/dist'
-    static def NKSE = 'SE'
-    static def NKEE = 'EE'
-    static def DEFAULT_RELEASEDIRS = ['SE': '1060-NetKernel-SE',
-                                      'EE': '1060-NetKernel-EE']
-
-    DownloadConfig downloadConfig
-
-    //Variable parameters
-    //TODO: Drive some of this from the ExecutionConfigs?
-    String release = NKSE
-    String version = '5.2.1' //TODO Needs to be parameterised
-    String baseURL = DISTRIBUTION_URL
-    String releaseDir
-    String filePrefix
 
     //Helpers
-    def fileSystemHelper = new FileSystemHelper()
     def propertyHelper = new PropertyHelper()
+
+    @Input
+    DownloadConfig downloadConfig
+
+    @Input
+    Release release
+
+    @OutputFile
+    File destinationFile
 
     @TaskAction
     void downloadNetKernel() {
-        File destinationDirectory = fileSystemHelper.fileInGradleHome("netkernel/download")
-        if (!destinationDirectory.exists() && !destinationDirectory.mkdirs()) {
-            ant.fail("Error creating: ${destinationDirectory}")
-        }
-
-        //Set base parameters
-        if (downloadConfig.url != null) {
-            baseURL = downloadConfig.url
-        }
-        if (releaseDir == null) {
-            releaseDir = DEFAULT_RELEASEDIRS[release]
-        }
-        if (filePrefix == null) {
-            filePrefix = DEFAULT_RELEASEDIRS[release]
-        }
-
-        switch (release) {
-            case NKSE:
-                downloadNKSEImpl("${baseURL}/${releaseDir}/${filePrefix}-${version}.jar", destinationDirectory)
+        switch (release.edition) {
+            case Edition.STANDARD:
+                downloadNKSEImpl(release.getDownloadUrl(downloadConfig))
                 break;
-            case NKEE:
-                def username = propertyHelper.findProjectProperty(project, "nkeeUsername",
-                    downloadConfig.username)
-                def password = propertyHelper.findProjectProperty(project, "nkeePassword",
-                    downloadConfig.password)
+            case Edition.ENTERPRISE:
+                def username = propertyHelper.findProjectProperty(project, "nkeeUsername", downloadConfig.username)
+                def password = propertyHelper.findProjectProperty(project, "nkeePassword", downloadConfig.password)
 
                 if (!username || !password) {
                     ant.fail("Downloading NKEE requires a username and password")
                 }
 
-                downloadNKEEImpl("${filePrefix}-${version}.jar", destinationDirectory, username, password)
+                downloadNKEEImpl(release.getDownloadUrl(downloadConfig), username, password)
                 break;
             default:
-                ant.fail("Unknown NetKernel version!")
+                ant.fail("Unknown NetKernel release!")
                 break;
         }
     }
 
-    void downloadNKSEImpl(url, dest) {
-        println "Downloading ${url} to ${dest}"
+    void downloadNKSEImpl(URL url) {
+        println "Downloading ${url} to ${destinationFile}"
 
         ant.project.buildListeners.toList().each {
             ant.project.removeBuildListener(it)
@@ -122,14 +97,14 @@ class DownloadNetKernelTask extends DefaultTask {
         })
 
         ant.get(src: url,
-            dest: dest,
+            dest: destinationFile,
             verbose: true,
             httpusecaches: true,
             usetimestamp: true)
 
     }
 
-    void downloadNKEEImpl(distribution, dest, username, password) {
+    void downloadNKEEImpl(URL url, String username, String password) {
         try {    //Prepare State Management
             HttpContext state = new BasicHttpContext();
             CookieStore cookieStore = new BasicCookieStore();
@@ -164,17 +139,16 @@ class DownloadNetKernelTask extends DefaultTask {
                 println("Successfully logged in to NKEE server")
                 //Now we can download the distribution
                 try {
-                    def get = new HttpGet("https://cs.1060research.com/csp/download/${distribution}");
+                    def get = new HttpGet(url.toURI());
                     response = client.execute(get, state)
                     statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == 200) {
                         def is = response.getEntity().getContent()
-                        def f = new File(dest, distribution)
-                        def fos = new FileOutputStream(f)
+                        def fos = new FileOutputStream(destinationFile)
                         Utils.pipe(is, fos)
                         fos.flush()
                         fos.close()
-                        println("Successfully downloaded ${distribution}")
+                        println("Successfully downloaded ${url}")
                     }
                 }
                 catch (Exception e) {

@@ -8,9 +8,9 @@ import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 
 /**
- * A NetKernelInstance represents an indvidual instance of NetKernel.  This can be
- * a distribution jar file downloaded from 1060 or an installed local instance.  Methods
- * are provided to start and stop the instance as well as deploy/undeploy of modules.
+ * A NetKernelInstance represents an indvidual instance of NetKernel.  Both the downloaded
+ * jar file and installed directory are represented by a single instance to simplify the use.
+ * Methods are provided to start and stop the instance as well as deploy/undeploy of modules.
  */
 @Slf4j
 // Used to keep map constructor from GroovyObject
@@ -22,11 +22,11 @@ class NetKernelInstance {
     int backendPort
     int frontendPort
 
-    // Location can either be a directory or jar file reference
+    // Location is the installed directory of NetKernel
     File location
 
-    // Location to install instance into.  Only applicable for jar instances
-    File installationDirectory
+    // Location of downloaded jar file
+    File jarFileLocation
 
     // Standard or Enterprise
     Release release
@@ -152,15 +152,14 @@ class NetKernelInstance {
     }
 
     /**
-     * Installs NetKernelInstance to installation directory. This only applies for jar
-     * instances and during initial plugin bootstrapping, install tasks should only be
-     * created for jar types.
+     * Installs NetKernelInstance to installation directory if not done already.
      *
-     * @throws IllegalStateException if called on directory instance
+     * @throws IllegalStateException if already installed
      */
     void install() {
-        if (!canInstall()) {
-            throw new IllegalStateException("${this} is not a jar file.  Cannot install.")
+
+        if (location.exists()) {
+            throw new IllegalStateException("${this} is already installed.")
         }
 
         start()
@@ -172,37 +171,33 @@ class NetKernelInstance {
         }
 
         try {
-            //TODO: Directory already exists handling?
-            if (installationDirectory.exists() || installationDirectory.mkdirs()) {
+            if (issueRequest(Method.POST, [
+                path : '/installer/',
+                query: [target           : location,
+                        expand           : 'yes',
+                        proxyHost        : '',
+                        proxyPort        : '',
+                        username         : '',
+                        password         : '',
+                        ntWorkstationHost: '',
+                        ntDomain         : '']])) {
+                log.info "Successfully installed NetKernel in ${location}"
+                log.info "Shutting NetKernel down..."
 
                 if (issueRequest(Method.POST, [
-                    path : '/installer/',
-                    query: [target           : installationDirectory,
-                            expand           : 'yes',
-                            proxyHost        : '',
-                            proxyPort        : '',
-                            username         : '',
-                            password         : '',
-                            ntWorkstationHost: '',
-                            ntDomain         : '']])) {
-                    log.info "Successfully installed NetKernel in ${installationDirectory}"
-                    log.info "Shutting NetKernel down..."
+                    path : '/tools/shutdown',
+                    query: [confirm: '1', action2: 'force']])) {
 
-                    if (issueRequest(Method.POST, [
-                        path : '/tools/shutdown',
-                        query: [confirm: '1', action2: 'force']])) {
-
-                        while (isRunning()) {
-                            log.info "Waiting for NetKernel to shutdown..."
-                            Thread.sleep(500)
-                        }
-                        log.info "Installation complete."
-                    } else {
-                        log.info "Error installing NetKernel to ${installationDirectory}"
+                    while (isRunning()) {
+                        log.info "Waiting for NetKernel to shutdown..."
+                        Thread.sleep(500)
                     }
+                    log.info "Installation complete."
                 } else {
-                    log.info "Installation didn't go as planned..."
+                    log.info "Error installing NetKernel to ${location}"
                 }
+            } else {
+                log.info "Installation didn't go as planned..."
             }
         } catch (Throwable t) {
             throw new IllegalStateException(t)
@@ -233,30 +228,29 @@ class NetKernelInstance {
         return new RESTClient("${url}:${backendPort}")."${method.toString().toLowerCase()}"(args)
     }
 
-    /**
-     * Determines if the NetKernel instance can be installed.  This is specific to jar instances
-     * that have an installationDirectory specified.
-     *
-     * @return true if can install; false otherwise
-     */
-    boolean canInstall() {
-        return !location.directory && installationDirectory
-    }
-
-    /**
-     * Determines if modules can be deployed. This is specific to instances that are directories
-     * and does not apply to jar files.
-     *
-     * @return true if module can be deployed; false otherwise
-     */
-    boolean canDeployModule() {
-        return location.directory
-    }
+//    /**
+//     * Determines if the NetKernel instance can be installed.  This is specific to jar instances
+//     * that have an installationDirectory specified.
+//     *
+//     * @return true if can install; false otherwise
+//     */
+//    boolean canInstall() {
+//        return !location.directory && jarFileLocation
+//    }
+//
+//    /**
+//     * Determines if modules can be deployed. This is specific to instances that are directories
+//     * and does not apply to jar files.
+//     *
+//     * @return true if module can be deployed; false otherwise
+//     */
+//    boolean canDeployModule() {
+//        return location.directory
+//    }
 
     String toString() {
         return name
     }
-
 
 //    def setNetKernelModulesExtensionDirectory() {
 //        String netkernelInstallDir = whereIsNetKernelInstalled()

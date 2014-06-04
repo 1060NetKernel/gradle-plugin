@@ -12,8 +12,8 @@ class FreezeTidyTaskSpec extends BasePluginSpec {
         File expandDir = new File(getResource('/test/freezeTidyTaskSpec/expandDir').file)
 
         FreezeTidyTask freezeTidyTask = createTask(FreezeTidyTask)
-        freezeTidyTask.freezeDirInner = freezeDirInner.absolutePath
-        freezeTidyTask.installDirInner = getResource('/test/freezeTidyTaskSpec/installDirInner').file
+        freezeTidyTask.freezeDirectory = freezeDirInner
+        freezeTidyTask.installDirectory = file '/test/freezeTidyTaskSpec/installDirInner'
 
         kernelPropertiesFile.text = "netkernel.layer0.expandDir=${expandDir}"
 

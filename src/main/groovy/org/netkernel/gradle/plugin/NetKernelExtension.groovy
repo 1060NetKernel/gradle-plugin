@@ -85,6 +85,10 @@ class NetKernelExtension {
         }
     }
 
+    /**
+     * TODO - Are we sure this is the installationDirectory we want, what about EE or SE?
+     * @return
+     */
     File getInstallationDirectory() {
         return instances[instanceName].location
     }

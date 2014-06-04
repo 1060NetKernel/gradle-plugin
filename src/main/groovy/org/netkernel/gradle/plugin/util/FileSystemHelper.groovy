@@ -83,7 +83,7 @@ class FileSystemHelper {
     /**
      * Checks whether the file exists in the gradle home directory or not.
      *
-     * @param directoryName
+     * @param directoryName directory to look for in gradle home directory
      *
      * @return true if the directory exists; false otherwise
      */
@@ -93,6 +93,8 @@ class FileSystemHelper {
 
     /**
      * Create the specified directory in the user's Gradle Home directory.
+     *
+     * @param directoryName name of directory to create
      */
     boolean createDirInGradleHomeDirectory(String directoryName) {
         def dir = "${gradleHomeDir()}/$directoryName"

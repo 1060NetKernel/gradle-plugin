@@ -203,8 +203,8 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         configureTask(FREEZE_TIDY) {
-            freezeDirInner netKernel.freezeDirectory
-            installDirInner netKernel.installationDirectory
+            freezeDirectory = netKernel.freezeDirectory
+            installDirectory = netKernel.installationDirectory
         }
 
         configureTask(FREEZE_JAR) {
@@ -415,8 +415,6 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
         configureTask(installTaskName) {
             netKernelInstance = instance
-            jarFileLocation = instance.jarFileLocation
-            installDirectory = instance.location
         }
 
 //        project.tasks[installTaskName].dependsOn "downloadNK${instance.release.edition}"

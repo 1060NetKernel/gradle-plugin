@@ -5,10 +5,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 
-/**
- * Created by randolph.kahle on 4/1/14.
- */
-class DeployToNetKernelTask extends DefaultTask {
+class UndeployFromNetKernelTask extends DefaultTask {
 
     @Input
     File moduleArchiveFile
@@ -17,8 +14,8 @@ class DeployToNetKernelTask extends DefaultTask {
     NetKernelInstance netKernelInstance
 
     @TaskAction
-    void deployToNetKernel() {
-        netKernelInstance.deploy(moduleArchiveFile)
+    void undeploy() {
+        netKernelInstance.undeploy(moduleArchiveFile)
     }
 
 }

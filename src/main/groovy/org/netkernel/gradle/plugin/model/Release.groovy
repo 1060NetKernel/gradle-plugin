@@ -6,23 +6,7 @@ import org.netkernel.gradle.plugin.nk.DownloadConfig
 @InheritConstructors
 class Release implements Serializable {
 
-    //    //Variable parameters
-//    //TODO: Drive some of this from the ExecutionConfigs?
-////    String release = NKSE
-////    String version = '5.2.1' //TODO Needs to be parameterised
-//    String baseURL = DISTRIBUTION_URL
-//    String releaseDir
-//    String filePrefix
-
-    //    // Static Defaults
-//    // TODO - Push to properties files
-//    static def DISTRIBUTION_URL = 'http://apposite.netkernel.org/dist'
-////    static def NKSE = 'SE'
-////    static def NKEE = 'EE'
-//    static def DEFAULT_RELEASEDIRS = ['SE': '1060-NetKernel-SE',
-//                                      'EE': '1060-NetKernel-EE']
-
-    // TODO - Move to property
+    // TODO - Move to property and parameterize these values
     static final String CURRENT_MAJOR_RELEASE = "5.2.1"
 
     static final Map DISTRIBUTION_URL = [

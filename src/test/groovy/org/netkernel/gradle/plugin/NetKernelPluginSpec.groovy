@@ -3,7 +3,9 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.NetKernelInstance
@@ -132,7 +134,6 @@ class NetKernelPluginSpec extends BasePluginSpec {
         copyBeforeFreeze.getIncludes() == ['**/*'] as Set
     }
 
-    @Ignore
     def 'download SE configured'() {
         setup:
         Project project = project '/examples/basic_gradle_structure'
@@ -178,6 +179,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
     def 'creates netkernel instance tasks for SE Edition'() {
         setup:
         netKernelPlugin.project = project
+        File archiveFile = file '/test/NetKernelPluginSpec/module.jar'
+        project.tasks.create(name: 'jar', type: Jar)
 
         NetKernelInstance netKernelInstance = new NetKernelInstance(
             name: 'SE',
@@ -186,7 +189,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
             jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
         )
 
-        Set<String> taskNames = ['startSE', 'stopSE', 'installSE']
+        Set<String> taskNames = ['startSE', 'stopSE', 'installSE', 'deployToSE', 'undeployFromSE']
 
         when:
         netKernelPlugin.createNetKernelInstanceTasks(netKernelInstance)
@@ -196,13 +199,23 @@ class NetKernelPluginSpec extends BasePluginSpec {
             assert project.tasks.findByName(taskName) != null
             assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
         }
+
+        and:
+        project.tasks.findAll {it.name.contains('deploy')}.each { Task task ->
+            assert task.moduleArchiveFile != null
+        }
     }
 
     def 'creates netkernel instance tasks for EE & SE Edition'() {
         setup:
         createNetKernelExtension()
         netKernelPlugin.project = project
-        Set<String> taskNames = ['startSE', 'stopSE', 'startEE', 'stopEE']
+        project.tasks.create(name: 'jar', type: Jar)
+        // A fancy groovy way of building list of task names
+        List<String> taskNames = [
+            ['start', 'stop', 'install', 'deployTo', 'undeployFrom'],
+            ['SE', 'EE']
+        ].combinations().collect({ l -> "${l[0]}${l[1]}" as String })
         project.extensions.getByName('netkernel').instances = netKernelPlugin.createNetKernelInstances()
         netKernelPlugin.netKernel = project.extensions.getByName('netkernel')
 

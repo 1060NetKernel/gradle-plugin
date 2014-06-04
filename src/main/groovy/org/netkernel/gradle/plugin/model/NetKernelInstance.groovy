@@ -8,14 +8,14 @@ import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 
 /**
- * A NetKernelInstance represents an indvidual instance of NetKernel.  Both the downloaded
+ * A NetKernelInstance represents an individual instance of NetKernel.  Both the downloaded
  * jar file and installed directory are represented by a single instance to simplify the use.
  * Methods are provided to start and stop the instance as well as deploy/undeploy of modules.
  */
 @Slf4j
 // Used to keep map constructor from GroovyObject
 @InheritConstructors
-class NetKernelInstance {
+class NetKernelInstance implements Serializable {
 
     String name
     URL url
@@ -59,31 +59,31 @@ class NetKernelInstance {
     }
 
     /**
-     * Starts the NetKernel instance by created a {@link Process}
+     * Starts NetKernel from installed directory
      */
     void start() {
+        // TODO: Add Windows Handling
+        doStart(location, "${location.absolutePath}/bin/netkernel.sh")
+    }
+
+    /**
+     * Starts NetKernel from jarFileLocation
+     */
+    void startJar() {
+        def jvm = org.gradle.internal.jvm.Jvm.current()
+        def javaBinary = jvm.javaExecutable.absolutePath
+        doStart(location.parentFile, javaBinary, '-jar', "${jarFileLocation.absolutePath}")
+    }
+
+    /**
+     * Actually start the NetKernel instance by creating a {@link Process}
+     */
+    void doStart(File workingDir, String... command) {
         if (!isRunning()) {
-            def jvm = org.gradle.internal.jvm.Jvm.current()
-            def javaBinary = jvm.javaExecutable.absolutePath
+            println("Process to be Executed: ${command}")
+            ProcessBuilder processBuilder = new ProcessBuilder(command)
+            Process process = processBuilder.redirectErrorStream(true).directory(workingDir).start()
 
-            ProcessBuilder processBuilder
-            File workingDir
-
-            if (location.directory) {
-                workingDir = location
-                // TODO: Add Windows Handling
-                processBuilder = new ProcessBuilder("${location.absolutePath}/bin/netkernel.sh")
-
-            } else {
-                workingDir = location.parentFile
-                println("Process to be Executed: ${javaBinary} -jar ${location.absolutePath}")
-                processBuilder = new ProcessBuilder(javaBinary, "-jar", location.absolutePath)
-
-            }
-
-            Process process = processBuilder.redirectErrorStream(true)
-                .directory(workingDir)
-                .start()
             /* Debug when process couldn't be found - this feeds forked process stdout into Gradle stdout
             def procis=proc.getInputStream()
             Utils.pipe(procis, System.out)
@@ -158,11 +158,11 @@ class NetKernelInstance {
      */
     void install() {
 
-        if (location.exists()) {
-            throw new IllegalStateException("${this} is already installed.")
-        }
+//        if (location.exists()) {
+//            throw new IllegalStateException("${this} is already installed.")
+//        }
 
-        start()
+        startJar()
 
         while (!running) {
             log.info "Waiting for NetKernel to start..."
@@ -204,12 +204,38 @@ class NetKernelInstance {
         }
     }
 
-    void deploy(Module module) {
+    void initializeModulesDir() {
+        File kernelPropertiesFile = new File(location, 'etc/kernel.properties')
+        File modulesDDirectory = new File(location, 'etc/modules.d')
+        String modulesExtensionProperty = 'netkernel.init.modulesdir'
 
+        Properties properties = new Properties()
+        kernelPropertiesFile.withReader { reader ->
+            properties.load(reader)
+        }
+        if (!properties[modulesExtensionProperty]) {
+            log.debug "Adding modules.d support to NetKernel instance ${this}"
+            kernelPropertiesFile.append """
+                # Directory to support daemon modules
+                ${modulesExtensionProperty}=etc/modules.d
+            """.stripIndent()
+        }
+        modulesDDirectory.mkdirs()
     }
 
-    void undeploy(Module module) {
+    void deploy(File moduleArchiveFile) {
+        log.debug "Deploying ${moduleArchiveFile} to ${this}"
+        File moduleReference = new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml")
+        moduleReference.text = """
+        <modules>
+        <module runlevel="7">${moduleArchiveFile.absolutePath}</module>
+        </modules>
+        """.stripIndent()
+    }
 
+    void undeploy(File moduleArchiveFile) {
+        log.debug "Undeploying ${moduleArchiveFile} from ${this}"
+        new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml").delete()
     }
 
     /**
@@ -226,30 +252,6 @@ class NetKernelInstance {
      */
     HttpResponse issueRequest(Method method, Map args) {
         return new RESTClient("${url}:${backendPort}")."${method.toString().toLowerCase()}"(args)
-    }
-
-//    /**
-//     * Determines if the NetKernel instance can be installed.  This is specific to jar instances
-//     * that have an installationDirectory specified.
-//     *
-//     * @return true if can install; false otherwise
-//     */
-//    boolean canInstall() {
-//        return !location.directory && jarFileLocation
-//    }
-//
-//    /**
-//     * Determines if modules can be deployed. This is specific to instances that are directories
-//     * and does not apply to jar files.
-//     *
-//     * @return true if module can be deployed; false otherwise
-//     */
-//    boolean canDeployModule() {
-//        return location.directory
-//    }
-
-    String toString() {
-        return name
     }
 
 //    def setNetKernelModulesExtensionDirectory() {
@@ -283,4 +285,8 @@ class NetKernelInstance {
 //        def extensionDirectoryRelativeLocation = queryNetKernelProperty('netkernel:/config/netkernel.init.modulesdir')
 //        return extensionDirectoryRelativeLocation
 //    }
+
+    String toString() {
+        return name
+    }
 }

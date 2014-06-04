@@ -7,6 +7,8 @@ final class TaskName {
     static final String CONFIGURE_APPOSITE = 'configureApposite'
     static final String COPY_BEFORE_FREEZE = 'copyBeforeFreeze'
     static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
+//    static final String DEPLOY = 'deploy'
+//    static final String UNDEPLOY = 'undeploy'
     static final String DOWNLOAD_EE = 'downloadEE'
     static final String DOWNLOAD_SE = 'downloadSE'
     static final String FREEZE_DELETE = 'freezeDelete'

@@ -5,22 +5,20 @@ import org.netkernel.gradle.plugin.model.NetKernelInstance
 
 class InstallNetKernelTaskSpec extends BasePluginSpec {
 
-    InstallNetKernelTask installNetKernelTask
-    NetKernelInstance mockNetKernelInstance
-
-    void setup() {
-        mockNetKernelInstance = Mock()
-
-        installNetKernelTask = createTask(InstallNetKernelTask)
-        installNetKernelTask.netKernelInstance = mockNetKernelInstance
-    }
-
     def 'installs netkernel successfully'() {
+        setup:
+        NetKernelInstance mockNetKernelInstance = Mock()
+
+        InstallNetKernelTask installNetKernelTask = createTask(InstallNetKernelTask)
+        installNetKernelTask.netKernelInstance = mockNetKernelInstance
+
+
         when:
-        installNetKernelTask.installNK()
+        installNetKernelTask.installNetKernel()
 
         then:
         1 * mockNetKernelInstance.install()
+        1 * mockNetKernelInstance.initializeModulesDir()
     }
 
 }

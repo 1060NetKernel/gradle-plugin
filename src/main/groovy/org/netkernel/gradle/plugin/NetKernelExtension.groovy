@@ -9,6 +9,7 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
  *  Manage configuration for the NetKernel plugin.
+ *  TODO - Refactor into smaller pieces or separate calls from build.gradle with actual model
  */
 class NetKernelExtension {
 

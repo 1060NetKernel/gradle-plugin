@@ -16,6 +16,7 @@ import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask
 import org.netkernel.gradle.plugin.tasks.CreateAppositePackageTask
+import org.netkernel.gradle.plugin.tasks.DeployToNetKernelTask
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.FreezeTidyTask
 import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
@@ -23,6 +24,7 @@ import org.netkernel.gradle.plugin.tasks.ModuleResourcesTask
 import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
 import org.netkernel.gradle.plugin.tasks.StopNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
+import org.netkernel.gradle.plugin.tasks.UndeployFromNetKernelTask
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
@@ -144,10 +146,9 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
-        // Create download task for each edition of NK
-        Edition.values().each { Edition edition ->
-            createTask("download${edition}", DownloadNetKernelTask, "Downloads NetKernel ${edition} edition")
-        }
+        createTask(DOWNLOAD_EE, DownloadNetKernelTask, 'Downloads NetKernel EE edition')
+
+        createTask(DOWNLOAD_SE, DownloadNetKernelTask, 'Downloads NetKernel SE edition')
 
         createTask(FREEZE_DELETE, Delete, "Deletes frozen NetKernel instance")
 
@@ -250,17 +251,12 @@ class NetKernelPlugin implements Plugin<Project> {
             downloadConfig = netKernel.download.se
             release = new Release(Edition.STANDARD)
             destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
-//            destinationFile =
         }
 
         configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
             release = new Release(Edition.ENTERPRISE)
             destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
-//            destinationFile =
-//            // TODO: Discuss with 1060
-//            releaseDir = 'ee'
-//            release = DownloadNetKernelTask.NKEE
         }
 
         configureTask(MODULE) {
@@ -374,15 +370,29 @@ class NetKernelPlugin implements Plugin<Project> {
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
         String installTaskName = "install${instance.name}"
+        String deployTaskName = "deployTo${instance.name}"
+        String undeployTaskName = "undeployFrom${instance.name}"
 
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance})")
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance})")
+        createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance})")
+        createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance})")
 
         configureTask(startTaskName) {
             netKernelInstance = instance
         }
 
         configureTask(stopTaskName) {
+            netKernelInstance = instance
+        }
+
+        configureTask(deployTaskName) {
+            moduleArchiveFile = project.tasks.getByName('jar').archivePath
+            netKernelInstance = instance
+        }
+
+        configureTask(undeployTaskName) {
+            moduleArchiveFile = project.tasks.getByName('jar').archivePath
             netKernelInstance = instance
         }
 
@@ -398,6 +408,8 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
         configureTask(installTaskName) {
             netKernelInstance = instance
+            jarFileLocation = instance.jarFileLocation
+            installDirectory = instance.location
         }
 
 //        project.tasks[installTaskName].dependsOn "downloadNK${instance.release.edition}"

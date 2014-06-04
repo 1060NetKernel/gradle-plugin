@@ -102,20 +102,39 @@ class NetKernelInstanceSpec extends BasePluginSpec {
         response(SC_NOT_FOUND)         | ''
     }
 
-    def 'deploys module'() {
+    def 'initializes modules directory'() {
         setup:
-        Module module = new Module(file('/test/NetKernelInstanceSpec/module/module.xml'))
+        File location = file '/test/NetKernelInstanceSpec/instance/se'
+        netKernelInstance.location = location
 
         when:
-        netKernelInstance.deploy(module)
+        netKernelInstance.initializeModulesDir()
 
         then:
-        true
+        new File(location, 'etc/modules.d').exists()
+        new File(location, 'etc/kernel.properties').text.contains("netkernel.init.modulesdir=etc/modules.d")
     }
 
-    def 'undeploys module'() {
+    def 'deploys and undeploys module'() {
+        setup:
+        File moduleArchiveFile = file '/test/NetKernelInstanceSpec/module.jar'
+        File location = file '/test/NetKernelInstanceSpec/instance/ee'
+        File moduleReferenceFile = new File(location, 'etc/modules.d/module.jar.xml')
+        netKernelInstance.location = location
 
+        when:
+        netKernelInstance.deploy(moduleArchiveFile)
+
+        then:
+        moduleReferenceFile.text.contains(moduleArchiveFile.absolutePath)
+
+        when:
+        netKernelInstance.undeploy(moduleArchiveFile)
+
+        then:
+        !moduleReferenceFile.exists()
     }
+
 
     def "doesn't install netkernel for instance that is already installed"() {
         setup:

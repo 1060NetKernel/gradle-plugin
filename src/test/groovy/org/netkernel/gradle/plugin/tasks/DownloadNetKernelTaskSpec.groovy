@@ -28,7 +28,7 @@ class DownloadNetKernelTaskSpec extends BasePluginSpec {
 
     }
 
-    @Ignore
+    @Ignore("Nick - Come back to this one.")
     def 'downloads NetKernel'() {
         setup:
         File downloadDirectory = getResourceAsFile('/test/gradleHomeDirectory/netkernel/download')

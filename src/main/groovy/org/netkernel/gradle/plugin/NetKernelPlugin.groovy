@@ -60,14 +60,19 @@ class NetKernelPlugin implements Plugin<Project> {
      * be it NetKernel or gradle.
      */
     void configureProject() {
+
         ['freeze', 'thaw', 'provided'].each { name ->
             project.configurations.create(name)
         }
+
+        // This is so that provided dependencies are on the classpath, but are filtered out during the build
         project.configurations.compile.extendsFrom(project.configurations.provided)
+
 
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project)
         netKernel.instances = createNetKernelInstances()
 
+        // Determine project structure
         if (new File(project.projectDir, "src/module.xml").exists()) {
             netKernel.sourceStructure = NetKernelExtension.SourceStructure.NETKERNEL
         } else {
@@ -93,6 +98,9 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileGroovy.configure {
                     source = fileTree
                 }
+
+                // TODO - Make this work for other languages (scala, kotlin, etc.)
+
                 netKernel.module = new Module(project.file('src/module.xml'))
 
                 //Add any libs to classpath
@@ -109,8 +117,7 @@ class NetKernelPlugin implements Plugin<Project> {
             case NetKernelExtension.SourceStructure.GRADLE:
                 if (project.file('src/module/module.xml').exists()) {
                     netKernel.module = new Module(project.file('src/module/module.xml'))
-                }
-                if (project.file('src/main/resources/module.xml').exists()) {
+                } else if (project.file('src/main/resources/module.xml').exists()) {
                     netKernel.module = new Module(project.file('src/main/resources/module.xml'))
                 }
                 break;

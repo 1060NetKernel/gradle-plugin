@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin.nk
+package org.netkernel.gradle.plugin.model
 
 import org.gradle.api.Project
 

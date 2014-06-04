@@ -1,7 +1,6 @@
 package org.netkernel.gradle.plugin.model
 
 import groovy.transform.InheritConstructors
-import org.netkernel.gradle.plugin.nk.DownloadConfig
 
 @InheritConstructors
 class Release implements Serializable {

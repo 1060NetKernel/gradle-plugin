@@ -1,6 +1,5 @@
 package org.netkernel.gradle.plugin.model
 
-import org.netkernel.gradle.plugin.nk.DownloadConfig
 import spock.lang.Specification
 
 class ReleaseSpec extends Specification {

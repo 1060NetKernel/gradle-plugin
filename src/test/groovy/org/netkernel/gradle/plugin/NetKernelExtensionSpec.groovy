@@ -4,7 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.nk.Download
+import org.netkernel.gradle.plugin.model.Download
 
 class NetKernelExtensionSpec extends BasePluginSpec {
 

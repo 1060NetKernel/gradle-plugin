@@ -4,7 +4,7 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.netkernel.gradle.plugin.model.Module
 import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.nk.Download
+import org.netkernel.gradle.plugin.model.Download
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**

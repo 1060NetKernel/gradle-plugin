@@ -4,7 +4,7 @@ import org.gradle.api.Project
 import org.netkernel.gradle.plugin.BasePluginSpec
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.Release
-import org.netkernel.gradle.plugin.nk.DownloadConfig
+import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 import org.netkernel.gradle.plugin.util.PropertyHelper
 import spock.lang.Ignore

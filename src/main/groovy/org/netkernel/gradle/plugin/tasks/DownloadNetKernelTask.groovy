@@ -28,7 +28,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.Release
-import org.netkernel.gradle.plugin.nk.DownloadConfig
+import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.util.PropertyHelper
 import org.netkernel.layer0.util.Utils
 

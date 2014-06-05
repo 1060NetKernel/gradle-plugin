@@ -8,6 +8,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
+import org.netkernel.gradle.plugin.model.NetKernelExtension
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.SourceStructure

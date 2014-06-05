@@ -1,7 +1,6 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.plugin.NetKernelExtension
 import org.netkernel.gradle.plugin.model.Module
 
 class UpdateModuleXmlVersionTaskSpec extends BasePluginSpec {

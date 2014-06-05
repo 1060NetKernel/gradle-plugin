@@ -12,6 +12,7 @@ import org.gradle.api.tasks.Upload
 import org.gradle.api.tasks.bundling.Jar
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.Module
+import org.netkernel.gradle.plugin.model.NetKernelExtension
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.SourceStructure

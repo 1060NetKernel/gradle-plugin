@@ -14,6 +14,7 @@ import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.Module
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
+import org.netkernel.gradle.plugin.model.SourceStructure
 import org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask
 import org.netkernel.gradle.plugin.tasks.CreateAppositePackageTask
 import org.netkernel.gradle.plugin.tasks.DeployToNetKernelTask
@@ -68,15 +69,14 @@ class NetKernelPlugin implements Plugin<Project> {
         // This is so that provided dependencies are on the classpath, but are filtered out during the build
         project.configurations.compile.extendsFrom(project.configurations.provided)
 
-
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project)
         netKernel.instances = createNetKernelInstances()
 
         // Determine project structure
         if (new File(project.projectDir, "src/module.xml").exists()) {
-            netKernel.sourceStructure = NetKernelExtension.SourceStructure.NETKERNEL
+            netKernel.sourceStructure = SourceStructure.NETKERNEL
         } else {
-            netKernel.sourceStructure = NetKernelExtension.SourceStructure.GRADLE
+            netKernel.sourceStructure = SourceStructure.GRADLE
         }
 
         // TODO - I don't know what this does
@@ -85,7 +85,7 @@ class NetKernelPlugin implements Plugin<Project> {
 //        }
 
         switch (netKernel.sourceStructure) {
-            case NetKernelExtension.SourceStructure.NETKERNEL:
+            case SourceStructure.NETKERNEL:
                 def baseDir = new File(project.projectDir, 'src/')
                 //Configure the javaCompiler
                 def fileTree = project.fileTree(dir: baseDir, includes: ['**/*.java'])
@@ -114,7 +114,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
 
                 break;
-            case NetKernelExtension.SourceStructure.GRADLE:
+            case SourceStructure.GRADLE:
                 if (project.file('src/module/module.xml').exists()) {
                     netKernel.module = new Module(project.file('src/module/module.xml'))
                 } else if (project.file('src/main/resources/module.xml').exists()) {
@@ -273,7 +273,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         configureTask(MODULE_RESOURCES) {
             into "${project.buildDir}/${netKernel.module.name}"
-            if (netKernel.sourceStructure == NetKernelExtension.SourceStructure.GRADLE) {
+            if (netKernel.sourceStructure == SourceStructure.GRADLE) {
                 from "${project.projectDir}/src/module"
                 from "${project.projectDir}/src/main/resources"
             } else {

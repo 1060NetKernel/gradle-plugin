@@ -10,9 +10,10 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Release
+import org.netkernel.gradle.plugin.model.SourceStructure
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.TaskName
-import spock.lang.Ignore
+import spock.lang.Unroll
 
 class NetKernelPluginSpec extends BasePluginSpec {
 
@@ -35,6 +36,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin = new NetKernelPlugin()
     }
 
+    @Unroll
     def 'applies NetKernel plugin to sample projects #projectDirName'() {
         setup:
         File projectDir = file("/examples/${projectDirName}")
@@ -45,6 +47,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin.apply(project)
 
         then:
+        // A fair amount of assertions here to check project
         providedTaskNames.each { name ->
             assert project.tasks.findByName(name) != null
         }
@@ -62,18 +65,24 @@ class NetKernelPluginSpec extends BasePluginSpec {
         // Assert added configurations
         project.configurations.getByName('freeze') != null
         project.configurations.getByName('thaw') != null
+        project.configurations.getByName('provided') != null
+
+        // Assertions on model created
+        project.extensions.getByName('netkernel') != null
+        NetKernelExtension extension = project.extensions.getByName('netkernel')
+        extension.sourceStructure == expectedSourceStructure
+        extension.module != null
 
         where:
-        projectDirName << [
-            'basic_gradle_structure',
-            'basic_netkernel_structure',
-            '01-single-module',
-            '02-nkjava-module',
-            '03-nkjava-module',
-            '04-module-mavendep',
-            '05-module-moduledep',
-            '06-module-mavenexternaljar'
-        ]
+        projectDirName               | expectedSourceStructure
+        'basic_gradle_structure'     | SourceStructure.GRADLE
+        'basic_netkernel_structure'  | SourceStructure.NETKERNEL
+        '01-single-module'           | SourceStructure.GRADLE
+        '02-nkjava-module'           | SourceStructure.NETKERNEL
+        '03-nkjava-module'           | SourceStructure.NETKERNEL
+        '04-module-mavendep'         | SourceStructure.GRADLE
+        '05-module-moduledep'        | SourceStructure.GRADLE
+        '06-module-mavenexternaljar' | SourceStructure.GRADLE
     }
 
     def 'uses version from module.xml'() {
@@ -201,7 +210,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
         }
 
         and:
-        project.tasks.findAll {it.name.contains('deploy')}.each { Task task ->
+        project.tasks.findAll { it.name.contains('deploy') }.each { Task task ->
             assert task.moduleArchiveFile != null
         }
     }

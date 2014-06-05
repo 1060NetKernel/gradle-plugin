@@ -2,9 +2,11 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.netkernel.gradle.plugin.model.Module
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Download
+import org.netkernel.gradle.plugin.model.SourceStructure
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
@@ -13,15 +15,10 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
  */
 class NetKernelExtension {
 
-    enum SourceStructure {
-        NETKERNEL, GRADLE
-    }
-
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
     Module module
 
     final Download download
-//    final NamedDomainObjectContainer<ExecutionConfig> envs
 
     // NetKernel instances
     NamedDomainObjectContainer<NetKernelInstance> instances
@@ -38,23 +35,17 @@ class NetKernelExtension {
     NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
-//        this.envs = envs
-//        this.configName = configName
     }
 
     def download(Closure closure) {
         project.configure(download, closure)
     }
 
-//    def envs(Closure closure) {
-//        envs.configure(closure)
-//    }
-
     def instances(Closure closure) {
         instances.configure(closure)
     }
 
-    org.gradle.api.artifacts.Dependency dep(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
+    Dependency dep(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
         project.dependencies.create(group: group, name: name, version: version)
     }
 

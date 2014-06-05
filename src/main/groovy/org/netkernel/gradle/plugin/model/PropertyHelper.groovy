@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin.util
+package org.netkernel.gradle.plugin.model
 
 import org.gradle.api.Project
 
@@ -11,6 +11,9 @@ import org.gradle.api.Project
 class PropertyHelper {
 
     static final String GRADLE_PLUGIN_PROPERTIES = '/gradle-plugin.properties'
+
+    // Property names (TODO: think about enum?)
+    static final String CURRENT_MAJOR_RELEASE_VERSION = 'current_major_release_version'
 
     Properties gradlePluginProperties
 

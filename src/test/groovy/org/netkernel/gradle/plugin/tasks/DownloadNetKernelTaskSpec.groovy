@@ -6,7 +6,7 @@ import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.util.FileSystemHelper
-import org.netkernel.gradle.plugin.util.PropertyHelper
+import org.netkernel.gradle.plugin.model.PropertyHelper
 import spock.lang.Ignore
 
 class DownloadNetKernelTaskSpec extends BasePluginSpec {

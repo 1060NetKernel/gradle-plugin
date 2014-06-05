@@ -260,13 +260,13 @@ class NetKernelPlugin implements Plugin<Project> {
         configureTask(DOWNLOAD_SE) {
             downloadConfig = netKernel.download.se
             release = new Release(Edition.STANDARD)
-            destinationFile = new File(fileSystemHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+            destinationFile = netKernel.workFile("download/${release.jarFileName}")
         }
 
         configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
             release = new Release(Edition.ENTERPRISE)
-            destinationFile = new File(fileSystemHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+            destinationFile = netKernel.workFile("download/${release.jarFileName}")
         }
 
         configureTask(MODULE) {
@@ -324,42 +324,6 @@ class NetKernelPlugin implements Plugin<Project> {
             createNetKernelInstanceTasks()
         }
     }
-
-//    def buildJarInstallerExecutionConfig(def project, def type) {
-//        def config = new ExecutionConfig()
-//
-//        project.configure(config, {
-//            name = "${type}Jar"
-//            relType = type
-//            release = ReleaseType.CURRENT_MAJOR_RELEASE
-//            directory = fsHelper.fileInGradleHome("netkernel/install/${type}-${release}")
-//            installJar = "1060-NetKernel-${type}-${release}.jar"
-//            mode = ExecutionConfig.Mode.NETKERNEL_INSTALL
-//        })
-//
-//        config
-//    }
-//
-//    def buildInstalledExecutionConfig(def project, def type) {
-//        def config = new ExecutionConfig()
-//
-//        project.configure(config, {
-//            name = "${type}"
-//            relType = type
-//            release = ReleaseType.CURRENT_MAJOR_RELEASE
-//            directory = fsHelper.fileInGradleHome("netkernel/install/${type}-${release}")
-//            supportsDaemonModules = true
-//        })
-//
-//        config
-//    }
-
-//    def gatherExecutionConfigs(def project, def envs) {
-//        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKSE))
-//        envs.add(buildJarInstallerExecutionConfig(project, ReleaseType.NKEE))
-//        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKSE))
-//        envs.add(buildInstalledExecutionConfig(project, ReleaseType.NKEE))
-//    }
 
     /**
      * Creates instance tasks for each NetKernelInstance
@@ -420,78 +384,12 @@ class NetKernelPlugin implements Plugin<Project> {
             netKernelInstance = instance
         }
 
-//        project.tasks[installTaskName].dependsOn "downloadNK${instance.release.edition}"
-//        project.tasks[startTaskName].dependsOn installTaskName
-        // TODO - Figure out task dependencies for instance tasks
-//            project.tasks[installTaskName]
-//        }
-
-//        project.tasks[startTaskName].dependsOn
-
-
-    }
-
-//    def installExecutionConfigTasks(def project, ExecutionConfig config) {
-//        def startNKJarName = "start${config.name}"
-//        def stopNKJarName = "stop${config.name}"
-//        def installNKJarName = "install${config.name}"
-//
-//        switch (config.mode) {
-//            case ExecutionConfig.Mode.NETKERNEL_INSTALL:
-//
-//                project.task(startNKJarName, type: StartNetKernelTask) {
-//                    configName = config.name
-//                }
-//
-//                createTask(stopNKJarName, StopNetKernelTask, "Stops NetKernel for ${config.name} configuration.")
-//                configureTask(stopNKJarName) {
-//                    configName = config.name
-//                }
-//
-//                project.task(installNKJarName, type: InstallNetKernelTask) {
-//                    configName = config.name
-//                }
-//
+        // TODO - Add task dependencies for instance tasks by from previous code:
 //                project.tasks."${startNKJarName}".dependsOn "downloadNK${config.relType}"
 //                project.tasks."${installNKJarName}".dependsOn startNKJarName
-//
-//                break;
-//            case ExecutionConfig.Mode.NETKERNEL_FULL:
-//                def startNKName = "start${config.name}"
-//                String stopNKName = "stop${config.name}"
-//
-//                project.task(startNKName, type: StartNetKernelTask) {
-//                    configName = config.name
-//                }
-//
-//                createTask(stopNKName, StopNetKernelTask, "Stops NetKernel for ${config.name} configuration.")
-//                configureTask(stopNKJarName) {
-//                    configName = config.name
-//                }
-//
-//                if (config.supportsDaemonModules) {
-//                    def initDaemonDirName = "initDaemonDir${config.name}"
-//                    def deployDaemonModuleName = "deployDaemonModule${config.name}"
-//                    def undeployDaemonModuleName = "undeployDaemonModule${config.name}"
-//
-//                    project.task(initDaemonDirName, type: InitializeDaemonDirTask) {
-//                        configName = config.name
-//                    }
-//
 //                    //project.tasks."${initDaemonDirName}".dependsOn installNKJarName
-//
-//                    project.task(deployDaemonModuleName, type: DeployDaemonModuleTask) {
-//                        configName = config.name
-//                    }
-//
-//                    project.task(undeployDaemonModuleName, type: Delete) {
-//                        delete "${config.directory}/etc/modules.d/${project.name}.xml"
-//                    }
-//                }
-//
-//                break;
-//        }
-//    }
+
+    }
 
     /**
      * Creates enumeration of possible NetKernel instances. This is done by looping through each edition and
@@ -503,11 +401,7 @@ class NetKernelPlugin implements Plugin<Project> {
         NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
 
         Edition.values().each { Edition edition ->
-
-            File location = fileSystemHelper.fileInGradleHome("netkernel/install/${edition}-${Release.CURRENT_MAJOR_RELEASE}")
-            File jarFileLocation = fileSystemHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Release.CURRENT_MAJOR_RELEASE}.jar")
-
-            instances.add createNetKernelInstance(edition, location, jarFileLocation)
+            instances.add createNetKernelInstance(edition)
         }
 
         return instances
@@ -522,18 +416,18 @@ class NetKernelPlugin implements Plugin<Project> {
      *
      * @return initialized NetKernelInstance
      */
-    NetKernelInstance createNetKernelInstance(Edition edition, File location, File jarFileLocation) {
-        // TODO - Reevaluate how the name is constructed
+    NetKernelInstance createNetKernelInstance(Edition edition) {
         String name = "${edition}"
+        String version = netKernel.currentMajorReleaseVersion()
 
         NetKernelInstance instance = new NetKernelInstance(
             name: name,
-            release: new Release(edition),
+            release: new Release(edition: edition, version: version),
             url: new URL('http://localhost'),
             backendPort: 1060,
             frontendPort: 8080,
-            location: location,
-            jarFileLocation: jarFileLocation
+            location: netKernel.workFile("install/${edition}-${version}"),
+            jarFileLocation: netKernel.workFile("download/1060-NetKernel-${edition}-${version}.jar")
         )
 
         return instance

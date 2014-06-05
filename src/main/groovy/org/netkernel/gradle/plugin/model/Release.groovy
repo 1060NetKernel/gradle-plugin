@@ -5,9 +5,6 @@ import groovy.transform.InheritConstructors
 @InheritConstructors
 class Release implements Serializable {
 
-    // TODO - Move to property and parameterize these values
-    static final String CURRENT_MAJOR_RELEASE = "5.2.1"
-
     static final Map DISTRIBUTION_URL = [
         (Edition.STANDARD)  : 'http://apposite.netkernel.org/dist',
         (Edition.ENTERPRISE): 'https://cs.1060research.com/csp/download'
@@ -23,7 +20,6 @@ class Release implements Serializable {
 
     Release(Edition edition) {
         this.edition = edition
-        this.version = CURRENT_MAJOR_RELEASE
     }
 
     URL getDownloadUrl(DownloadConfig downloadConfig) {

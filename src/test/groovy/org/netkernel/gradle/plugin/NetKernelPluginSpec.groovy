@@ -159,12 +159,17 @@ class NetKernelPluginSpec extends BasePluginSpec {
         File location = file '/test/NetKernelPluginSpec/install/EE-5.2.1'
         File jarFileLocation = file '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar'
         Edition edition = Edition.STANDARD
-        String version = Release.CURRENT_MAJOR_RELEASE
+        String version = '5.2.1'
+
+        NetKernelExtension mockNetKernelExtension = Mock()
+        netKernelPlugin.netKernel = mockNetKernelExtension
 
         when:
-        NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition, location, jarFileLocation)
+        NetKernelInstance instance = netKernelPlugin.createNetKernelInstance(edition)
 
         then:
+        1 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
+        2 * mockNetKernelExtension.workFile(_) >>> [location, jarFileLocation]
         instance.name == 'SE'
         instance.release.version == version
         instance.release.edition == edition
@@ -172,18 +177,35 @@ class NetKernelPluginSpec extends BasePluginSpec {
         instance.backendPort == 1060
         instance.frontendPort == 8080
         instance.location == location
+        instance.jarFileLocation == jarFileLocation
     }
 
     def 'creates netkernel instance references'() {
         setup:
+        File file = file '/test/NetKernelPluginSpec/module.jar'
+
+        NetKernelExtension mockNetKernelExtension = Mock()
         netKernelPlugin.project = project
+        netKernelPlugin.netKernel = mockNetKernelExtension
+        String version = "version"
 
         when:
         NamedDomainObjectContainer<NetKernelInstance> instances = netKernelPlugin.createNetKernelInstances()
 
         then:
-        instances != null
-        instances['SE'] != null
+        2 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
+        4 * mockNetKernelExtension.workFile(_) >> file
+        Edition.values().each { Edition edition ->
+            NetKernelInstance instance = instances[edition.toString()]
+            assert instance.name == edition.toString()
+            assert instance.release.version == version
+            assert instance.release.edition == edition
+            assert instance.url == new URL('http://localhost')
+            assert instance.backendPort == 1060
+            assert instance.frontendPort == 8080
+            assert instance.location == file
+            assert instance.jarFileLocation == file
+        }
     }
 
     def 'creates netkernel instance tasks for SE Edition'() {
@@ -218,21 +240,28 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     def 'creates netkernel instance tasks for EE & SE Edition'() {
         setup:
-        createNetKernelExtension()
-        netKernelPlugin.project = project
         project.tasks.create(name: 'jar', type: Jar)
+
+        NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
+        instances.add(new NetKernelInstance(name: 'SE'))
+        instances.add(new NetKernelInstance(name: 'EE'))
+
         // A fancy groovy way of building list of task names
         List<String> taskNames = [
             ['start', 'stop', 'install', 'deployTo', 'undeployFrom'],
             ['SE', 'EE']
         ].combinations().collect({ l -> "${l[0]}${l[1]}" as String })
-        project.extensions.getByName('netkernel').instances = netKernelPlugin.createNetKernelInstances()
-        netKernelPlugin.netKernel = project.extensions.getByName('netkernel')
+
+        NetKernelExtension mockNetKernelExtension = Mock()
+
+        netKernelPlugin.project = project
+        netKernelPlugin.netKernel = mockNetKernelExtension
 
         when:
         netKernelPlugin.createNetKernelInstanceTasks()
 
         then:
+        1 * mockNetKernelExtension.instances >> instances
         taskNames.each { String name ->
             assert project.tasks.findByName(name) != null
         }

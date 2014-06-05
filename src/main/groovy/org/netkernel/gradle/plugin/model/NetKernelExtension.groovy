@@ -12,6 +12,7 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
 class NetKernelExtension {
 
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
+    PropertyHelper propertyHelper = new PropertyHelper()
 
     final Download download
     // Properties moved from primary plugin
@@ -81,23 +82,38 @@ class NetKernelExtension {
     }
 
     File getFreezeDirectory() {
-        return fileSystemHelper.fileInGradleHome('netkernel/freeze')
+        return workFile('freeze')
     }
 
     File getDestinationDirectory() {
-        return fileSystemHelper.fileInGradleHome('netkernel')
+        return workFile('')
     }
 
     File getThawDirectory() {
-        return fileSystemHelper.fileInGradleHome('netkernel/thaw')
+        return workFile('thaw')
     }
 
     File getThawInstallationDirectory() {
-        return fileSystemHelper.fileInGradleHome('netkernel/thawInstallation')
+        return workFile('thawInstallation')
     }
 
     File getFrozenArchiveFile() {
-        return fileSystemHelper.fileInGradleHome('netkernel/download/frozen.zip')
+        return workFile('download/frozen.zip')
+    }
+
+    /**
+     * Returns a file reference that is inside the ~/.gradle/netkernel directory.
+     *
+     * @param location location of file or directory
+     *
+     * @return file reference
+     */
+    File workFile(String location) {
+        return fileSystemHelper.fileInGradleHome('netkernel/' + location)
+    }
+
+    String currentMajorReleaseVersion() {
+        return propertyHelper.findProjectProperty(project, PropertyHelper.CURRENT_MAJOR_RELEASE_VERSION, null)
     }
 
 }

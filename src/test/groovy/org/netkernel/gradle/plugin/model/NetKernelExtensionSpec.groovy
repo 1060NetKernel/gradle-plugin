@@ -155,4 +155,16 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         then:
         frozenArchiveFile == expectedFrozenArchiveFile
     }
+
+    def 'gets work file'() {
+        setup:
+        File expectedFile = file '/test/gradleHomeDirectory/netkernel/download'
+
+        when:
+        File workFile = netKernelExtension.workFile('download')
+
+        then:
+        workFile == expectedFile
+
+    }
 }

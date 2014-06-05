@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin.util
+package org.netkernel.gradle.plugin.model
 
 import org.netkernel.gradle.plugin.BasePluginSpec
 

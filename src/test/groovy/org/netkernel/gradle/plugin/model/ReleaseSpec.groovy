@@ -1,12 +1,12 @@
 package org.netkernel.gradle.plugin.model
 
-import spock.lang.Specification
+import org.netkernel.gradle.plugin.BasePluginSpec
 
-class ReleaseSpec extends Specification {
+class ReleaseSpec extends BasePluginSpec {
 
     def 'gets download url and jar file name'() {
         setup:
-        Release release = new Release(edition)
+        Release release = new Release(edition: edition, version: '5.2.1')
         DownloadConfig downloadConfig = new DownloadConfig(url: baseUrl)
 
         expect:

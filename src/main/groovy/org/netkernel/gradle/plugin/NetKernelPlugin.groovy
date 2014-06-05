@@ -37,9 +37,11 @@ import static org.netkernel.gradle.plugin.tasks.TaskName.*
  */
 class NetKernelPlugin implements Plugin<Project> {
 
-    def fsHelper = new FileSystemHelper()
+    FileSystemHelper fileSystemHelper = new FileSystemHelper()
 
     Project project
+
+    // The primary model class for the build.
     NetKernelExtension netKernel
 
     void apply(Project project) {
@@ -258,13 +260,13 @@ class NetKernelPlugin implements Plugin<Project> {
         configureTask(DOWNLOAD_SE) {
             downloadConfig = netKernel.download.se
             release = new Release(Edition.STANDARD)
-            destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+            destinationFile = new File(fileSystemHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
         }
 
         configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
             release = new Release(Edition.ENTERPRISE)
-            destinationFile = new File(fsHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
+            destinationFile = new File(fileSystemHelper.fileInGradleHome('netkernel/download'), release.jarFileName)
         }
 
         configureTask(MODULE) {
@@ -502,8 +504,8 @@ class NetKernelPlugin implements Plugin<Project> {
 
         Edition.values().each { Edition edition ->
 
-            File location = fsHelper.fileInGradleHome("netkernel/install/${edition}-${Release.CURRENT_MAJOR_RELEASE}")
-            File jarFileLocation = fsHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Release.CURRENT_MAJOR_RELEASE}.jar")
+            File location = fileSystemHelper.fileInGradleHome("netkernel/install/${edition}-${Release.CURRENT_MAJOR_RELEASE}")
+            File jarFileLocation = fileSystemHelper.fileInGradleHome("netkernel/download/1060-NetKernel-${edition}-${Release.CURRENT_MAJOR_RELEASE}.jar")
 
             instances.add createNetKernelInstance(edition, location, jarFileLocation)
         }

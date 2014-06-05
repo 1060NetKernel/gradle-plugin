@@ -1,26 +1,24 @@
 package org.netkernel.gradle.plugin.util
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Specification
+import org.netkernel.gradle.plugin.BasePluginSpec
 
-class PropertyHelperSpec extends Specification {
+class PropertyHelperSpec extends BasePluginSpec {
 
     PropertyHelper propertyHelper
-    Project project
 
     void setup() {
         propertyHelper = new PropertyHelper()
-
-        project = ProjectBuilder.builder().withName('propertyHelperTest').build()
     }
 
     def 'gets property value from project'() {
+        setup:
+        project.properties.sort().each { p -> println p }
+
         when:
         String value = propertyHelper.findProjectProperty(project, 'name', 'default')
 
         then:
-        value == 'propertyHelperTest'
+        value == 'test'
 
     }
 
@@ -50,6 +48,16 @@ class PropertyHelperSpec extends Specification {
 
         then:
         result == defaultValue
+    }
+
+    def 'gets property from property file included in plugin'() {
+        setup:
+
+        when:
+        String result = propertyHelper.findProjectProperty(project, 'testProperty', null)
+
+        then:
+        result == 'testValue'
     }
 
 }

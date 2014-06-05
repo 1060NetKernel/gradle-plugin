@@ -3,10 +3,6 @@ package org.netkernel.gradle.plugin.model
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
-import org.netkernel.gradle.plugin.model.Module
-import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.model.Download
-import org.netkernel.gradle.plugin.model.SourceStructure
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
@@ -16,25 +12,24 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
 class NetKernelExtension {
 
     FileSystemHelper fileSystemHelper = new FileSystemHelper()
-    Module module
 
     final Download download
+    // Properties moved from primary plugin
+    // TODO -  Move this to a properties file
+    final String instanceName = 'SE'
+    Module module
 
-    // NetKernel instances
+    // NetKernel instances (SE & EE come for free)
     NamedDomainObjectContainer<NetKernelInstance> instances
 
     SourceStructure sourceStructure
 
-    // Properties moved from primary plugin
-    // TODO -  Move this to a properties file
-    final String instanceName = 'SE'
-
-
-    private Project project
+    Project project
 
     NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
+        project.setProperty('hello', 'nick')
     }
 
     def download(Closure closure) {
@@ -45,10 +40,11 @@ class NetKernelExtension {
         instances.configure(closure)
     }
 
-    Dependency dep(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
+    Dependency dependency(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
         project.dependencies.create(group: group, name: name, version: version)
     }
 
+    // TODO - Move to properties file
     void useROCRepo() {
         useRepo "http://maven.netkernelroc.org:8080/netkernel-maven"
     }
@@ -67,12 +63,12 @@ class NetKernelExtension {
 
     void useStandardCompileDependencies() {
         project.dependencies {
-            provided dep('netkernel.api')
-            provided dep('netkernel.impl')
-            provided dep('layer0')
-            provided dep('module.standard')
-            provided dep('cache.se')
-            provided dep('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
+            provided dependency('netkernel.api')
+            provided dependency('netkernel.impl')
+            provided dependency('layer0')
+            provided dependency('module.standard')
+            provided dependency('cache.se')
+            provided dependency('ext.layer1', '[1.0.0,)', 'urn.org.netkernel')
         }
     }
 

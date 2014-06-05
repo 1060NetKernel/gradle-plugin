@@ -1,8 +1,10 @@
-package org.netkernel.gradle.plugin
+package org.netkernel.gradle.plugin.model
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactRepositoryContainer
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.BasePluginSpec
+import org.netkernel.gradle.plugin.model.NetKernelExtension
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.Download
 

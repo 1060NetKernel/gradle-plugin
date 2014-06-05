@@ -1,4 +1,4 @@
-package org.netkernel.gradle.plugin
+package org.netkernel.gradle.plugin.model
 
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project

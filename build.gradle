@@ -22,9 +22,6 @@ sourceSets {
     }
 }
 
-group = 'org.netkernel'
-version = '0.0.5'
-
 publishing {
     publications {
         maven(MavenPublication) {

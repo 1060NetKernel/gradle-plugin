@@ -216,7 +216,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         NetKernelInstance netKernelInstance = new NetKernelInstance(
             name: 'SE',
-            release: new Release(Edition.STANDARD),
+            release: new Release(edition: Edition.STANDARD, version: '5.2.1'),
             location: file('/test/NetKernelPluginSpec/install/SE-5.2.1'),
             jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
         )

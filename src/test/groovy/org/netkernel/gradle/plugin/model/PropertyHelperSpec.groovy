@@ -60,4 +60,12 @@ class PropertyHelperSpec extends BasePluginSpec {
         result == 'testValue'
     }
 
+    def 'gets property and populates placeholder variables'() {
+        when:
+        String result = propertyHelper.findProjectProperty(project, 'testPropertyWithPlaceholder', null, [name1: 'value1', name2: 'value2'])
+
+        then:
+        result == 'testValue/value1/value2/{notSubstituted}'
+    }
+
 }

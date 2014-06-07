@@ -2,38 +2,33 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
 import org.netkernel.gradle.plugin.BasePluginSpec
-import org.netkernel.gradle.plugin.model.Edition
-import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.DownloadConfig
-import org.netkernel.gradle.plugin.util.FileSystemHelper
+import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
+import org.netkernel.gradle.plugin.model.Release
 import spock.lang.Ignore
 
 class DownloadNetKernelTaskSpec extends BasePluginSpec {
 
     DownloadNetKernelTask downloadNetKernelTask
-    FileSystemHelper mockFileSystemHelper = Mock()
     PropertyHelper mockPropertyHelper = Mock()
     DownloadConfig downloadConfig
 
     void setup() {
-        mockFileSystemHelper = Mock()
         mockPropertyHelper = Mock()
         downloadConfig = new DownloadConfig()
 
         downloadNetKernelTask = createTask(DownloadNetKernelTask)
-        downloadNetKernelTask.fileSystemHelper = mockFileSystemHelper
         downloadNetKernelTask.propertyHelper = mockPropertyHelper
         downloadNetKernelTask.downloadConfig = downloadConfig
-
     }
 
-    @Ignore("Nick - Come back to this one.")
+    @Ignore('Still working on this one...')
     def 'downloads NetKernel'() {
         setup:
         File downloadDirectory = getResourceAsFile('/test/gradleHomeDirectory/netkernel/download')
         File distributionDir = getResourceAsFile('/test/distributions')
-        downloadNetKernelTask.release = new Release(edition)
+        downloadNetKernelTask.release = new Release(edition: edition, version: '5.2.1')
         downloadNetKernelTask.destinationFile = file '/test/gradleHomeDirectory/netkernel/download', resultantJarFileName
         downloadConfig.url = distributionDir.toURI().toURL()
         downloadConfig.username = 'username'

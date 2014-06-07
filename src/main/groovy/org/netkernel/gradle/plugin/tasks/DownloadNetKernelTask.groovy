@@ -26,10 +26,10 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.plugin.model.Edition
-import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.DownloadConfig
+import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
+import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.layer0.util.Utils
 
 /**
@@ -53,8 +53,9 @@ class DownloadNetKernelTask extends DefaultTask {
     void downloadNetKernel() {
         switch (release.edition) {
             case Edition.STANDARD:
-                downloadNKSEImpl(release.getDownloadUrl(downloadConfig))
+                downloadNKSEImpl(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_SE, null, [version: release.version]))
                 break;
+
             case Edition.ENTERPRISE:
                 def username = propertyHelper.findProjectProperty(project, "nkeeUsername", downloadConfig.username)
                 def password = propertyHelper.findProjectProperty(project, "nkeePassword", downloadConfig.password)
@@ -63,10 +64,12 @@ class DownloadNetKernelTask extends DefaultTask {
                     ant.fail("Downloading NKEE requires a username and password")
                 }
 
-                downloadNKEEImpl(release.getDownloadUrl(downloadConfig), username, password)
+                String url = propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_EE, null, [version: release.version])
+                downloadNKEEImpl(url, username, password)
                 break;
+
             default:
-                ant.fail("Unknown NetKernel release!")
+                ant.fail("Unknown NetKernel edition!")
                 break;
         }
     }

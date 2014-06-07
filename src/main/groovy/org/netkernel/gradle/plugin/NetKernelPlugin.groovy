@@ -259,14 +259,14 @@ class NetKernelPlugin implements Plugin<Project> {
 
         configureTask(DOWNLOAD_SE) {
             downloadConfig = netKernel.download.se
-            release = new Release(Edition.STANDARD)
-            destinationFile = netKernel.workFile("download/${release.jarFileName}")
+            release = new Release(edition: Edition.STANDARD, version: netKernel.currentMajorReleaseVersion())
+            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(release)}")
         }
 
         configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
-            release = new Release(Edition.ENTERPRISE)
-            destinationFile = netKernel.workFile("download/${release.jarFileName}")
+            release = new Release(edition: Edition.ENTERPRISE, version: netKernel.currentMajorReleaseVersion())
+            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(release)}")
         }
 
         configureTask(MODULE) {

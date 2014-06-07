@@ -15,9 +15,8 @@ class NetKernelExtension {
     PropertyHelper propertyHelper = new PropertyHelper()
 
     final Download download
-    // Properties moved from primary plugin
-    // TODO -  Move this to a properties file
-    final String instanceName = 'SE'
+
+    // This should probably be a list or else this model operates on a single module at a time
     Module module
 
     // NetKernel instances (SE & EE come for free)
@@ -45,13 +44,16 @@ class NetKernelExtension {
         project.dependencies.create(group: group, name: name, version: version)
     }
 
-    // TODO - Move to properties file
     void useROCRepo() {
-        useRepo "http://maven.netkernelroc.org:8080/netkernel-maven"
+        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNELROC_URL)
     }
 
     void useLocalhostRepo() {
-        useRepo "http://localhost:8080/netkernel-maven"
+        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_LOCAL_URL)
+    }
+
+    void useNKRepo() {
+        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNEL_URL)
     }
 
     void useRepo(String repoURL) {
@@ -114,6 +116,14 @@ class NetKernelExtension {
 
     String currentMajorReleaseVersion() {
         return propertyHelper.findProjectProperty(project, PropertyHelper.CURRENT_MAJOR_RELEASE_VERSION, null)
+    }
+
+    String distributionJarFile(Release release) {
+        return propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_JAR_NAME, null, [edition: release.edition, version: release.version])
+    }
+
+    String getInstanceName() {
+        return propertyHelper.findProjectProperty(project, PropertyHelper.NETKERNEL_INSTANCE, 'SE')
     }
 
 }

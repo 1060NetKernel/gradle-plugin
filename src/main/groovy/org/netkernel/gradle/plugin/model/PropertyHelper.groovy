@@ -14,6 +14,13 @@ class PropertyHelper {
 
     // Property names (TODO: think about enum?)
     static final String CURRENT_MAJOR_RELEASE_VERSION = 'current_major_release_version'
+    static final String DISTRIBUTION_URL_EE = 'distribution_url.ee'
+    static final String DISTRIBUTION_URL_SE = 'distribution_url.se'
+    static final String DISTRIBUTION_JAR_NAME = 'distribution.jar_name'
+    static final String NETKERNEL_INSTANCE = 'netkernel.instance'
+    static final String MAVEN_LOCAL_URL = 'maven.local.url'
+    static final String MAVEN_NETKERNEL_URL = 'netkernel.maven.url'
+    static final String MAVEN_NETKERNELROC_URL = 'netkernelroc.maven.url'
 
     Properties gradlePluginProperties
 
@@ -36,7 +43,7 @@ class PropertyHelper {
      * @param propertyName name of property to look for
      * @param defaultValue default value if not found in any other locations
      */
-    String findProjectProperty(Project project, String propertyName, String defaultValue) {
+    String findProjectProperty(Project project, String propertyName, String defaultValue = null, Map values = [:]) {
         String retValue = project.hasProperty(propertyName) ? project.getProperties().get(propertyName) : null
         if (retValue == null) {
             retValue = System.properties[propertyName]
@@ -48,6 +55,15 @@ class PropertyHelper {
             }
         }
 
+        if (values) {
+            retValue = retValue?.replaceAll("\\{(.*?)\\}") { globalMatch, name ->
+                // Return original match if no value is supplied for the placeholder
+                values[name] ?: globalMatch
+            }
+        }
+
+
         retValue
     }
+
 }

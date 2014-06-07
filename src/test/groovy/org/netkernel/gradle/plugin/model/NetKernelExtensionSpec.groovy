@@ -9,14 +9,18 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
     Project project
     NetKernelExtension netKernelExtension
+    PropertyHelper mockPropertyHelper
 
     void setup() {
+        mockPropertyHelper = Mock()
+
         project = ProjectBuilder.builder().build()
         project.apply(plugin: 'java')
         project.configurations.create('provided').extendsFrom(project.configurations.compile)
         netKernelExtension = new NetKernelExtension(project)
         netKernelExtension.fileSystemHelper.@_gradleHome = file '/test/gradleHomeDirectory'
         netKernelExtension.instances = project.container(NetKernelInstance)
+        netKernelExtension.propertyHelper = mockPropertyHelper
 
 //        netKernelExtension.envs {
 //            test {
@@ -60,20 +64,20 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         project.repositories.findByName(ArtifactRepositoryContainer.DEFAULT_MAVEN_CENTRAL_REPO_NAME)
     }
 
-    def 'uses ROC repository'() {
+    def 'uses custom maven repositories'() {
         when:
-        netKernelExtension.useROCRepo()
+        netKernelExtension."${method}"()
 
         then:
-        project.repositories.find { it.name == 'maven' }.url as String == 'http://maven.netkernelroc.org:8080/netkernel-maven'
-    }
+        1 * mockPropertyHelper.findProjectProperty(_, propertyName) >> "http://localhost"
+        project.repositories.find { it.name == 'maven' }.url as String == "http://localhost"
 
-    def 'uses local host repository'() {
-        when:
-        netKernelExtension.useLocalhostRepo()
+        where:
+        method             | propertyName
+        'useLocalhostRepo' | PropertyHelper.MAVEN_LOCAL_URL
+        'useNKRepo'        | PropertyHelper.MAVEN_NETKERNEL_URL
+        'useROCRepo'       | PropertyHelper.MAVEN_NETKERNELROC_URL
 
-        then:
-        project.repositories.find { it.name == 'maven' }.url as String == 'http://localhost:8080/netkernel-maven'
     }
 
     def 'configures instances'() {
@@ -134,6 +138,7 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         File directory = netKernelExtension."${directoryName}"
 
         then:
+        _ * mockPropertyHelper.findProjectProperty(project, PropertyHelper.NETKERNEL_INSTANCE, 'SE') >> 'SE'
         directory == expectedDirectory
 
         where:
@@ -165,6 +170,21 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
         then:
         workFile == expectedFile
+    }
 
+    def 'gets distribution jar file'() {
+        setup:
+        Release release = new Release(edition: Edition.STANDARD, version: '5.2.1')
+
+        when:
+        String jarFile = netKernelExtension.distributionJarFile(release)
+
+        then:
+        1 * mockPropertyHelper.findProjectProperty(_, _, _, _) >> { Project project, String propertyName, String defaultValue, Map values ->
+            assert values['edition'] == release.edition
+            assert values['version'] == release.version
+            return "jarFile"
+        }
+        jarFile == "jarFile"
     }
 }

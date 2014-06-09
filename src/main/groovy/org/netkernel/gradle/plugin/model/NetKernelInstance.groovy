@@ -10,7 +10,7 @@ import org.apache.http.HttpStatus
 /**
  * A NetKernelInstance represents an individual instance of NetKernel.  Both the downloaded
  * jar file and installed directory are represented by a single instance to simplify the use.
- * Methods are provided to start and stop the instance as well as deploy/undeploy of modules.
+ * Methods are provided to start and stop the instance as well as deploy/undeploy modules.
  */
 @Slf4j
 // Used to keep map constructor from GroovyObject
@@ -158,10 +158,6 @@ class NetKernelInstance implements Serializable {
      */
     void install() {
 
-//        if (location.exists()) {
-//            throw new IllegalStateException("${this} is already installed.")
-//        }
-
         startJar()
 
         while (!running) {
@@ -204,6 +200,11 @@ class NetKernelInstance implements Serializable {
         }
     }
 
+    /**
+     * Verifies that instance has the appropriate setup for using the modules.d folder.  This
+     * includes creating the etc/modules.d folder as well as adding the appropriate property
+     * to the etc/kernel.properties file.
+     */
     void initializeModulesDir() {
         File kernelPropertiesFile = new File(location, 'etc/kernel.properties')
         File modulesDDirectory = new File(location, 'etc/modules.d')
@@ -223,6 +224,13 @@ class NetKernelInstance implements Serializable {
         modulesDDirectory.mkdirs()
     }
 
+    /**
+     * Adds a new file to the modules.d folder using the name of the archive file.  So if the
+     * archive file is module-1.0.0.jar, a file named module-1.0.0.jar.xml is created in the modules.d
+     * folder with a reference to the archive file.
+     *
+     * @param moduleArchiveFile module file to deploy
+     */
     void deploy(File moduleArchiveFile) {
         log.debug "Deploying ${moduleArchiveFile} to ${this}"
         File moduleReference = new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml")
@@ -233,6 +241,12 @@ class NetKernelInstance implements Serializable {
         """.stripIndent()
     }
 
+    /**
+     * Undeploy simply removes the file from the modules.d folder that references the archive file.  The
+     * method assumes that the name of the file will be {archive file name}.xml.
+     *
+     * @param moduleArchiveFile module file to undeploy
+     */
     void undeploy(File moduleArchiveFile) {
         log.debug "Undeploying ${moduleArchiveFile} from ${this}"
         new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml").delete()
@@ -254,39 +268,7 @@ class NetKernelInstance implements Serializable {
         return new RESTClient("${url}:${backendPort}")."${method.toString().toLowerCase()}"(args)
     }
 
-//    def setNetKernelModulesExtensionDirectory() {
-//        String netkernelInstallDir = whereIsNetKernelInstalled()
-//        String netkernelProperties = netkernelInstallDir + '/etc/kernel.properties'
-//        String modulesExtensionProperty = 'netkernel.init.modulesdir'
-//
-//        def props = new Properties()
-//        new File(netkernelProperties).withInputStream { stream -> props.load(stream) }
-//        if (null == props[modulesExtensionProperty]) {
-//            println 'Adding modules.d support to NetKernel'
-//            String properties = new File(netkernelProperties).text
-//            properties = properties + modulesExtensionProperty + "=etc/modules.d\n"
-//            new File(netkernelProperties).withWriter { writer -> writer.append(properties) }
-//            // We need to create that directory
-//            def extDir = new File(netkernelInstallDir + '/etc/modules.d')
-//            if (!extDir.exists()) {
-//                extDir.mkdir()
-//            }
-//        } else {
-//            if ('etc/modules.d'.equals(props[modulesExtensionProperty])) {
-//                println 'NetKernel has proper support for the modules.d extension'
-//            } else {
-//                println 'NetKernel has proper support for the modules.d extension at ' + props[modulesExtensionProperty]
-//            }
-//        }
-//
-//    }
-//
-//    def whereIsModuleExtensionDirectory() throws Exception {
-//        def extensionDirectoryRelativeLocation = queryNetKernelProperty('netkernel:/config/netkernel.init.modulesdir')
-//        return extensionDirectoryRelativeLocation
-//    }
-
     String toString() {
-        return name
+        return "${name}: ${location}"
     }
 }

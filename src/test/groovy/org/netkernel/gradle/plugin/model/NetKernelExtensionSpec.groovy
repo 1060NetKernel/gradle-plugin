@@ -187,4 +187,18 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         }
         jarFile == "jarFile"
     }
+
+    def 'gets project property'() {
+        when:
+        String propertyValue = netKernelExtension.projectProperty('propertyName', 'defaultValue', [a: 'a'])
+
+        then:
+        1 * mockPropertyHelper.findProjectProperty(_, _, _, _) >> { Project project, String propertyName, String defaultValue, Map values ->
+            assert values['a'] == 'a'
+            assert propertyName == 'propertyName'
+            assert defaultValue == 'defaultValue'
+            return "propertyValue"
+        }
+        propertyValue == 'propertyValue'
+    }
 }

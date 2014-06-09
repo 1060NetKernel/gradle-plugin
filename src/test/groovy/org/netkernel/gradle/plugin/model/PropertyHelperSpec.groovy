@@ -11,15 +11,11 @@ class PropertyHelperSpec extends BasePluginSpec {
     }
 
     def 'gets property value from project'() {
-        setup:
-        project.properties.sort().each { p -> println p }
-
         when:
         String value = propertyHelper.findProjectProperty(project, 'name', 'default')
 
         then:
         value == 'test'
-
     }
 
     def 'gets property value from system properties'() {
@@ -36,7 +32,6 @@ class PropertyHelperSpec extends BasePluginSpec {
 
         cleanup:
         System.clearProperty(propertyName)
-
     }
 
     def 'gets property value using default value'() {
@@ -66,6 +61,14 @@ class PropertyHelperSpec extends BasePluginSpec {
 
         then:
         result == 'testValue/value1/value2/{notSubstituted}'
+    }
+
+    def 'gets property and uses other property value'() {
+        when:
+        String result = propertyHelper.findProjectProperty(project, 'testPropertyWithOtherProperty', null)
+
+        then:
+        result == "testValue/testValue"
     }
 
 }

@@ -28,16 +28,14 @@ import org.netkernel.gradle.plugin.tasks.StopNetKernelTask
 import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
 import org.netkernel.gradle.plugin.tasks.UndeployFromNetKernelTask
 import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
-import org.netkernel.gradle.plugin.util.FileSystemHelper
 
+import static org.netkernel.gradle.plugin.model.PropertyHelper.*
 import static org.netkernel.gradle.plugin.tasks.TaskName.*
 
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
  */
 class NetKernelPlugin implements Plugin<Project> {
-
-    FileSystemHelper fileSystemHelper = new FileSystemHelper()
 
     Project project
 
@@ -335,7 +333,7 @@ class NetKernelPlugin implements Plugin<Project> {
     }
 
     /**
-     * Creates start/stop tasks and install task for the instance of NK.
+     * Creates tasks for a specific instance of NetKernel.
      *
      * @param instance instance of NetKernel
      */
@@ -349,25 +347,21 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance})")
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance})")
+        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
         createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance})")
         createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance})")
 
-        configureTask(startTaskName) {
-            netKernelInstance = instance
+
+        [startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
+            configureTask(name) {
+                netKernelInstance = instance
+            }
         }
 
-        configureTask(stopTaskName) {
-            netKernelInstance = instance
-        }
-
-        configureTask(deployTaskName) {
-            moduleArchiveFile = project.tasks.getByName('jar').archivePath
-            netKernelInstance = instance
-        }
-
-        configureTask(undeployTaskName) {
-            moduleArchiveFile = project.tasks.getByName('jar').archivePath
-            netKernelInstance = instance
+        [deployTaskName, undeployTaskName].each { name ->
+            configureTask(name) {
+                moduleArchiveFile = project.tasks.getByName('jar').archivePath
+            }
         }
 
 //        // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?
@@ -377,12 +371,6 @@ class NetKernelPlugin implements Plugin<Project> {
 //                    executionConfig = config
 //                }
 //        }
-
-//        if (instance.canInstall()) {
-        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
-        configureTask(installTaskName) {
-            netKernelInstance = instance
-        }
 
         // TODO - Add task dependencies for instance tasks by from previous code:
 //                project.tasks."${startNKJarName}".dependsOn "downloadNK${config.relType}"
@@ -408,11 +396,9 @@ class NetKernelPlugin implements Plugin<Project> {
     }
 
     /**
-     * Creates a NetKernelInstance reference
+     * Creates a NetKernelInstance reference using properties for ports, url and locations.
      *
      * @param edition Edition of NetKernel (SE or EE)
-     * @param location location of netkernel instance (directory or jar file location)
-     * @param jarFileLocation location of NetKernel distribution
      *
      * @return initialized NetKernelInstance
      */
@@ -423,11 +409,11 @@ class NetKernelPlugin implements Plugin<Project> {
         NetKernelInstance instance = new NetKernelInstance(
             name: name,
             release: new Release(edition: edition, version: version),
-            url: new URL('http://localhost'),
-            backendPort: 1060,
-            frontendPort: 8080,
-            location: netKernel.workFile("install/${edition}-${version}"),
-            jarFileLocation: netKernel.workFile("download/1060-NetKernel-${edition}-${version}.jar")
+            url: new URL(netKernel.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL)),
+            backendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) as int,
+            frontendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) as int,
+            location: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_INSTALL_DIR, null, [edition: edition, version: version])),
+            jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, version: version]))
         )
 
         return instance

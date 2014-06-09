@@ -29,7 +29,6 @@ class NetKernelExtension {
     NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
-        project.setProperty('hello', 'nick')
     }
 
     def download(Closure closure) {
@@ -124,6 +123,10 @@ class NetKernelExtension {
 
     String getInstanceName() {
         return propertyHelper.findProjectProperty(project, PropertyHelper.NETKERNEL_INSTANCE, 'SE')
+    }
+
+    String projectProperty(String propertyName, String defaultValue = null, Map values = null) {
+        return propertyHelper.findProjectProperty(project, propertyName, defaultValue, values)
     }
 
 }

@@ -16,6 +16,8 @@ import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.TaskName
 import spock.lang.Unroll
 
+import static org.netkernel.gradle.plugin.model.PropertyHelper.*
+
 class NetKernelPluginSpec extends BasePluginSpec {
 
     NetKernelPlugin netKernelPlugin
@@ -160,6 +162,9 @@ class NetKernelPluginSpec extends BasePluginSpec {
         File jarFileLocation = file '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar'
         Edition edition = Edition.STANDARD
         String version = '5.2.1'
+        String defaultUrl = 'http://localhost'
+        String backendPort = '1060'
+        String frontendPort = '8080'
 
         NetKernelExtension mockNetKernelExtension = Mock()
         netKernelPlugin.netKernel = mockNetKernelExtension
@@ -170,12 +175,15 @@ class NetKernelPluginSpec extends BasePluginSpec {
         then:
         1 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
         2 * mockNetKernelExtension.workFile(_) >>> [location, jarFileLocation]
+        1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL) >> defaultUrl
+        1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) >> backendPort
+        1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) >> frontendPort
         instance.name == 'SE'
         instance.release.version == version
         instance.release.edition == edition
-        instance.url == new URL('http://localhost')
-        instance.backendPort == 1060
-        instance.frontendPort == 8080
+        instance.url == new URL(defaultUrl)
+        instance.backendPort == backendPort as int
+        instance.frontendPort == frontendPort as int
         instance.location == location
         instance.jarFileLocation == jarFileLocation
     }
@@ -188,6 +196,9 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin.project = project
         netKernelPlugin.netKernel = mockNetKernelExtension
         String version = "version"
+        String defaultUrl = 'http://localhost'
+        String backendPort = '1060'
+        String frontendPort = '8080'
 
         when:
         NamedDomainObjectContainer<NetKernelInstance> instances = netKernelPlugin.createNetKernelInstances()
@@ -195,14 +206,17 @@ class NetKernelPluginSpec extends BasePluginSpec {
         then:
         2 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
         4 * mockNetKernelExtension.workFile(_) >> file
+        2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL) >> defaultUrl
+        2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) >> backendPort
+        2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) >> frontendPort
         Edition.values().each { Edition edition ->
             NetKernelInstance instance = instances[edition.toString()]
             assert instance.name == edition.toString()
             assert instance.release.version == version
             assert instance.release.edition == edition
-            assert instance.url == new URL('http://localhost')
-            assert instance.backendPort == 1060
-            assert instance.frontendPort == 8080
+            assert instance.url == new URL(defaultUrl)
+            assert instance.backendPort == backendPort as int
+            assert instance.frontendPort == frontendPort as int
             assert instance.location == file
             assert instance.jarFileLocation == file
         }

@@ -9,8 +9,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
-        // TODO: Default to netkernelroc.org, but allow override
-        url "http://maven.netkernelroc.org/netkernel-maven"
+        url "http://maven.netkernel.org/netkernel-maven"
     }
 }
 

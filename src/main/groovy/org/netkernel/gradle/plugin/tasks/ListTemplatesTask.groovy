@@ -1,7 +1,7 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
-import org.netkernel.gradle.util.ModuleTemplates
+import org.netkernel.gradle.plugin.util.ModuleTemplates
 
 class ListTemplatesTask extends DefaultTask {
 

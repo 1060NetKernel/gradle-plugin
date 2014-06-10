@@ -2,14 +2,14 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.netkernel.gradle.plugin.BasePluginSpec
 import org.netkernel.gradle.plugin.NetKernelPlugin
-import spock.lang.Specification
 
-class ModuleResourcesTaskSpec extends Specification {
+class ModuleResourcesTaskSpec extends BasePluginSpec {
 
     def 'processes module resources'() {
         setup:
-        File projectDir = new File(ModuleResourcesTaskSpec.getResource("/modules/basic_gradle_structure").file)
+        File projectDir = file('/examples/basic_gradle_structure')
         Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
 
         NetKernelPlugin netKernelPlugin = new NetKernelPlugin()
@@ -24,7 +24,7 @@ class ModuleResourcesTaskSpec extends Specification {
         moduleResourcesTask.processModuleResources()
 
         then:
-        File libDir = new File("${project.buildDir}/${project.ext.nkModuleIdentity}/lib")
+        File libDir = new File("${project.buildDir}/${project.extensions.netkernel.module.name}/lib")
         libDir.listFiles().size() == 1
         libDir.listFiles().find { it.name == "sample-compile-dependency.jar" }
     }

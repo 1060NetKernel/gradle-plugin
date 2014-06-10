@@ -1,0 +1,19 @@
+<module version="2.0">
+  <meta>
+    <identity>
+      <uri>urn:org:netkernel:gradle:emptymodule</uri>
+      <version>0.0.1</version>
+    </identity>
+    <info>
+      <name>Empty Module</name>
+      <description>Empty Module</description>
+    </info>
+  </meta>
+
+  <system>
+    <dynamic/>
+  </system>
+
+  <rootspace />
+
+</module>

@@ -9,8 +9,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
-        // TODO: Default to netkernelroc.org, but allow override
-        url "http://maven.netkernelroc.org/netkernel-maven"
+        url "http://maven.netkernel.org/netkernel-maven"
     }
 }
 
@@ -21,9 +20,6 @@ sourceSets {
         }
     }
 }
-
-group = 'org.netkernel'
-version = '0.0.5'
 
 publishing {
     publications {
@@ -49,7 +45,6 @@ dependencies {
     compile group: 'org.freemarker', name: 'freemarker', version: '2.3.20'
 
     // Test Dependencies
-    testCompile 'junit:junit:4+'
     testCompile 'org.spockframework:spock-core:0.7-groovy-1.8' // Friends don't let friends use other unit testing frameworks...
     testCompile 'cglib:cglib-nodep:2.2.2'
 }

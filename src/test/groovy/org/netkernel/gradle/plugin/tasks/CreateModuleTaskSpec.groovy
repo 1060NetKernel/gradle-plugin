@@ -2,9 +2,9 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.netkernel.gradle.util.ModuleTemplate
-import org.netkernel.gradle.util.TemplateHelper
-import org.netkernel.gradle.util.TemplateProperties
+import org.netkernel.gradle.plugin.util.ModuleTemplate
+import org.netkernel.gradle.plugin.util.TemplateHelper
+import org.netkernel.gradle.plugin.util.TemplateProperties
 import spock.lang.Specification
 
 class CreateModuleTaskSpec extends Specification {

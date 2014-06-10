@@ -75,3 +75,5 @@ Additional templates can be loaded by adding a comma separated list of directori
   netkernel.template.dirs=~/templates1, ~/templates2
 ```
 
+// Make reference to gradle-download-task
+https://github.com/michel-kraemer/gradle-download-task

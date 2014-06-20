@@ -71,4 +71,12 @@ class PropertyHelperSpec extends BasePluginSpec {
         result == "testValue/testValue"
     }
 
+    def 'gets complex property with multiple replacements'() {
+        when:
+        String result = propertyHelper.findProjectProperty(project, PropertyHelper.NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: Edition.STANDARD, netKernelVersion: '5.1.1'])
+
+        then:
+        result == 'download/1060-NetKernel-SE-5.1.1.jar'
+    }
+
 }

@@ -1,33 +1,13 @@
 package org.netkernel.gradle.plugin
 
-import org.gradle.api.InvalidUserDataException
-import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
+import org.gradle.api.*
 import org.gradle.api.artifacts.maven.MavenResolver
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Upload
 import org.gradle.api.tasks.bundling.Jar
-import org.netkernel.gradle.plugin.model.Edition
-import org.netkernel.gradle.plugin.model.Module
-import org.netkernel.gradle.plugin.model.NetKernelExtension
-import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.model.Release
-import org.netkernel.gradle.plugin.model.SourceStructure
-import org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask
-import org.netkernel.gradle.plugin.tasks.CreateAppositePackageTask
-import org.netkernel.gradle.plugin.tasks.DeployToNetKernelTask
-import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
-import org.netkernel.gradle.plugin.tasks.FreezeTidyTask
-import org.netkernel.gradle.plugin.tasks.InstallNetKernelTask
-import org.netkernel.gradle.plugin.tasks.ModuleResourcesTask
-import org.netkernel.gradle.plugin.tasks.StartNetKernelTask
-import org.netkernel.gradle.plugin.tasks.StopNetKernelTask
-import org.netkernel.gradle.plugin.tasks.ThawConfigureTask
-import org.netkernel.gradle.plugin.tasks.UndeployFromNetKernelTask
-import org.netkernel.gradle.plugin.tasks.UpdateModuleXmlVersionTask
+import org.netkernel.gradle.plugin.model.*
+import org.netkernel.gradle.plugin.tasks.*
 
 import static org.netkernel.gradle.plugin.model.PropertyHelper.*
 import static org.netkernel.gradle.plugin.tasks.TaskName.*
@@ -128,14 +108,14 @@ class NetKernelPlugin implements Plugin<Project> {
             throw new InvalidUserDataException("Could not find module.xml in the project.")
         }
 
-        // If the project has a version specified, override the value in the module.xml
+        // If the project has a netKernelVersion specified, override the value in the module.xml
         if (project.version == 'unspecified') {
             project.version = netKernel.module.version
         } else {
             netKernel.module.version = project.version
         }
 
-        //Set Maven Artifact name and version
+        //Set Maven Artifact name and netKernelVersion
         //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
         project.archivesBaseName = netKernel.module.URIDotted
     }
@@ -257,14 +237,16 @@ class NetKernelPlugin implements Plugin<Project> {
 
         configureTask(DOWNLOAD_SE) {
             downloadConfig = netKernel.download.se
-            release = new Release(edition: Edition.STANDARD, version: netKernel.currentMajorReleaseVersion())
-            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(release)}")
+            edition = Edition.STANDARD
+            netKernelVersion = netKernel.currentMajorReleaseVersion()
+            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
         configureTask(DOWNLOAD_EE) {
             downloadConfig = netKernel.download.ee
-            release = new Release(edition: Edition.ENTERPRISE, version: netKernel.currentMajorReleaseVersion())
-            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(release)}")
+            edition = Edition.ENTERPRISE
+            netKernelVersion = netKernel.currentMajorReleaseVersion()
+            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
         configureTask(MODULE) {
@@ -339,17 +321,19 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createNetKernelInstanceTasks(NetKernelInstance instance) {
 
+        String groupName = "NetKernel Instance (${instance.name})"
+
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
         String installTaskName = "install${instance.name}"
         String deployTaskName = "deployTo${instance.name}"
         String undeployTaskName = "undeployFrom${instance.name}"
 
-        createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance})")
-        createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance})")
-        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})").setGroup(null)
-        createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance})")
-        createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance})")
+        createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance})", groupName)
+        createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance})", groupName)
+        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance})", groupName)
+        createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance})", groupName)
+        createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance})", groupName)
 
 
         [startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
@@ -404,16 +388,17 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     NetKernelInstance createNetKernelInstance(Edition edition) {
         String name = "${edition}"
-        String version = netKernel.currentMajorReleaseVersion()
+        String netKernelVersion = netKernel.currentMajorReleaseVersion()
 
         NetKernelInstance instance = new NetKernelInstance(
             name: name,
-            release: new Release(edition: edition, version: version),
+            edition: edition,
+            netKernelVersion: netKernelVersion,
             url: new URL(netKernel.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL)),
             backendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) as int,
             frontendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) as int,
-            location: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_INSTALL_DIR, null, [edition: edition, version: version])),
-            jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, version: version]))
+            location: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_INSTALL_DIR, null, [edition: edition, netKernelVersion: netKernelVersion])),
+            jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion]))
         )
 
         return instance
@@ -425,11 +410,13 @@ class NetKernelPlugin implements Plugin<Project> {
      * @param name name of task
      * @param type class defining type of task
      * @param description description of what task does
+     *
+     * @return created task
      */
-    private Task createTask(String name, Class type, String description) {
+    private Task createTask(String name, Class type, String description, String group = 'NetKernel') {
         project.tasks.create(
             name: name,
-            group: "NetKernel",
+            group: group,
             type: type,
             description: description
         )

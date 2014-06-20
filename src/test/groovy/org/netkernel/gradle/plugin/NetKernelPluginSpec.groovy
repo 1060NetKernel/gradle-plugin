@@ -10,7 +10,6 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.NetKernelExtension
 import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.gradle.plugin.model.SourceStructure
 import org.netkernel.gradle.plugin.tasks.DownloadNetKernelTask
 import org.netkernel.gradle.plugin.tasks.TaskName
@@ -179,8 +178,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
         1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) >> backendPort
         1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) >> frontendPort
         instance.name == 'SE'
-        instance.release.version == version
-        instance.release.edition == edition
+        instance.netKernelVersion == version
+        instance.edition == edition
         instance.url == new URL(defaultUrl)
         instance.backendPort == backendPort as int
         instance.frontendPort == frontendPort as int
@@ -212,8 +211,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
         Edition.values().each { Edition edition ->
             NetKernelInstance instance = instances[edition.toString()]
             assert instance.name == edition.toString()
-            assert instance.release.version == version
-            assert instance.release.edition == edition
+            assert instance.netKernelVersion == version
+            assert instance.edition == edition
             assert instance.url == new URL(defaultUrl)
             assert instance.backendPort == backendPort as int
             assert instance.frontendPort == frontendPort as int
@@ -230,7 +229,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         NetKernelInstance netKernelInstance = new NetKernelInstance(
             name: 'SE',
-            release: new Release(edition: Edition.STANDARD, version: '5.2.1'),
+            edition: Edition.STANDARD,
+            netKernelVersion: '5.2.1',
             location: file('/test/NetKernelPluginSpec/install/SE-5.2.1'),
             jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
         )

@@ -30,6 +30,9 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
         netKernelExtension.instances {
             SE {
+                backendPort = 1060
+                frontendPort = 8080
+                url = 'http://localhost'
                 location = file '/test/gradleHomeDirectory/netkernel/installation'
             }
         }
@@ -82,27 +85,52 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
     def 'configures instances'() {
         setup:
-        File devDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/dev')
-        File qaDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/qa')
-        File prodDirectory = file('/test/netKernelExtensionSpec/opt/netkernel/prod')
+        File devDirectory = file '/test/netKernelExtensionSpec/opt/netkernel/dev'
+        File prodDirectory = file '/test/netKernelExtensionSpec/opt/netkernel/prod'
+
+        Map projectProperties = [
+            (PropertyHelper.NETKERNEL_INSTANCE_BACKEND_PORT)     : 1060,
+            (PropertyHelper.NETKERNEL_INSTANCE_FRONTEND_PORT)    : 8080,
+            (PropertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL)      : 'http://localhost',
+            (PropertyHelper.CURRENT_MAJOR_RELEASE_VERSION)       : '5.1.2',
+            (PropertyHelper.NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME): 'nk.jar'
+        ]
 
         when:
         netKernelExtension.instances {
-            dev {
-                location = devDirectory
+            DEV {
+                location = devDirectory.absolutePath
             }
-            qa {
-                location = qaDirectory
-            }
-            prod {
-                location = prodDirectory
+            PROD {
+                edition = 'EE'
+                version = '5.1.1'
+                location = prodDirectory.absolutePath
+                url = 'http://127.0.0.1'
+                backendPort = 2200
+                frontendPort = 8888
             }
         }
 
         then:
-        netKernelExtension.instances['dev'].location == devDirectory
-        netKernelExtension.instances['qa'].location == qaDirectory
-        netKernelExtension.instances['prod'].location == prodDirectory
+        _ * mockPropertyHelper.findProjectProperty(*_) >> { List args ->
+            return projectProperties[args[1]]
+        }
+
+        netKernelExtension.instances['DEV'].location == devDirectory
+        netKernelExtension.instances['DEV'].jarFileLocation.name == 'nk.jar'
+        netKernelExtension.instances['DEV'].edition == Edition.STANDARD
+        netKernelExtension.instances['DEV'].netKernelVersion == '5.1.2'
+        netKernelExtension.instances['DEV'].url as String == 'http://localhost'
+        netKernelExtension.instances['DEV'].backendPort == 1060
+        netKernelExtension.instances['DEV'].frontendPort == 8080
+
+        netKernelExtension.instances['PROD'].location == prodDirectory
+        netKernelExtension.instances['PROD'].jarFileLocation.name == 'nk.jar'
+        netKernelExtension.instances['PROD'].edition == Edition.ENTERPRISE
+        netKernelExtension.instances['PROD'].netKernelVersion == '5.1.1'
+        netKernelExtension.instances['PROD'].url as String == 'http://127.0.0.1'
+        netKernelExtension.instances['PROD'].backendPort == 2200
+        netKernelExtension.instances['PROD'].frontendPort == 8888
     }
 
     def 'configures download object'() {
@@ -174,15 +202,16 @@ class NetKernelExtensionSpec extends BasePluginSpec {
 
     def 'gets distribution jar file'() {
         setup:
-        Release release = new Release(edition: Edition.STANDARD, version: '5.2.1')
+        Edition edition = Edition.STANDARD
+        String version = '5.2.1'
 
         when:
-        String jarFile = netKernelExtension.distributionJarFile(release)
+        String jarFile = netKernelExtension.distributionJarFile(edition, version)
 
         then:
         1 * mockPropertyHelper.findProjectProperty(_, _, _, _) >> { Project project, String propertyName, String defaultValue, Map values ->
-            assert values['edition'] == release.edition
-            assert values['version'] == release.version
+            assert values['edition'] == edition
+            assert values['netKernelVersion'] == version
             return "jarFile"
         }
         jarFile == "jarFile"

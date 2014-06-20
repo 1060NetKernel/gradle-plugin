@@ -29,7 +29,10 @@ class NetKernelInstance implements Serializable {
     File jarFileLocation
 
     // Standard or Enterprise
-    Release release
+    Edition edition
+
+    // NetKernel Version
+    String netKernelVersion
 
     /**
      * Constructor used by gradle for calls to project.container(NetKernelInstance).  Otherwise,
@@ -102,8 +105,8 @@ class NetKernelInstance implements Serializable {
         if (isRunning()) {
 
             HttpResponse response = issueRequest(Method.POST, [
-                path : '/tools/shutdown',
-                query: [config: '1', action2: 'force']])
+                    path : '/tools/shutdown',
+                    query: [config: '1', action2: 'force']])
 
             if (response.statusLine.statusCode == HttpStatus.SC_OK) {
                 while (isRunning()) {
@@ -134,15 +137,15 @@ class NetKernelInstance implements Serializable {
             """
 
         HttpResponse response = issueRequest(Method.GET, [
-            path : '/tools/scriptplaypen',
-            query: [
-                action2   : 'execute',
-                type      : 'gy',
-                example   : "",
-                identifier: "",
-                name      : "",
-                space     : "",
-                script    : groovyScript]])
+                path : '/tools/scriptplaypen',
+                query: [
+                        action2   : 'execute',
+                        type      : 'gy',
+                        example   : "",
+                        identifier: "",
+                        name      : "",
+                        space     : "",
+                        script    : groovyScript]])
 
         if (response.statusLine.statusCode == HttpStatus.SC_OK) {
             return response.entity.content.text
@@ -168,21 +171,21 @@ class NetKernelInstance implements Serializable {
 
         try {
             if (issueRequest(Method.POST, [
-                path : '/installer/',
-                query: [target           : location,
-                        expand           : 'yes',
-                        proxyHost        : '',
-                        proxyPort        : '',
-                        username         : '',
-                        password         : '',
-                        ntWorkstationHost: '',
-                        ntDomain         : '']])) {
+                    path : '/installer/',
+                    query: [target           : location,
+                            expand           : 'yes',
+                            proxyHost        : '',
+                            proxyPort        : '',
+                            username         : '',
+                            password         : '',
+                            ntWorkstationHost: '',
+                            ntDomain         : '']])) {
                 log.info "Successfully installed NetKernel in ${location}"
                 log.info "Shutting NetKernel down..."
 
                 if (issueRequest(Method.POST, [
-                    path : '/tools/shutdown',
-                    query: [confirm: '1', action2: 'force']])) {
+                        path : '/tools/shutdown',
+                        query: [confirm: '1', action2: 'force']])) {
 
                     while (isRunning()) {
                         log.info "Waiting for NetKernel to shutdown..."
@@ -266,6 +269,42 @@ class NetKernelInstance implements Serializable {
      */
     HttpResponse issueRequest(Method method, Map args) {
         return new RESTClient("${url}:${backendPort}")."${method.toString().toLowerCase()}"(args)
+    }
+
+    /**
+     * Used to allow strings to be used for locations in the build.gradle file.
+     *
+     * @param location absolute path of location
+     */
+    void setLocation(String location) {
+        this.location = new File(location)
+    }
+
+    /**
+     * Sets the edition.  Used primarily for instances added from build.gradle file.
+     *
+     * @param e Edition as a String 'EE' or 'SE'
+     */
+    void setEdition(String e) {
+        this.edition = Edition.values().find { it.name == e }
+    }
+
+    /**
+     * Sets the version.  This is to make it easier within the build.gradle files.
+     *
+     * @param v version number as string
+     */
+    void setVersion(String v) {
+        this.netKernelVersion = v
+    }
+
+    /**
+     * Sets the URL as a string used primarily by build.gradle file.
+     *
+     * @param url string netKernelVersion of url
+     */
+    void setUrl(String url) {
+        this.url = new URL(url)
     }
 
     String toString() {

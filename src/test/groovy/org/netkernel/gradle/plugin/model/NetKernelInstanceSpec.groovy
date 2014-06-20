@@ -57,7 +57,9 @@ class NetKernelInstanceSpec extends BasePluginSpec {
         boolean result = netKernelInstance.isRunning()
 
         then:
-        1 * mockRestClient.get(_ as Map) >> { throw new HttpHostConnectException(new HttpHost('localhost'), new ConnectException()) }
+        1 * mockRestClient.get(_ as Map) >> {
+            throw new HttpHostConnectException(new HttpHost('localhost'), new ConnectException())
+        }
         result == false
     }
 
@@ -157,14 +159,62 @@ class NetKernelInstanceSpec extends BasePluginSpec {
 
         then:
         3 * mockRestClient.get(_ as Map) >>> [
-            response(SC_OK), // Call during start() method to see if server is running
-            response(SC_OK), // Call during install() to check if server is running
-            response(SC_REQUEST_TIMEOUT) // Second call after installation is performed
+                response(SC_OK), // Call during start() method to see if server is running
+                response(SC_OK), // Call during install() to check if server is running
+                response(SC_REQUEST_TIMEOUT) // Second call after installation is performed
         ]
         2 * mockRestClient.post(_ as Map) >>> [
-            response(SC_OK), // Call to perform installation
-            response(SC_OK) // Call to shutdown NetKernel
+                response(SC_OK), // Call to perform installation
+                response(SC_OK) // Call to shutdown NetKernel
         ]
+    }
+
+    def 'sets edition'() {
+        when:
+        netKernelInstance.edition = edition
+
+        then:
+        netKernelInstance.edition == expectedEdition
+
+        where:
+        edition | expectedEdition
+        'EE'    | Edition.ENTERPRISE
+        'SE'    | Edition.STANDARD
+    }
+
+    def 'sets version'() {
+        when:
+        netKernelInstance.netKernelVersion = '5.1.1'
+
+        then:
+        netKernelInstance.netKernelVersion == '5.1.1'
+    }
+
+    def 'sets location as string'() {
+        setup:
+        File location = file '/test/NetKernelInstanceSpec'
+
+        when:
+        netKernelInstance.setLocation(location.absolutePath)
+
+        then:
+        netKernelInstance.location == location
+    }
+
+    def 'sets url as string'() {
+        setup:
+        URL url = new URL('http://localhost')
+
+        when:
+        netKernelInstance.setUrl(url as String)
+
+        then:
+        netKernelInstance.url == url
+    }
+
+    def 'instance is serializable'() {
+        expect:
+        netKernelInstance instanceof Serializable
     }
 
 }

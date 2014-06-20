@@ -29,31 +29,31 @@ import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
-import org.netkernel.gradle.plugin.model.Release
 import org.netkernel.layer0.util.Utils
 
 /**
- * A task to download a version of NetKernel.  This is used to download both the SE & EE Editions.
+ * A task to download a netKernelVersion of NetKernel.  This is used to download both the SE & EE Editions.
  */
 class DownloadNetKernelTask extends DefaultTask {
 
     //Helpers
     def propertyHelper = new PropertyHelper()
-
-    @Input
     DownloadConfig downloadConfig
 
     @Input
-    Release release
+    Edition edition
+
+    @Input
+    String netKernelVersion
 
     @OutputFile
     File destinationFile
 
     @TaskAction
     void downloadNetKernel() {
-        switch (release.edition) {
+        switch (edition) {
             case Edition.STANDARD:
-                downloadNKSEImpl(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_SE, null, [version: release.version]))
+                downloadNKSEImpl(new URL(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_SE, null, [netKernelVersion: netKernelVersion])))
                 break;
 
             case Edition.ENTERPRISE:
@@ -61,10 +61,10 @@ class DownloadNetKernelTask extends DefaultTask {
                 def password = propertyHelper.findProjectProperty(project, "nkeePassword", downloadConfig.password)
 
                 if (!username || !password) {
-                    ant.fail("Downloading NKEE requires a username and password")
+                    ant.fail("Downloading NetKernel Enterprise Edition requires a username and password.  Details can be found here: http://1060research.com/resources/#download")
                 }
 
-                String url = propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_EE, null, [version: release.version])
+                URL url = new URL(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_EE, null, [netKernelVersion: netKernelVersion]))
                 downloadNKEEImpl(url, username, password)
                 break;
 

@@ -12,10 +12,8 @@ import org.gradle.api.tasks.Input
 @Slf4j
 class FreezeTidyTask extends DefaultTask {
 
-    @Input
     File freezeDirectory
 
-    @Input
     File installDirectory
 
     @org.gradle.api.tasks.TaskAction
@@ -29,7 +27,7 @@ class FreezeTidyTask extends DefaultTask {
 
         File freezeExpandDir
         File propertiesFile = new File(freezeDirectory, "etc/kernel.properties")
-        propertiesFile.text = propertiesFile.text.replaceAll(/^netkernel.layer0.expandDir=(.*)$/) { match ->
+        propertiesFile.text = propertiesFile.text.replaceAll(/netkernel.layer0.expandDir=(.*)/) { match ->
             URI expandDirURI = URI.create(match[1])
             String expandDirPath = URI.create(installDirectory.absolutePath).relativize(expandDirURI) as String
             freezeExpandDir = new File(freezeDirectory, expandDirPath)
@@ -39,7 +37,7 @@ class FreezeTidyTask extends DefaultTask {
         log.debug "Cleaning up netkernel.sh"
 
         File netkernelShFile = new File(freezeDirectory, "/bin/netkernel.sh")
-        netkernelShFile.text = netkernelShFile.text.replaceAll(/^INSTALLPATH=.*$/,"INSTALLPATH='%INSTALLPATH%'")
+        netkernelShFile.text = netkernelShFile.text.replaceAll(/INSTALLPATH='.*?'/,"INSTALLPATH='%INSTALLPATH%'")
 
         //  Delete freeze expand dir
         if(freezeExpandDir) {

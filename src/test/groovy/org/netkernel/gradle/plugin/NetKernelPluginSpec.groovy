@@ -225,7 +225,9 @@ class NetKernelPluginSpec extends BasePluginSpec {
         setup:
         netKernelPlugin.project = project
         File archiveFile = file '/test/NetKernelPluginSpec/module.jar'
+        File freezeDirectory = file '/test/NetKernelPluginSpec/freeze'
         project.tasks.create(name: 'jar', type: Jar)
+        Closure assertTaskDependency = assertTaskDependencyClosure.curry(project)
 
         NetKernelInstance netKernelInstance = new NetKernelInstance(
             name: 'SE',
@@ -235,36 +237,50 @@ class NetKernelPluginSpec extends BasePluginSpec {
             jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
         )
 
-        Set<String> taskNames = ['startSE', 'stopSE', 'installSE', 'deployToSE', 'undeployFromSE']
+        Set<String> taskNames = ['startSE', 'stopSE', 'installSE', 'deployToSE', 'undeployFromSE', 'freezeSE', 'copyBeforeFreezeSE', 'freezeTidySE']
+
+        NetKernelExtension mockNetKernelExtension = Mock()
+        netKernelPlugin.netKernel = mockNetKernelExtension
 
         when:
         netKernelPlugin.createNetKernelInstanceTasks(netKernelInstance)
 
         then:
+        1 * mockNetKernelExtension.workFile('freeze') >> freezeDirectory
         taskNames.each { taskName ->
             assert project.tasks.findByName(taskName) != null
-            assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
+//            assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
         }
 
         and:
         project.tasks.findAll { it.name.contains('deploy') }.each { Task task ->
             assert task.moduleArchiveFile != null
         }
+
+        and: // assert task dependencies
+        assertTaskDependency('freezeTidySE', 'copyBeforeFreezeSE')
+        assertTaskDependency('freezeSE', 'freezeTidySE')
     }
 
     def 'creates netkernel instance tasks for EE & SE Edition'() {
         setup:
         project.tasks.create(name: 'jar', type: Jar)
 
+        File freezeDirectory = file '/test/NetKernelPluginSpec/freeze'
+        File seLocation = file '/test/NetKernelPluginSpec/install/SE-5.2.1'
+        File eeLocation = file '/test/NetKernelPluginSpec/install/EE-5.2.1'
+
         NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
-        instances.add(new NetKernelInstance(name: 'SE'))
-        instances.add(new NetKernelInstance(name: 'EE'))
+        instances.add(new NetKernelInstance(name: 'SE', location: seLocation))
+        instances.add(new NetKernelInstance(name: 'EE', location: eeLocation))
+
+        Closure createTasks = { tasksNames, instanceNames ->
+            return [tasksNames, instanceNames].combinations().collect({ l -> "${l[0]}${l[1]}" as String })
+        }
 
         // A fancy groovy way of building list of task names
-        List<String> taskNames = [
-            ['start', 'stop', 'install', 'deployTo', 'undeployFrom'],
-            ['SE', 'EE']
-        ].combinations().collect({ l -> "${l[0]}${l[1]}" as String })
+        List<String> taskNames = createTasks(['start', 'stop', 'install', 'deployTo', 'undeployFrom', 'freeze'], ['SE', 'EE'])
+        List<String> instanceAwareTaskNames = createTasks(['start', 'stop', 'install', 'deployTo', 'undeployFrom'], ['SE', 'EE'])
 
         NetKernelExtension mockNetKernelExtension = Mock()
 
@@ -276,8 +292,14 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         1 * mockNetKernelExtension.instances >> instances
+        2 * mockNetKernelExtension.workFile('freeze') >> freezeDirectory
         taskNames.each { String name ->
             assert project.tasks.findByName(name) != null
+        }
+
+        instanceAwareTaskNames.each { String name ->
+            assert project.tasks.findByName(name).netKernelInstance != null
+
         }
     }
 

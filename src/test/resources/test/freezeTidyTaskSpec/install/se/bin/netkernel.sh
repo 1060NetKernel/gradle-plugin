@@ -1,0 +1,1 @@
+INSTALLPATH='this is a path that should be replaced'

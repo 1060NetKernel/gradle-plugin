@@ -6,26 +6,30 @@ class FreezeTidyTaskSpec extends BasePluginSpec {
 
     def 'freezes netkernel'() {
         setup:
-        File freezeDirInner = getResourceAsFile('/test/freezeTidyTaskSpec/freezeDirInner')
-        File kernelPropertiesFile = new File(freezeDirInner, 'etc/kernel.properties')
-        File netkernelShFile = new File(freezeDirInner, 'bin/netkernel.sh')
-        File expandDir = new File(getResource('/test/freezeTidyTaskSpec/expandDir').file)
+        File freezeDirectory = file '/test/freezeTidyTaskSpec/freeze/se'
+        File installDirectory = file '/test/freezeTidyTaskSpec/install/se'
+
+        File kernelPropertiesFile = new File(freezeDirectory, 'etc/kernel.properties')
+        File netkernelShFile = new File(freezeDirectory, 'bin/netkernel.sh')
 
         FreezeTidyTask freezeTidyTask = createTask(FreezeTidyTask)
-        freezeTidyTask.freezeDirectory = freezeDirInner
-        freezeTidyTask.installDirectory = file '/test/freezeTidyTaskSpec/installDirInner'
+        freezeTidyTask.freezeDirectory = freezeDirectory
+        freezeTidyTask.installDirectory = installDirectory
 
+        String expandDirPath = 'lib/expandDir'
+
+        File expandDir = new File(installDirectory, expandDirPath)
         kernelPropertiesFile.text = "netkernel.layer0.expandDir=${expandDir}"
 
         when:
         freezeTidyTask.freeze()
 
         then:
-        !new File(expandDir, 'empty.txt').exists()
+        !new File(freezeDirectory, "${expandDirPath}/empty.txt").exists()
         ['etc/license', 'package-cache', 'log'].each { path ->
-            assert !(new File(freezeDirInner, path).exists())
+            assert !(new File(freezeDirectory, path).exists())
         }
-        kernelPropertiesFile.text.contains(expandDir.absolutePath)
+        kernelPropertiesFile.text.contains(expandDirPath)
         netkernelShFile.text.trim() == "INSTALLPATH='%INSTALLPATH%'"
     }
 

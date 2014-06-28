@@ -4,7 +4,6 @@ import org.gradle.api.InvalidUserDataException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.testfixtures.ProjectBuilder
 import org.netkernel.gradle.plugin.model.Edition
@@ -21,13 +20,9 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     NetKernelPlugin netKernelPlugin
     Set<String> providedTaskNames = [
-        'copyBeforeFreeze',
         'createAppositePackage',
         'downloadEE',
         'downloadSE',
-        'freezeDelete',
-        'freezeJar',
-        'freezeTidy',
         'installFreeze',
         'module',
         'moduleResources',
@@ -58,14 +53,10 @@ class NetKernelPluginSpec extends BasePluginSpec {
         assertTaskDependency('moduleResources', 'module')
         assertTaskDependency('module', 'compileGroovy')
         assertTaskDependency('jar', 'moduleResources')
-        assertTaskDependency('freezeTidy', 'copyBeforeFreeze')
-        assertTaskDependency('freezeJar', 'freezeTidy')
-        assertTaskDependency('freezeDelete', 'freezeJar')
         assertTaskDependency('thawExpand', 'thawDeleteInstall')
         assertTaskDependency('thawConfigure', 'thawExpand')
 
         // Assert added configurations
-        project.configurations.getByName('freeze') != null
         project.configurations.getByName('thaw') != null
         project.configurations.getByName('provided') != null
 
@@ -132,18 +123,18 @@ class NetKernelPluginSpec extends BasePluginSpec {
         thrown(InvalidUserDataException)
     }
 
-    def 'copyBeforeFreeze task initialized properly'() {
-        setup:
-        File projectDir = file('/examples/basic_gradle_structure')
-        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
-        netKernelPlugin.apply(project)
-
-        when:
-        Copy copyBeforeFreeze = project.tasks.getByName('copyBeforeFreeze')
-
-        then:
-        copyBeforeFreeze.getIncludes() == ['**/*'] as Set
-    }
+//    def 'copyBeforeFreeze task initialized properly'() {
+//        setup:
+//        File projectDir = file('/examples/basic_gradle_structure')
+//        Project project = ProjectBuilder.builder().withProjectDir(projectDir).build()
+//        netKernelPlugin.apply(project)
+//
+//        when:
+//        Copy copyBeforeFreeze = project.tasks.getByName('copyBeforeFreeze')
+//
+//        then:
+//        copyBeforeFreeze.getIncludes() == ['**/*'] as Set
+//    }
 
     def 'download SE configured'() {
         setup:
@@ -246,7 +237,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
         netKernelPlugin.createNetKernelInstanceTasks(netKernelInstance)
 
         then:
-        1 * mockNetKernelExtension.workFile('freeze') >> freezeDirectory
+        _ * mockNetKernelExtension.workFile({ ~/^freeze/ }) >> freezeDirectory
         taskNames.each { taskName ->
             assert project.tasks.findByName(taskName) != null
 //            assert project.tasks.getByName(taskName).netKernelInstance == netKernelInstance
@@ -292,7 +283,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         1 * mockNetKernelExtension.instances >> instances
-        2 * mockNetKernelExtension.workFile('freeze') >> freezeDirectory
+        _ * mockNetKernelExtension.workFile({ ~/^freeze/ }) >> freezeDirectory
         taskNames.each { String name ->
             assert project.tasks.findByName(name) != null
         }

@@ -126,23 +126,13 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTasks() {
 
-//        createTask(CLEAN_SE_JAR, CleanDownloadedJarTask, 'Removes downloaded SE jar')
-
         createTask(CONFIGURE_APPOSITE, ConfigureAppositeTask, 'Configures apposite repository')
-
-        createTask(COPY_BEFORE_FREEZE, Copy, 'Copies NetKernel installation into freeze directory')
 
         createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
         createTask(DOWNLOAD_EE, DownloadNetKernelTask, 'Downloads NetKernel EE edition')
 
         createTask(DOWNLOAD_SE, DownloadNetKernelTask, 'Downloads NetKernel SE edition')
-
-        createTask(FREEZE_DELETE, Delete, "Deletes frozen NetKernel instance")
-
-        createTask(FREEZE_JAR, Jar, 'Creates zip file of frozen NetKernel instance')
-
-        createTask(FREEZE_TIDY, FreezeTidyTask, 'Cleans up copied NetKernel instance during freeze')
 
         createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository")
 
@@ -177,23 +167,6 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void configureTasks() {
 
-        configureTask(COPY_BEFORE_FREEZE) {
-            from netKernel.installationDirectory
-            into netKernel.freezeDirectory
-            include "**/*"
-        }
-
-        configureTask(FREEZE_TIDY) {
-            freezeDirectory = netKernel.freezeDirectory
-            installDirectory = netKernel.installationDirectory
-        }
-
-        configureTask(FREEZE_JAR) {
-            from netKernel.freezeDirectory
-            destinationDir = netKernel.destinationDirectory
-            archiveName = 'frozen.zip'
-        }
-
         configureTask(INSTALL_FREEZE) {
             // TODO - Introduce constants for configuration 'freeze', etc.
             configuration = project.configurations.freeze
@@ -213,10 +186,6 @@ class NetKernelPlugin implements Plugin<Project> {
                 into netKernel.thawDirectory
                 from project.zipTree(project.configurations.thaw.singleFile)
             }
-        }
-
-        configureTask(FREEZE_DELETE) {
-            delete netKernel.freezeDirectory
         }
 
         // TODO - Figure out what this task is doing...
@@ -282,9 +251,9 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTaskDependencies() {
 
-        project.tasks[FREEZE_DELETE].dependsOn FREEZE_JAR
-        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
-        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
+//        project.tasks[FREEZE_DELETE].dependsOn FREEZE_JAR
+//        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
+//        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
         project.tasks[JAR].dependsOn MODULE_RESOURCES
         project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
         project.tasks[MODULE].dependsOn COMPILE_GROOVY
@@ -332,7 +301,7 @@ class NetKernelPlugin implements Plugin<Project> {
         String freezeTaskName = "freeze${instance.name}"
         String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
         String freezeTidyTaskName = "freezeTidy${instance.name}"
-
+        String cleanFreezeTaskName = "cleanFreeze${instance.name}"
 
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
@@ -342,8 +311,9 @@ class NetKernelPlugin implements Plugin<Project> {
 
         // Tasks related to freezing and thawing instance
         createTask(freezeTaskName, Jar, "Freezes the NetKernel instance (${instance.name})", groupName)
-        createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", groupName)
-        createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", groupName)
+        createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
+        createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
+        createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", groupName)
 
         [startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
             configureTask(name) {
@@ -372,6 +342,10 @@ class NetKernelPlugin implements Plugin<Project> {
         configureTask(freezeTidyTaskName) {
             freezeDirectory = netKernel.workFile("freeze/${instance.name}")
             installDirectory = instance.location
+        }
+
+        configureTask(cleanFreezeTaskName) {
+            delete netKernel.workFile("freeze/${instance.name}")
         }
 
 //        // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?

@@ -25,8 +25,14 @@ class NetKernelInstance implements Serializable {
     // Location is the installed directory of NetKernel
     File location
 
-    // Location of downloaded jar file
+    // Location of downloaded distribution jar file
     File jarFileLocation
+
+    // Location of frozen jar file for freezing/thawing
+    File frozenJarFile
+
+    // The frozen location is where the NetKernel instance is copied to prior to jar file creation
+    File frozenLocation
 
     // Standard or Enterprise
     Edition edition

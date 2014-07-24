@@ -27,7 +27,7 @@ class NetKernelInstanceSpec extends BasePluginSpec {
         RESTClient.metaClass.constructor = { url -> mockRestClient }
     }
 
-    def 'constructs NetKernelInstace'() {
+    def 'constructs NetKernelInstance'() {
         when:
         NetKernelInstance instance = new NetKernelInstance(constructorArgs)
 

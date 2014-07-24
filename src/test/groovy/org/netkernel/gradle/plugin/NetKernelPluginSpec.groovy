@@ -148,8 +148,10 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
     def 'creates single netkernel instance reference'() {
         setup:
-        File location = file '/test/NetKernelPluginSpec/install/EE-5.2.1'
+        File location = file '/test/NetKernelPluginSpec/install/SE-5.2.1'
         File jarFileLocation = file '/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar'
+        File frozenJarFile = file '/test/NetKernelPluginSpec/freeze/frozen-SE.jar'
+        File frozenLocation = file '/test/NetKernelPluginSpec/freeze/SE'
         Edition edition = Edition.STANDARD
         String version = '5.2.1'
         String defaultUrl = 'http://localhost'
@@ -164,7 +166,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         1 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
-        2 * mockNetKernelExtension.workFile(_) >>> [location, jarFileLocation]
+        4 * mockNetKernelExtension.workFile(_) >>> [location, jarFileLocation, frozenJarFile, frozenLocation]
         1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL) >> defaultUrl
         1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) >> backendPort
         1 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) >> frontendPort
@@ -176,6 +178,8 @@ class NetKernelPluginSpec extends BasePluginSpec {
         instance.frontendPort == frontendPort as int
         instance.location == location
         instance.jarFileLocation == jarFileLocation
+        instance.frozenJarFile == frozenJarFile
+        instance.frozenLocation == frozenLocation
     }
 
     def 'creates netkernel instance references'() {
@@ -195,7 +199,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         2 * mockNetKernelExtension.currentMajorReleaseVersion() >> version
-        4 * mockNetKernelExtension.workFile(_) >> file
+        8 * mockNetKernelExtension.workFile(_) >> file
         2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_DEFAULT_URL) >> defaultUrl
         2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) >> backendPort
         2 * mockNetKernelExtension.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) >> frontendPort
@@ -209,6 +213,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
             assert instance.frontendPort == frontendPort as int
             assert instance.location == file
             assert instance.jarFileLocation == file
+            assert instance.frozenJarFile == file
         }
     }
 
@@ -224,11 +229,16 @@ class NetKernelPluginSpec extends BasePluginSpec {
             name: 'SE',
             edition: Edition.STANDARD,
             netKernelVersion: '5.2.1',
+            url: 'http://localhost',
+            backendPort: 1060,
+            frontendPort: 8080,
             location: file('/test/NetKernelPluginSpec/install/SE-5.2.1'),
-            jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar')
+            jarFileLocation: file('/test/NetKernelPluginSpec/1060-NetKernel-SE-5.2.1.jar'),
+            frozenJarFile: file('/test/NetKernelPluginSpec/freeze/frozen-SE.jar'),
+            frozenLocation: file('/test/NetKernelPluginSpec/freeze/SE')
         )
 
-        Set<String> taskNames = ['startSE', 'stopSE', 'installSE', 'deployToSE', 'undeployFromSE', 'freezeSE', 'copyBeforeFreezeSE', 'freezeTidySE']
+        Set<String> taskNames = ['startSE', 'stopSE', 'installSE', 'deployToSE', 'undeployFromSE', 'freezeSE', 'copyBeforeFreezeSE', 'freezeTidySE', 'thawSE', 'thawExpandSE']
 
         NetKernelExtension mockNetKernelExtension = Mock()
         netKernelPlugin.netKernel = mockNetKernelExtension
@@ -257,13 +267,17 @@ class NetKernelPluginSpec extends BasePluginSpec {
         setup:
         project.tasks.create(name: 'jar', type: Jar)
 
-        File freezeDirectory = file '/test/NetKernelPluginSpec/freeze'
-        File seLocation = file '/test/NetKernelPluginSpec/install/SE-5.2.1'
         File eeLocation = file '/test/NetKernelPluginSpec/install/EE-5.2.1'
+        File eeFrozenJarFile = file '/test/NetKernelPluginSpec/freeze/frozen-EE.jar'
+        File eeFrozenLocation = file '/test/NetKernelPluginSpec/freeze/EE'
+
+        File seLocation = file '/test/NetKernelPluginSpec/install/SE-5.2.1'
+        File seFrozenJarFile = file '/test/NetKernelPluginSpec/freeze/frozen-SE.jar'
+        File seFrozenLocation = file '/test/NetKernelPluginSpec/freeze/SE'
 
         NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
-        instances.add(new NetKernelInstance(name: 'SE', location: seLocation))
-        instances.add(new NetKernelInstance(name: 'EE', location: eeLocation))
+        instances.add(new NetKernelInstance(name: 'SE', location: seLocation, frozenJarFile: seFrozenJarFile, frozenLocation: seFrozenLocation))
+        instances.add(new NetKernelInstance(name: 'EE', location: eeLocation, frozenJarFile: eeFrozenJarFile, frozenLocation: eeFrozenLocation))
 
         Closure createTasks = { tasksNames, instanceNames ->
             return [tasksNames, instanceNames].combinations().collect({ l -> "${l[0]}${l[1]}" as String })
@@ -283,7 +297,7 @@ class NetKernelPluginSpec extends BasePluginSpec {
 
         then:
         1 * mockNetKernelExtension.instances >> instances
-        _ * mockNetKernelExtension.workFile({ ~/^freeze/ }) >> freezeDirectory
+//        _ * mockNetKernelExtension.workFile({ ~/^freeze/ }) >> freezeDir
         taskNames.each { String name ->
             assert project.tasks.findByName(name) != null
         }

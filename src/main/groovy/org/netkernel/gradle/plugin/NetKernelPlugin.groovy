@@ -302,6 +302,8 @@ class NetKernelPlugin implements Plugin<Project> {
         String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
         String freezeTidyTaskName = "freezeTidy${instance.name}"
         String cleanFreezeTaskName = "cleanFreeze${instance.name}"
+        String thawTaskName = "thaw${instance.name}"
+        String thawExpandTaskName = "thawExpand${instance.name}"
 
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
@@ -314,6 +316,8 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
         createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
         createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", groupName)
+        createTask(thawTaskName, Copy, "Thaws frozen NetKernel instance (${instance.name}", groupName)
+        createTask(thawExpandTaskName, Copy, "Thaws and expands frozen NetKernel instance (${instance.name}", groupName)
 
         [startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
             configureTask(name) {
@@ -329,23 +333,25 @@ class NetKernelPlugin implements Plugin<Project> {
 
         configureTask(freezeTaskName) {
             from instance.location
-            destinationDir = netKernel.workFile("freeze")
-            archiveName = "frozen-${instance.name}.jar"
+            archiveFile instance.frozenJarFile
+//            destinationDir = instance.frozenJarFile.parentFile
+//            archiveName = instance.frozenJarFile.name
         }
 
         configureTask(copyBeforeFreezeTaskName) {
             from instance.location
-            into netKernel.workFile("freeze/${instance.name}")
+            into instance.frozenLocation
             include "**/*"
         }
 
         configureTask(freezeTidyTaskName) {
-            freezeDirectory = netKernel.workFile("freeze/${instance.name}")
+            freezeDirectory = instance.frozenLocation
             installDirectory = instance.location
         }
 
         configureTask(cleanFreezeTaskName) {
-            delete netKernel.workFile("freeze/${instance.name}")
+            delete instance.frozenJarFile
+            delete instance.frozenLocation
         }
 
 //        // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?
@@ -400,7 +406,9 @@ class NetKernelPlugin implements Plugin<Project> {
             backendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_BACKEND_PORT) as int,
             frontendPort: netKernel.projectProperty(NETKERNEL_INSTANCE_FRONTEND_PORT) as int,
             location: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_INSTALL_DIR, null, [edition: edition, netKernelVersion: netKernelVersion])),
-            jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion]))
+            jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion])),
+            frozenJarFile: netKernel.workFile("freeze/frozen-${name}.jar"),
+            frozenLocation: netKernel.workFile("freeze/${name}")
         )
 
         return instance

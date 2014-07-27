@@ -4,7 +4,7 @@ import org.gradle.api.Project
 
 /**
  * Simple helper class for handling properties.  Allows for default values to be provided as well as
- * includes internal gradle plugin properties for distribution type properties (version, URLs, etc.)
+ * includes internal gradle plugin properties for distribution type properties (netKernelVersion, URLs, etc.)
  *
  * Created by brian on 2/12/14.
  */
@@ -51,6 +51,8 @@ class PropertyHelper {
      * @param propertyName name of property to look for
      * @param defaultValue default value if not found in any other locations
      * @param values map of substitution values to fill in any placeholders {} in property value
+     *
+     * @return property value with values populated
      */
     String findProjectProperty(Project project, String propertyName, String defaultValue = null, Map values = [:]) {
         String propertyValue = project.hasProperty(propertyName) ? project.getProperties().get(propertyName) : null
@@ -70,7 +72,7 @@ class PropertyHelper {
                 // Return original match if no value is supplied for the placeholder
                 String value = values[name]
                 if (value == null) {
-                    value = findProjectProperty(project, name)
+                    value = findProjectProperty(project, name, null, values)
                     if (value == null) {
                         value = globalMatch
                     }

@@ -37,7 +37,23 @@ class NetKernelExtension {
 
     def instances(Closure closure) {
         instances.configure(closure)
+
+        // After initial configuration, loop through instances and fill in default values if missing
+        instances.each { NetKernelInstance instance ->
+            instance.edition = instance.edition ?: Edition.STANDARD
+            instance.netKernelVersion = instance.netKernelVersion ?: currentMajorReleaseVersion()
+            instance.url = instance.url ?: new URL(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL))
+            instance.backendPort = instance.backendPort ?: projectProperty(PropertyHelper.NETKERNEL_INSTANCE_BACKEND_PORT) as int
+            instance.frontendPort = instance.frontendPort ?: projectProperty(PropertyHelper.NETKERNEL_INSTANCE_FRONTEND_PORT) as int
+            instance.jarFileLocation = instance.jarFileLocation ?:
+                workFile(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: instance.edition, netKernelVersion: instance.netKernelVersion]))
+        }
     }
+
+
+//    String distributionJarFile(Edition edition, String netKernelVersion) {
+//        return propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion])
+//    }
 
     Dependency dependency(String name, String version = '[1.0.0,)', String group = 'urn.com.ten60.core') {
         project.dependencies.create(group: group, name: name, version: version)
@@ -117,8 +133,8 @@ class NetKernelExtension {
         return propertyHelper.findProjectProperty(project, PropertyHelper.CURRENT_MAJOR_RELEASE_VERSION, null)
     }
 
-    String distributionJarFile(Release release) {
-        return propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_JAR_NAME, null, [edition: release.edition, version: release.version])
+    String distributionJarFile(Edition edition, String netKernelVersion) {
+        return propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion])
     }
 
     String getInstanceName() {

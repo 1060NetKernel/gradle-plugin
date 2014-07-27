@@ -5,7 +5,7 @@ import org.gradle.api.tasks.TaskAction
 
 //Imports for Apache Client used in NKEE download
 /*
- * A task to download a version of NetKernel.
+ * A task to download a netKernelVersion of NetKernel.
  */
 
 class ConfigureAppositeTask extends DefaultTask {

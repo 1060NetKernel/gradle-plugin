@@ -71,7 +71,7 @@ netkernel {
     
 /*    env {
         name = "foo"
-        version = "5.2.1"
+        netKernelVersion = "5.2.1"
         type = "SE"
         directory = "...."
         host = ""

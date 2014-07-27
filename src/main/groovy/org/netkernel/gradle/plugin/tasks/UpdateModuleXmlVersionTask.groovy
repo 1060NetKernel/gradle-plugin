@@ -18,7 +18,7 @@ class UpdateModuleXmlVersionTask extends DefaultTask {
     void updateModuleXmlVersion() {
         Module sourceModule = new Module(sourceModuleXml)
 
-        // Remove '-SNAPSHOT' from version
+        // Remove '-SNAPSHOT' from netKernelVersion
         String version = project.version.replace('-SNAPSHOT', '')
 
         outputModuleXml.text = sourceModuleXml.text.replace(

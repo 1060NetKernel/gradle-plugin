@@ -5,7 +5,6 @@ import org.netkernel.gradle.plugin.BasePluginSpec
 import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
-import org.netkernel.gradle.plugin.model.Release
 import spock.lang.Ignore
 
 class DownloadNetKernelTaskSpec extends BasePluginSpec {
@@ -28,7 +27,8 @@ class DownloadNetKernelTaskSpec extends BasePluginSpec {
         setup:
         File downloadDirectory = getResourceAsFile('/test/gradleHomeDirectory/netkernel/download')
         File distributionDir = getResourceAsFile('/test/distributions')
-        downloadNetKernelTask.release = new Release(edition: edition, version: '5.2.1')
+        downloadNetKernelTask.edition = edition
+        downloadNetKernelTask.netKernelVersion = '5.2.1'
         downloadNetKernelTask.destinationFile = file '/test/gradleHomeDirectory/netkernel/download', resultantJarFileName
         downloadConfig.url = distributionDir.toURI().toURL()
         downloadConfig.username = 'username'

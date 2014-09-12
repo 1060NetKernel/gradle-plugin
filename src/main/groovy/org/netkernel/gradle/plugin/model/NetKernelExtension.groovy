@@ -26,6 +26,8 @@ class NetKernelExtension {
 
     Project project
 
+    String[] packageList=[]
+
     NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
@@ -60,18 +62,21 @@ class NetKernelExtension {
     }
 
     void useROCRepo() {
-        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNELROC_URL)
+        //useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNELROC_URL)
+        throw new Exception("NK-ROC Repo is now offline. Please use the official 1060 NetKernel maven repository with .useNKRepo()");
     }
 
-    void useLocalhostRepo() {
-        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_LOCAL_URL)
+    void useMavenNKLocal() {
+        useMaven propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_LOCAL_URL)
     }
 
-    void useNKRepo() {
-        useRepo propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNEL_URL)
+    void useMavenNK() {
+        println("******Added Official NetKernel Repo********")
+        useMaven propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNEL_URL)
     }
 
-    void useRepo(String repoURL) {
+    void useMaven(String repoURL) {
+        println("Adding repo: ${repoURL}")
         project.repositories.maven { url repoURL }
     }
 

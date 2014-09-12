@@ -29,7 +29,7 @@ import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.DownloadConfig
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
-import org.netkernel.layer0.util.Utils
+//import org.netkernel.layer0.util.Utils
 
 /**
  * A task to download a netKernelVersion of NetKernel.  This is used to download both the SE & EE Editions.
@@ -148,7 +148,7 @@ class DownloadNetKernelTask extends DefaultTask {
                     if (statusCode == 200) {
                         def is = response.getEntity().getContent()
                         def fos = new FileOutputStream(destinationFile)
-                        Utils.pipe(is, fos)
+                        pipe(is, fos)
                         fos.flush()
                         fos.close()
                         println("Successfully downloaded ${url}")
@@ -169,6 +169,24 @@ class DownloadNetKernelTask extends DefaultTask {
         catch (Exception e) {
             e.printStackTrace()
             ant.fail("Failed to connect to NKEE server")
+        }
+    }
+
+    def public static void pipe(InputStream aInput, OutputStream aOutput) throws IOException
+    {	def b = new byte[256];
+        int c;
+        try
+        {	while ( (c=aInput.read(b))>0 )
+        {	aOutput.write(b,0,c);
+        }
+        }
+        finally
+        {	try
+        {	aInput.close();
+        }
+        finally
+        {	aOutput.close();
+        }
         }
     }
 }

@@ -79,7 +79,7 @@ class NetKernelExtensionSpec extends BasePluginSpec {
         method             | propertyName
         'useLocalhostRepo' | PropertyHelper.MAVEN_LOCAL_URL
         'useNKRepo'        | PropertyHelper.MAVEN_NETKERNEL_URL
-        'useROCRepo'       | PropertyHelper.MAVEN_NETKERNELROC_URL
+        //'useROCRepo'       | PropertyHelper.MAVEN_NETKERNELROC_URL
 
     }
 

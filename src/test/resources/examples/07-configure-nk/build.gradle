@@ -5,14 +5,12 @@ buildscript {
         mavenLocal()
         mavenCentral()
         maven {
-            // TODO: Default to local, but allow override
-            url "http://maven.netkernel.org:8080/netkernel-maven"
-            //url "http://localhost:8080/netkernel-maven"
+            url "http://maven.netkernel.org/netkernel-maven"
         }
     }
 
     dependencies {
-        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '[0.0.1,)'
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
     }
 }
 
@@ -30,28 +28,26 @@ repositories {
 
 netkernel {
     useMavenCentral()
-    useROCRepo()
-	//useLocalhostRepo()
+    useMavenNK()
 
     useStandardCompileDependencies()
 
     download {
         ee {
             //url = "http://localhost:8000"
-            //username = ""
-            //password = ""
+            username = "pjr"
+            password = "rjgoto4509a;sdfw"
         }
     }
-
-    /*
-    envs {
-        ConfigNK {
-            packages = [ "lang-trl", "html5-frameworks"]
-        }
-    }
-    */
-
+	
+	packageList = ["lang-trl", "html5-frameworks"]
 }
+
+/*
+task setup(type: org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask) {
+		packageList=["lang-trl", "html5-frameworks"]
+}
+*/
 
 
 

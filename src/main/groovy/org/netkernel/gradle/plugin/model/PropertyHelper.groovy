@@ -27,8 +27,8 @@ class PropertyHelper {
     static final String NETKERNEL_INSTANCE_INSTALL_DIR = 'netkernel.instance.install_dir'
 
     static final String MAVEN_LOCAL_URL = 'maven.local.url'
-    static final String MAVEN_NETKERNEL_URL = 'netkernel.maven.url'
-    static final String MAVEN_NETKERNELROC_URL = 'netkernelroc.maven.url'
+    static final String MAVEN_NETKERNEL_URL = 'maven.netkernel.url'
+    static final String MAVEN_NETKERNELROC_URL = 'maven.netkernelroc.url'
 
     Properties gradlePluginProperties
 

@@ -3,35 +3,33 @@ package org.netkernel.gradle.plugin.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-//Imports for Apache Client used in NKEE download
 /*
- * A task to download a netKernelVersion of NetKernel.
+ * A task to configure NetKernel by installing packages from Apposite
  */
 
 class ConfigureAppositeTask extends DefaultTask {
     // Static Defaults
     static def DISTRIBUTION_URL = 'http://localhost:1060'
 
-
     //Variable parameters
+    def packageList=[]
 
     //Helpers
 
     @TaskAction
     void configureApposite() {
-        println("CONFIGURING APPOSITE");
+        println("CONFIGURING APPOSITE: ");
 
         def url="${DISTRIBUTION_URL}"
 
-        synchronize=url+"/tools/apposite/unattended/v1/synchronize";
-        update=url+"/tools/apposite/unattended/v1/update";
-        install=url+"/tools/apposite/unattended/v1/change?install=lang-trl&install=html5-frameworks";
+        def install=url+"/tools/apposite/unattended/v1/change?";
+        packageList.each { p ->
+            install+="install=${p}&"
+            println(p)
+        }
 
-        callAppositeAPI(synchronize);
-        sleep(5000);
-        callAppositeAPI(update)
-        sleep(30000);
         callAppositeAPI(install)
+        sleep(20000)
     }
 
     def callAppositeAPI(url)

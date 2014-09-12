@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '[0.0.1,)'
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
     }
 }
 
@@ -28,8 +28,7 @@ dependencies {
 netkernel {
 
     useMavenCentral()
-    useROCRepo()
-	//useLocalhostRepo()
+    useMavenNK()
 
     useStandardCompileDependencies()
 

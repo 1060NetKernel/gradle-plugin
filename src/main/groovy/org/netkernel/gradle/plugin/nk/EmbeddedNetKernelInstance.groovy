@@ -1,5 +1,6 @@
 package org.netkernel.gradle.plugin.nk
 
+/*
 import com.ten60.netkernel.cache.se.representation2.ConcurrentCache
 import org.netkernel.container.impl.Kernel
 import org.netkernel.layer0.boot.IModuleFactory
@@ -9,6 +10,7 @@ import org.netkernel.layer0.nkf.INKFRequestContext
 import org.netkernel.layer0.tools.ExtraMimeTypes
 import org.netkernel.layer0.util.PropertyConfiguration
 import org.netkernel.module.standard.StandardModuleFactory
+*/
 
 
 /**
@@ -17,9 +19,11 @@ import org.netkernel.module.standard.StandardModuleFactory
  *
  */
 class EmbeddedNetKernelInstance {
+    /*
     def ModuleManager mModuleManager
     def INKFRequestContext mContext
     def ConcurrentCache mRepresentationCache
+    */
 
     EmbeddedNetKernelInstance() {
         try {
@@ -30,6 +34,7 @@ class EmbeddedNetKernelInstance {
     }
 
     def init() throws Exception {
+        /*
         Kernel kernel = new Kernel()
         ClassLoader classLoader = EmbeddedNetKernelInstance.class.getClassLoader()
         ExtraMimeTypes.getInstance()
@@ -48,6 +53,6 @@ class EmbeddedNetKernelInstance {
         //InputStream is = classLoader.getResourceAsStream
 
         mModuleManager.setRunLevel(1)
-
+        */
     }
 }

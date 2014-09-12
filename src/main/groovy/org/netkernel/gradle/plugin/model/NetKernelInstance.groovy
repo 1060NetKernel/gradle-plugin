@@ -81,6 +81,8 @@ class NetKernelInstance implements Serializable {
     void startJar() {
         def jvm = org.gradle.internal.jvm.Jvm.current()
         def javaBinary = jvm.javaExecutable.absolutePath
+        //println "Starting NK jar:  ${jarFileLocation.absolutePath} in directory ${location.parentFile}"
+        location.parentFile.mkdirs()
         doStart(location.parentFile, javaBinary, '-jar', "${jarFileLocation.absolutePath}")
     }
 

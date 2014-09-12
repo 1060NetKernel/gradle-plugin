@@ -4,7 +4,8 @@ package org.netkernel.gradle.plugin.tasks
 final class TaskName {
 
     // NetKernel Plugin Tasks
-    static final String CONFIGURE_APPOSITE = 'configureApposite'
+    static final String APPOSITE_CONFIGURE = 'appositeConfigure'
+    static final String APPOSITE_UPDATE = 'appositeUpdate'
     static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
 //    static final String DEPLOY = 'deploy'
 //    static final String UNDEPLOY = 'undeploy'

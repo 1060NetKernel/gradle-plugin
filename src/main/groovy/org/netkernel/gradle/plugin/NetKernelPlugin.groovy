@@ -105,19 +105,21 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         if (!netKernel.module) {
-            throw new InvalidUserDataException("Could not find module.xml in the project.")
+            //throw new InvalidUserDataException("Could not find module.xml in the project.")
+            System.err.println("WARNING: Could not find module.xml in the project.")
         }
 
         // If the project has a netKernelVersion specified, override the value in the module.xml
-        if (project.version == 'unspecified') {
-            project.version = netKernel.module.version
-        } else {
-            netKernel.module.version = project.version
+        if(netKernel.module) {
+            if (project.version == 'unspecified') {
+                project.version = netKernel.module.version
+            } else {
+                netKernel.module.version = project.version
+            }
+            //Set Maven Artifact name and netKernelVersion
+            //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
+            project.archivesBaseName = netKernel.module.URIDotted
         }
-
-        //Set Maven Artifact name and netKernelVersion
-        //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
-        project.archivesBaseName = netKernel.module.URIDotted
     }
 
     /**
@@ -126,7 +128,9 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTasks() {
 
-        createTask(CONFIGURE_APPOSITE, ConfigureAppositeTask, 'Configures apposite repository')
+        createTask(APPOSITE_CONFIGURE, ConfigureAppositeTask, 'Configures NetKernel with packages from Apposite repository')
+
+        createTask(APPOSITE_UPDATE, UpdateAppositeTask, 'Updates NetKernel from Apposite repository')
 
         createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
@@ -136,9 +140,6 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository")
 
-        createTask(MODULE, Copy, "Copies built classes to build folder")
-
-        createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
 
         createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory")
             .setEnabled(project.configurations.thaw.files.size() == 1)
@@ -149,9 +150,16 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(THAW_EXPAND, Copy, "Expands thawed NetKernel instance into thaw installation directory")
 
-        createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
-            .setEnabled(netKernel.module.versionOverridden)
+        if(netKernel.module) {
 
+            createTask(MODULE, Copy, "Copies built classes to build folder")
+
+            createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
+
+            createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
+                    .setEnabled(netKernel.module.versionOverridden)
+
+        }
         /*        project.task('freezePublish', type: org.gradle.api.publish.maven.tasks.PublishToMavenLocal) {
             publication {
                 from freezeDir
@@ -218,32 +226,37 @@ class NetKernelPlugin implements Plugin<Project> {
             destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
-        configureTask(MODULE) {
-            into "${project.buildDir}/${netKernel.module.name}"
-            from project.sourceSets.main.output
+        configureTask(APPOSITE_UPDATE) {
+            packageList = netKernel.packageList
         }
 
-        configureTask(MODULE_RESOURCES) {
-            into "${project.buildDir}/${netKernel.module.name}"
-            if (netKernel.sourceStructure == SourceStructure.GRADLE) {
-                from "${project.projectDir}/src/module"
-                from "${project.projectDir}/src/main/resources"
-            } else {
-                from "${project.projectDir}/src"
+        if(netKernel.module) {
+            configureTask(MODULE) {
+                into "${project.buildDir}/${netKernel.module.name}"
+                from project.sourceSets.main.output
+            }
+
+            configureTask(MODULE_RESOURCES) {
+                into "${project.buildDir}/${netKernel.module.name}"
+                if (netKernel.sourceStructure == SourceStructure.GRADLE) {
+                    from "${project.projectDir}/src/module"
+                    from "${project.projectDir}/src/main/resources"
+                } else {
+                    from "${project.projectDir}/src"
+                }
+            }
+
+            // TODO: Rethink for multi modules
+            configureTask(JAR) {
+                from project.fileTree(dir: "${project.buildDir}/${netKernel.module.name}")
+                duplicatesStrategy 'exclude'
+            }
+
+            configureTask(UPDATE_MODULE_XML_VERSION) {
+                sourceModuleXml = netKernel.module.moduleFile
+                outputModuleXml = project.file("${project.buildDir}/${netKernel.module.name}/module.xml")
             }
         }
-
-        // TODO: Rethink for multi modules
-        configureTask(JAR) {
-            from project.fileTree(dir: "${project.buildDir}/${netKernel.module.name}")
-            duplicatesStrategy 'exclude'
-        }
-
-        configureTask(UPDATE_MODULE_XML_VERSION) {
-            sourceModuleXml = netKernel.module.moduleFile
-            outputModuleXml = project.file("${project.buildDir}/${netKernel.module.name}/module.xml")
-        }
-
     }
 
     /**
@@ -254,13 +267,17 @@ class NetKernelPlugin implements Plugin<Project> {
 //        project.tasks[FREEZE_DELETE].dependsOn FREEZE_JAR
 //        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
 //        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
-        project.tasks[JAR].dependsOn MODULE_RESOURCES
-        project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
-        project.tasks[MODULE].dependsOn COMPILE_GROOVY
-        project.tasks[MODULE_RESOURCES].dependsOn MODULE
+        if(netKernel.module) {
+            project.tasks[JAR].dependsOn MODULE_RESOURCES
+            project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
+            project.tasks[MODULE].dependsOn COMPILE_GROOVY
+            project.tasks[MODULE_RESOURCES].dependsOn MODULE
+            project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
+        }
+
         project.tasks[THAW_CONFIGURE].dependsOn THAW_EXPAND
         project.tasks[THAW_EXPAND].dependsOn THAW_DELETE_INSTALL
-        project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
+
 
     }
 
@@ -331,12 +348,14 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         }
 
+        /*Broken: method archiveFile is missing!!
         configureTask(freezeTaskName) {
             from instance.location
             archiveFile instance.frozenJarFile
 //            destinationDir = instance.frozenJarFile.parentFile
 //            archiveName = instance.frozenJarFile.name
         }
+        */
 
         configureTask(copyBeforeFreezeTaskName) {
             from instance.location

@@ -39,15 +39,13 @@ netkernel {
             password = "rjgoto4509a;sdfw"
         }
     }
-	
-	packageList = ["lang-trl", "html5-frameworks"]
+
+	//packageList=["lang-trl", "html5-frameworks"]
 }
 
-/*
 task setup(type: org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask) {
 		packageList=["lang-trl", "html5-frameworks"]
 }
-*/
 
 
 

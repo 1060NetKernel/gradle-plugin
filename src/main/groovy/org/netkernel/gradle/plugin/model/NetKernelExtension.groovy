@@ -26,7 +26,7 @@ class NetKernelExtension {
 
     Project project
 
-    String[] packageList=[]
+    //String[] packageList
 
     NetKernelExtension(Project project) {
         this.project = project

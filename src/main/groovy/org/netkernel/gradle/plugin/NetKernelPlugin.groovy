@@ -106,7 +106,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         if (!netKernel.module) {
             //throw new InvalidUserDataException("Could not find module.xml in the project.")
-            System.err.println("WARNING: Could not find module.xml in the project.")
+            System.err.println("WARNING: Could not find module.xml in the project - only sysadmin tasks will be available")
         }
 
         // If the project has a netKernelVersion specified, override the value in the module.xml
@@ -226,9 +226,12 @@ class NetKernelPlugin implements Plugin<Project> {
             destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
+        /*
+        //Can't get this to work!!
         configureTask(APPOSITE_UPDATE) {
             packageList = netKernel.packageList
         }
+        */
 
         if(netKernel.module) {
             configureTask(MODULE) {

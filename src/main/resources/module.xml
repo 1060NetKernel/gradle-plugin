@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="2.0">
+    <meta>
+        <identity>
+            <uri>urn:org:netkernel:gradle:plugin</uri>
+            <version>1.1.1</version>
+        </identity>
+        <info>
+            <name>Gradle Plugin - Class Library</name>
+            <description>Gradle Plugin classes (no resources)</description>
+        </info>
+    </meta>
+    <system>
+        <classloader>
+            <exports>
+                <match>org\.netkernel\.gradle.plugin.*</match>
+            </exports>
+        </classloader>
+    </system>
+    <rootspace>
+            <!--Deliberately Empty - this is only a java class library and provides no resources -->
+    </rootspace>
+</module>

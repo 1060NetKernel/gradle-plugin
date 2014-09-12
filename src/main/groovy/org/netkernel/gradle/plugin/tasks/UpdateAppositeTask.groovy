@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.netkernel.gradle.plugin.model.PropertyHelper
 
 /*
  * A task to synchronize and update NetKernel with latest packages from Apposite
@@ -9,17 +10,19 @@ import org.gradle.api.tasks.TaskAction
 
 class UpdateAppositeTask extends DefaultTask {
     // Static Defaults
-    static def DISTRIBUTION_URL = 'http://localhost:1060'
 
     //Variable parameters
 
     //Helpers
+    def propertyHelper = new PropertyHelper()
 
     @TaskAction
     void updateApposite() {
         println("UPDATING NETKERNEL WITH APPOSITE");
 
-        def url="${DISTRIBUTION_URL}"
+        def url=propertyHelper.findProjectProperty(project, propertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL, "http://localhost")+
+                ":"+
+                propertyHelper.findProjectProperty(project, propertyHelper.NETKERNEL_INSTANCE_BACKEND_PORT, "1060")
 
         def synchronize=url+"/tools/apposite/unattended/v1/synchronize";
         def update=url+"/tools/apposite/unattended/v1/update";

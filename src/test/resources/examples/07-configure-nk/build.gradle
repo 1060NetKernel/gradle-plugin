@@ -27,10 +27,6 @@ repositories {
 }
 
 netkernel {
-    useMavenCentral()
-    useMavenNK()
-
-    useStandardCompileDependencies()
 
     download {
         ee {

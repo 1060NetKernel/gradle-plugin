@@ -180,6 +180,7 @@ class NetKernelPlugin implements Plugin<Project> {
             configuration = project.configurations.freeze
             repositories {
                 mavenInstaller()
+                //mavenLocal()
             }
             repositories.withType(MavenResolver) {
                 pom.groupId = 'org.netkernel'
@@ -351,14 +352,14 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         }
 
-        /*Broken: method archiveFile is missing!!
+        /*Broken: method archiveFile is missing!!*/
         configureTask(freezeTaskName) {
             from instance.location
-            archiveFile instance.frozenJarFile
-//            destinationDir = instance.frozenJarFile.parentFile
-//            archiveName = instance.frozenJarFile.name
+            //archiveFile instance.frozenJarFile
+            destinationDir = instance.frozenJarFile.parentFile
+            archiveName = instance.frozenJarFile.name
         }
-        */
+
 
         configureTask(copyBeforeFreezeTaskName) {
             from instance.location

@@ -119,6 +119,11 @@ class NetKernelPlugin implements Plugin<Project> {
             //Set Maven Artifact name and netKernelVersion
             //See http://www.gradle.org/docs/current/userguide/maven_plugin.html#sec:maven_pom_generation
             project.archivesBaseName = netKernel.module.URIDotted
+
+            println "MODULE TARGET ${netKernel.module.name}"
+
+            println("Finished configuring srcStructure")
+
         }
     }
 
@@ -154,7 +159,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
             createTask(MODULE, Copy, "Copies built classes to build folder")
 
-            createTask(MODULE_RESOURCES, ModuleResourcesTask, 'Copies module resources (module.xml, etc.) to build folder')
+            createTask(MODULE_RESOURCES, Copy, 'Copies module resources (module.xml, etc.) to build folder and resolves lib/ dependencies')
 
             createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
                     .setEnabled(netKernel.module.versionOverridden)
@@ -240,15 +245,66 @@ class NetKernelPlugin implements Plugin<Project> {
                 from project.sourceSets.main.output
             }
 
+
             configureTask(MODULE_RESOURCES) {
-                into "${project.buildDir}/${netKernel.module.name}"
-                if (netKernel.sourceStructure == SourceStructure.GRADLE) {
+                if(netKernel.sourceStructure.equals(SourceStructure.GRADLE))
+                {
+                    into "${project.buildDir}/${netKernel.module.name}"
                     from "${project.projectDir}/src/module"
-                    from "${project.projectDir}/src/main/resources"
-                } else {
+                }
+                if(netKernel.sourceStructure.equals(SourceStructure.NETKERNEL))
+                {
+                    into "${project.buildDir}/${netKernel.module.name}"
                     from "${project.projectDir}/src"
                 }
+                //Find out what classes were used to build this
+                doLast {
+                    println ("JAVA/GROOVY CLASSPATH AT BUILD")
+                    def groovySources=false
+                    //println "FINDING GROOVY SOURCES"
+                    project.tasks.compileGroovy.source.each { File s ->
+                        if(s.name.endsWith(".groovy"))
+                        {    groovySources=true
+                            println "FOUND GROOOOOOVY SO WILL REJECT groovy*.jar"
+                            return
+                        }
+                    }
+                    def jarsToPack=[]
+                    project.tasks.compileJava.classpath.each { f ->
+                        File fi=f
+                        if(fi.absolutePath.matches(".*expanded\\.lib.*"))
+                        {   println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"
+                        }
+                        else if(fi.absolutePath.contains("urn.com.ten60.core"))
+                        {   //println "CORE ${fi.name}"
+                        }
+                        else if(fi.absolutePath.contains("urn.org.netkernel"))
+                        {   println "REJECTED CORE LIB ${fi.name}"
+                        }
+                        else if(groovySources && fi.absolutePath.matches(".*groovy.*\\.jar"))
+                        {   println "REJECTED GROOVY BUILD LIB ${fi.name}"
+                        }
+                        else
+                        {   println "FOUND LIBRARY DEPENDENCY ${fi.name}"
+                            jarsToPack.add fi
+                        }
+                    }
+
+                    if(!jarsToPack.empty)
+                    {   println ("PACKING JARS IN MODULE lib/\n======>")
+                        jarsToPack=project.files(jarsToPack)
+                        jarsToPack.each { f -> println f.name}
+                        project.copy {
+                            from jarsToPack
+                            into "${project.buildDir}/${netKernel.module.name}/lib/"
+                        }
+                        println ("<======")
+                    }
+                    println("MODULE ${netKernel.module.name} IS BUILT")
+
+                }
             }
+
 
             // TODO: Rethink for multi modules
             configureTask(JAR) {

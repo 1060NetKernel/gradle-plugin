@@ -32,31 +32,23 @@ netkernel {
         ee {
             //url = "http://localhost:8000"
             username = "pjr"
-            password = "rjgoto4509a;sdfw"
+            password = ''
         }
     }
 
-    /* Can't get this simple approach to work - seems to require nested closure which is much more complicated for end users*/
     apposite {
         packageList = ["lang-trl", "html5-frameworks"]
     }
 
-    /*
-    apposite {
 
-        appositeConfig
-                {
-                    packageList = ["lang-trl", "html5-frameworks"]
-                }
+    deploy {
+        collection = "my-deployment"
+        module  group: 'gradle-test', name: 'urn.org.netkernel.single.java.module', version: '[0.0.1,)'
+        //module  group: 'urn.org.netkernel', name: 'test-boo', version: '[0.0.1,)'
+        //module  group: 'urn.org.netkernel', name: 'test-baa', version: '[0.0.1,)'
+        //module  group: 'urn.org.netkernel', name: 'test-baz', version: '[0.0.1,)'
     }
-    */
 }
-
-/*
-task setup(type: org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask) {
-		packageList=["lang-trl", "html5-frameworks"]
-}
-*/
 
 
 

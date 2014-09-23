@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import org.gradle.api.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.netkernel.gradle.plugin.model.AppositeConfig
 import org.netkernel.gradle.plugin.model.PropertyHelper
 
 /*
@@ -15,10 +16,11 @@ class ConfigureAppositeTask extends DefaultTask {
 
 
     //Variable parameters
-    def packageList=[]
+    //def packageList=[]
 
     //Helpers
     def propertyHelper = new PropertyHelper()
+    AppositeConfig  appositeConfig
 
     @TaskAction
     void configureApposite() {
@@ -29,12 +31,12 @@ class ConfigureAppositeTask extends DefaultTask {
                 propertyHelper.findProjectProperty(project, propertyHelper.NETKERNEL_INSTANCE_BACKEND_PORT, "1060")
 
         def install=url+"/tools/apposite/unattended/v1/change?";
-        packageList.each { p ->
+        appositeConfig.packageList.each { p ->
             install+="install=${p}&"
             println(p)
         }
 
-        callAppositeAPI(install)
+        //callAppositeAPI(install)
         sleep(20000)
     }
 

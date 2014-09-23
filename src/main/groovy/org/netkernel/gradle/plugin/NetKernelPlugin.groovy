@@ -232,12 +232,12 @@ class NetKernelPlugin implements Plugin<Project> {
             destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
-        /*
         //Can't get this to work!!
-        configureTask(APPOSITE_UPDATE) {
-            packageList = netKernel.packageList
+        configureTask(APPOSITE_CONFIGURE) {
+            println("===================nk packagelist==============")
+            println(netKernel.apposite)
+            appositeConfig = netKernel.apposite.appositeConfig
         }
-        */
 
         if(netKernel.module) {
             configureTask(MODULE) {

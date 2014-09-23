@@ -36,12 +36,25 @@ netkernel {
         }
     }
 
-	//packageList=["lang-trl", "html5-frameworks"]
+    /* Can't get this simple approach to work - seems to require nested closure which is much more complicated for end users
+    apposite {
+        packageList = ["lang-trl", "html5-frameworks"]
+    }
+    */
+    apposite {
+
+        appositeConfig
+                {
+                    packageList = ["lang-trl", "html5-frameworks"]
+                }
+    }
 }
 
+/*
 task setup(type: org.netkernel.gradle.plugin.tasks.ConfigureAppositeTask) {
 		packageList=["lang-trl", "html5-frameworks"]
 }
+*/
 
 
 

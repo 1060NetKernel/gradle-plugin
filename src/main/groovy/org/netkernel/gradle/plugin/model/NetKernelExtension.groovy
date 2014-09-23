@@ -15,6 +15,7 @@ class NetKernelExtension {
     PropertyHelper propertyHelper = new PropertyHelper()
 
     final Download download
+    final Apposite apposite
 
     // This should probably be a list or else this model operates on a single module at a time
     Module module
@@ -31,10 +32,16 @@ class NetKernelExtension {
     NetKernelExtension(Project project) {
         this.project = project
         this.download = new Download(project)
+        this.apposite = new Apposite(project)
     }
 
     def download(Closure closure) {
         project.configure(download, closure)
+    }
+
+    def apposite(Closure closure) {
+        println("APPOSITE RECEIVED A CLOSURE")
+        project.configure(apposite, closure)
     }
 
     def instances(Closure closure) {

@@ -16,6 +16,7 @@ class Deploy {
     }
 
     def module (moduleMap)
-    {   modules.add(moduleMap)
+    {   project.dependencies.runtime moduleMap
+        modules.add(moduleMap)
     }
 }

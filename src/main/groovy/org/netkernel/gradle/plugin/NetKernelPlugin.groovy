@@ -240,6 +240,20 @@ class NetKernelPlugin implements Plugin<Project> {
 
         configureTask(DEPLOY_COLLECTION) {
             deploy = netKernel.deploy
+            from project.configurations.runtime     //Copy the runtime dependencies set up by the Deploy configuration
+            def modulesDir=new File(netKernel.getThawInstallationDirectory(), "modules")
+            println(modulesDir)
+            into modulesDir     //Into the modules directory of the thawed target
+            //Keep record of each copied file in the copied list in the task
+            eachFile { f ->
+                   name =f.getFile().getName()
+                   println("Copied $name")
+                   copied.add(name)
+            }
+            def modulesd=new File(netKernel.getThawInstallationDirectory(), "etc/modules.d/")
+            doLast {
+                writeModulesd(modulesd);
+            }
         }
 
         if(netKernel.module) {

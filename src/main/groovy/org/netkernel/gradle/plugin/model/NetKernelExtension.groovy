@@ -16,6 +16,7 @@ class NetKernelExtension {
 
     final Download download
     final Apposite apposite
+    final Deploy deploy;
 
     // This should probably be a list or else this model operates on a single module at a time
     Module module
@@ -33,6 +34,8 @@ class NetKernelExtension {
         this.project = project
         this.download = new Download(project)
         this.apposite = new Apposite(project)
+        this.deploy = new Deploy(project)
+
     }
 
     def download(Closure closure) {
@@ -42,6 +45,11 @@ class NetKernelExtension {
     def apposite(Closure closure) {
         println("APPOSITE RECEIVED A CLOSURE")
         project.configure(apposite, closure)
+    }
+
+    def deploy(Closure closure) {
+        println("DEPLOY RECEIVED A CLOSURE")
+        project.configure(deploy, closure)
     }
 
     def instances(Closure closure) {

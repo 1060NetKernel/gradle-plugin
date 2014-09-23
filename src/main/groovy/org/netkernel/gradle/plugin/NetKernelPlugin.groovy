@@ -137,6 +137,8 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(APPOSITE_UPDATE, UpdateAppositeTask, 'Updates NetKernel from Apposite repository')
 
+        createTask(DEPLOY_COLLECTION, DeployCollectionTask, 'Deploy collection of modules from Maven to NetKernel')
+
         createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
 
         createTask(DOWNLOAD_EE, DownloadNetKernelTask, 'Downloads NetKernel EE edition')
@@ -232,11 +234,12 @@ class NetKernelPlugin implements Plugin<Project> {
             destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
         }
 
-        //Can't get this to work!!
         configureTask(APPOSITE_CONFIGURE) {
-            println("===================nk packagelist==============")
-            println(netKernel.apposite)
             apposite = netKernel.apposite
+        }
+
+        configureTask(DEPLOY_COLLECTION) {
+            deploy = netKernel.deploy
         }
 
         if(netKernel.module) {

@@ -36,11 +36,12 @@ netkernel {
         }
     }
 
-    /* Can't get this simple approach to work - seems to require nested closure which is much more complicated for end users
+    /* Can't get this simple approach to work - seems to require nested closure which is much more complicated for end users*/
     apposite {
         packageList = ["lang-trl", "html5-frameworks"]
     }
-    */
+
+    /*
     apposite {
 
         appositeConfig
@@ -48,6 +49,7 @@ netkernel {
                     packageList = ["lang-trl", "html5-frameworks"]
                 }
     }
+    */
 }
 
 /*

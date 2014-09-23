@@ -236,7 +236,7 @@ class NetKernelPlugin implements Plugin<Project> {
         configureTask(APPOSITE_CONFIGURE) {
             println("===================nk packagelist==============")
             println(netKernel.apposite)
-            appositeConfig = netKernel.apposite.appositeConfig
+            apposite = netKernel.apposite
         }
 
         if(netKernel.module) {

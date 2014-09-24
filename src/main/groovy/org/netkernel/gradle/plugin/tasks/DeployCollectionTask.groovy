@@ -32,18 +32,6 @@ class DeployCollectionTask extends Copy {
     Deploy  deploy
     def copied=[]
 
-    /*
-    @TaskAction
-    void deployCollection() {
-
-        println ("Collection to be deployed: ${deploy.collection}")
-        deploy.modules.each{ m ->
-            println(""" ${m["group"]} : ${m["name"]} : ${m["version"]} """)
-        }
-
-    }
-    */
-
     def writeModulesd(modulesd)
     {
         //Set up the modules.d entry

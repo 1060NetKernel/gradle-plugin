@@ -7,7 +7,6 @@ import org.gradle.api.Project
  */
 class Deploy {
     def collection
-    def modules=[]
 
     final Project project
 
@@ -17,6 +16,5 @@ class Deploy {
 
     def module (moduleMap)
     {   project.dependencies.runtime moduleMap
-        modules.add(moduleMap)
     }
 }

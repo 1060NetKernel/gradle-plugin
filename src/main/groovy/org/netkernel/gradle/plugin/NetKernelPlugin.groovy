@@ -141,9 +141,6 @@ class NetKernelPlugin implements Plugin<Project> {
 
         createTask(DOWNLOAD, DownloadNetKernelTask, 'Downloads NetKernel EE or SE edition', groupName)
 
-        createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository", groupName)
-
-
         createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory", groupName)
             .setEnabled(project.configurations.thaw.files.size() == 1)
 
@@ -177,21 +174,6 @@ class NetKernelPlugin implements Plugin<Project> {
      * is provided by the backing model classes (e.g. {@see NetKernelExtension})
      */
     void configureTasks() {
-
-        configureTask(INSTALL_FREEZE) {
-            // TODO - Introduce constants for configuration 'freeze', etc.
-            configuration = project.configurations.freeze
-            repositories {
-                mavenInstaller()
-                //mavenLocal()
-            }
-            repositories.withType(MavenResolver) {
-                pom.groupId = 'org.netkernel'
-                pom.version = '1.1.1'
-                pom.artifactId = 'frozenInstance'
-                pom.scopeMappings.mappings.clear()
-            }
-        }
 
         if (project.tasks[THAW].enabled) {
             configureTask(THAW) {
@@ -362,6 +344,7 @@ class NetKernelPlugin implements Plugin<Project> {
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
         String installTaskName = "install${instance.name}"
+        String installFreezeTaskName = "installFreeze${instance.name}"
         String deployTaskName = "deployTo${instance.name}"
         String undeployTaskName = "undeployFrom${instance.name}"
 
@@ -381,6 +364,8 @@ class NetKernelPlugin implements Plugin<Project> {
             createTask(appositeUpdateName, UpdateAppositeTask, "Updates NetKernel (${instance.name}) from Apposite repository", groupName)
         }
         else log.info "${instance.name} is SE. Apposite tasks not available"
+
+        createTask(installFreezeTaskName, Upload, "Installs frozen NetKernel ${instance.name} into maven repository", groupName)
 
         //To be sorted tasks
         createTask(deployCollectionName, DeployCollectionTask, "Deploy collection of modules from Maven to NetKernel(${instance.name})", groupName)
@@ -413,12 +398,64 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         */
 
+        configureTask(installFreezeTaskName) {
+            // TODO - Introduce constants for configuration 'freeze', etc.
+            configuration = project.configurations.freeze
+
+            /*
+
+            */
+            println("uploadArchives")
+            println project.uploadArchives.repositories
+
+            if(project.uploadArchives.repositories.isEmpty())
+            {   repositories {
+                    mavenLocal()
+                }
+            }
+            else {
+                repositories {
+                        project.uploadArchives.repositories     //This isn't working yet!!
+                        throw new Exception("uploadArchives not implemented yet!")
+                }
+            }
+            println repositories
+
+            /* This doesn't work
+            repositories.each { mavendeployer ->
+                mavendeployer.pom.groupId = 'org.netkernel'
+                mavendeployer.pom.version = '1.1.1'
+                mavendeployer.pom.artifactId = 'frozenInstance'
+                mavendeployer.pom.scopeMappings.mappings.clear()
+            }
+            */
+
+            //Try a hack...
+            project.group="org.netkernel"
+            project.version = "1.1.1"
+
+            doFirst() {
+                //Ensure the result of the freezeXX task becomes the artifact in the freeze configuration which we use in the installFreezeXX task
+                project.artifacts {
+                    freeze project.tasks[freezeTaskName]
+                }
+
+                println("Hello here are the artifacts to freeze")
+                println configuration.artifacts
+                println("Here are the repositories")
+                println repositories
+
+            }
+
+        }
+
+
         configureTask(freezeTaskName) {
             from instance.location
             destinationDir = instance.frozenJarFile.parentFile
             archiveName = instance.frozenJarFile.name
+            baseName=archiveName.replaceAll(".jar", "")
         }
-
 
         configureTask(copyBeforeFreezeTaskName) {
             from instance.location
@@ -474,6 +511,7 @@ class NetKernelPlugin implements Plugin<Project> {
 //                project.tasks."${installNKJarName}".dependsOn startNKJarName
 //                    //project.tasks."${initDaemonDirName}".dependsOn installNKJarName
 
+        project.tasks[installFreezeTaskName].dependsOn freezeTaskName
         project.tasks[freezeTaskName].dependsOn freezeTidyTaskName
         project.tasks[freezeTidyTaskName].dependsOn copyBeforeFreezeTaskName
     }

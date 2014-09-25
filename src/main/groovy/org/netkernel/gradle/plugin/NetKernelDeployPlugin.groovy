@@ -2,7 +2,6 @@ package org.netkernel.gradle.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.netkernel.gradle.plugin.tasks.DeployToNetKernelTask
 
 /**
  * Created by randolph.kahle on 4/1/14.

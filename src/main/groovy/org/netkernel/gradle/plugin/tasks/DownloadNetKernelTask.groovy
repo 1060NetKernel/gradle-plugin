@@ -26,7 +26,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.netkernel.gradle.plugin.model.DownloadConfig
+import org.netkernel.gradle.plugin.model.Download
 import org.netkernel.gradle.plugin.model.Edition
 import org.netkernel.gradle.plugin.model.PropertyHelper
 //import org.netkernel.layer0.util.Utils
@@ -38,10 +38,7 @@ class DownloadNetKernelTask extends DefaultTask {
 
     //Helpers
     def propertyHelper = new PropertyHelper()
-    DownloadConfig downloadConfig
-
-    @Input
-    Edition edition
+    Download download
 
     @Input
     String netKernelVersion
@@ -51,14 +48,14 @@ class DownloadNetKernelTask extends DefaultTask {
 
     @TaskAction
     void downloadNetKernel() {
-        switch (edition) {
+        switch (download.edition) {
             case Edition.STANDARD:
                 downloadNKSEImpl(new URL(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_SE, null, [netKernelVersion: netKernelVersion])))
                 break;
 
             case Edition.ENTERPRISE:
-                def username = propertyHelper.findProjectProperty(project, "nkeeUsername", downloadConfig.username)
-                def password = propertyHelper.findProjectProperty(project, "nkeePassword", downloadConfig.password)
+                def username = propertyHelper.findProjectProperty(project, "nkeeUsername", download.username)
+                def password = propertyHelper.findProjectProperty(project, "nkeePassword", download.password)
 
                 if (!username || !password) {
                     ant.fail("Downloading NetKernel Enterprise Edition requires a username and password.  Details can be found here: http://1060research.com/resources/#download")

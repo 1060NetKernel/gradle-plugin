@@ -6,6 +6,7 @@ import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
+import org.gradle.api.Project
 
 /**
  * A NetKernelInstance represents an individual instance of NetKernel.  Both the downloaded
@@ -40,6 +41,8 @@ class NetKernelInstance implements Serializable {
     // NetKernel Version
     String netKernelVersion
 
+    Project project
+
     /**
      * Constructor used by gradle for calls to project.container(NetKernelInstance).  Otherwise,
      * the inherited Map constructor is used.
@@ -48,6 +51,11 @@ class NetKernelInstance implements Serializable {
      */
     NetKernelInstance(String name) {
         this.name = name
+    }
+
+    //Declare maven dependency to thaw
+    def thaw (dependencyMap)
+    {   project.dependencies.thaw dependencyMap
     }
 
     /**
@@ -316,6 +324,6 @@ class NetKernelInstance implements Serializable {
     }
 
     String toString() {
-        return "${name}: ${location}"
+        return "NetKernel Instance: ${name}\nLocation: ${location}\nEdition: ${this.edition} ${this.netKernelVersion}\nAdmin Fulcrum: ${this.url}:${this.backendPort}"
     }
 }

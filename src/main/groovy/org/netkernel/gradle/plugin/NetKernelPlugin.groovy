@@ -8,6 +8,7 @@ import org.gradle.api.tasks.Upload
 import org.gradle.api.tasks.bundling.Jar
 import org.netkernel.gradle.plugin.model.*
 import org.netkernel.gradle.plugin.tasks.*
+import groovy.util.logging.Slf4j
 
 import static org.netkernel.gradle.plugin.model.PropertyHelper.*
 import static org.netkernel.gradle.plugin.tasks.TaskName.*
@@ -15,6 +16,7 @@ import static org.netkernel.gradle.plugin.tasks.TaskName.*
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
  */
+@Slf4j
 class NetKernelPlugin implements Plugin<Project> {
 
     Project project
@@ -133,37 +135,31 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTasks() {
 
-        createTask(APPOSITE_CONFIGURE, ConfigureAppositeTask, 'Configures NetKernel with packages from Apposite repository')
+        String groupName = "NetKernel Helper"
 
-        createTask(APPOSITE_UPDATE, UpdateAppositeTask, 'Updates NetKernel from Apposite repository')
+        //createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package', groupName) - Deprecated
 
-        createTask(DEPLOY_COLLECTION, DeployCollectionTask, 'Deploy collection of modules from Maven to NetKernel')
+        createTask(DOWNLOAD, DownloadNetKernelTask, 'Downloads NetKernel EE or SE edition', groupName)
 
-        createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package')
-
-        createTask(DOWNLOAD_EE, DownloadNetKernelTask, 'Downloads NetKernel EE edition')
-
-        createTask(DOWNLOAD_SE, DownloadNetKernelTask, 'Downloads NetKernel SE edition')
-
-        createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository")
+        createTask(INSTALL_FREEZE, Upload, "Installs frozen NetKernel instance into maven repository", groupName)
 
 
-        createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory")
+        createTask(THAW, Copy, "Copies frozen NetKernel instance into thaw directory", groupName)
             .setEnabled(project.configurations.thaw.files.size() == 1)
 
-        createTask(THAW_CONFIGURE, ThawConfigureTask, "Thaws configuration for NetKernel instance")
+        createTask(THAW_CONFIGURE, ThawConfigureTask, "Thaws configuration for NetKernel instance", groupName)
 
-        createTask(THAW_DELETE_INSTALL, Delete, "Deletes thawed installation directory")
+        createTask(THAW_DELETE_INSTALL, Delete, "Deletes thawed installation directory", groupName)
 
-        createTask(THAW_EXPAND, Copy, "Expands thawed NetKernel instance into thaw installation directory")
+        createTask(THAW_EXPAND, Copy, "Expands thawed NetKernel instance into thaw installation directory", groupName)
 
         if(netKernel.module) {
 
-            createTask(MODULE, Copy, "Copies built classes to build folder")
+            createTask(MODULE, Copy, "Copies built classes to build folder", groupName)
 
-            createTask(MODULE_RESOURCES, Copy, 'Copies module resources (module.xml, etc.) to build folder and resolves lib/ dependencies')
+            createTask(MODULE_RESOURCES, Copy, 'Copies module resources (module.xml, etc.) to build folder and resolves lib/ dependencies', groupName)
 
-            createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version')
+            createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version', groupName)
                     .setEnabled(netKernel.module.versionOverridden)
 
         }
@@ -220,40 +216,10 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
 
-        configureTask(DOWNLOAD_SE) {
-            downloadConfig = netKernel.download.se
-            edition = Edition.STANDARD
+        configureTask(DOWNLOAD) {
+            download = netKernel.download
             netKernelVersion = netKernel.currentMajorReleaseVersion()
-            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
-        }
-
-        configureTask(DOWNLOAD_EE) {
-            downloadConfig = netKernel.download.ee
-            edition = Edition.ENTERPRISE
-            netKernelVersion = netKernel.currentMajorReleaseVersion()
-            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(edition, netKernelVersion)}")
-        }
-
-        configureTask(APPOSITE_CONFIGURE) {
-            apposite = netKernel.apposite
-        }
-
-        configureTask(DEPLOY_COLLECTION) {
-            deploy = netKernel.deploy
-            from project.configurations.runtime     //Copy the runtime dependencies set up by the Deploy configuration
-            def modulesDir=new File(netKernel.getThawInstallationDirectory(), "modules")
-            println(modulesDir)
-            into modulesDir     //Into the modules directory of the thawed target
-            //Keep record of each copied file in the copied list in the task
-            eachFile { f ->
-                   name =f.getFile().getName()
-                   println("Copied $name")
-                   copied.add(name)
-            }
-            def modulesd=new File(netKernel.getThawInstallationDirectory(), "etc/modules.d/")
-            doLast {
-                writeModulesd(modulesd);
-            }
+            destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(download.edition, netKernelVersion)}")
         }
 
         if(netKernel.module) {
@@ -391,7 +357,7 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createNetKernelInstanceTasks(NetKernelInstance instance) {
 
-        String groupName = "NetKernel Instance (${instance})"
+        String groupName = "NetKernel Instance (${instance.name})"
 
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
@@ -405,37 +371,50 @@ class NetKernelPlugin implements Plugin<Project> {
         String cleanFreezeTaskName = "cleanFreeze${instance.name}"
         String thawTaskName = "thaw${instance.name}"
         String thawExpandTaskName = "thawExpand${instance.name}"
+        String appositeConfigureName=APPOSITE_CONFIGURE+instance.name
+        String appositeUpdateName=APPOSITE_UPDATE+instance.name
+        String deployCollectionName=DEPLOY_COLLECTION+instance.name
 
+        //Apposite Tasks on EE
+        if(instance.edition==Edition.ENTERPRISE) {
+            createTask(appositeConfigureName, ConfigureAppositeTask, "Configures NetKernel (${instance.name}) with packages from Apposite repository", groupName)
+            createTask(appositeUpdateName, UpdateAppositeTask, "Updates NetKernel (${instance.name}) from Apposite repository", groupName)
+        }
+        else log.info "${instance.name} is SE. Apposite tasks not available"
+
+        //To be sorted tasks
+        createTask(deployCollectionName, DeployCollectionTask, "Deploy collection of modules from Maven to NetKernel(${instance.name})", groupName)
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
         createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance.name})", groupName)
-        createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance.name})", groupName)
-        createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance.name})", groupName)
+        //createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance.name})", groupName)  //Deprecated - must use Maven
+        //createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance.name})", groupName)    //Deprecated - must use Maven
 
         // Tasks related to freezing and thawing instance
         createTask(freezeTaskName, Jar, "Freezes the NetKernel instance (${instance.name})", groupName)
         createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
         createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
         createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", groupName)
-        createTask(thawTaskName, Copy, "Thaws frozen NetKernel instance (${instance.name}", groupName)
-        createTask(thawExpandTaskName, Copy, "Thaws and expands frozen NetKernel instance (${instance.name}", groupName)
+        createTask(thawTaskName, Copy, "Thaws frozen NetKernel instance (${instance.name})", groupName)
+        createTask(thawExpandTaskName, Copy, "Thaws and expands frozen NetKernel instance (${instance.name})", groupName)
 
-        [startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
+        //[startTaskName, stopTaskName, installTaskName, deployTaskName, undeployTaskName].each { name ->
+        [startTaskName, stopTaskName, installTaskName].each { name ->
             configureTask(name) {
                 netKernelInstance = instance
             }
         }
 
+        /*DEPRECATED
         [deployTaskName, undeployTaskName].each { name ->
             configureTask(name) {
                 moduleArchiveFile = project.tasks.getByName('jar').archivePath
             }
         }
+        */
 
-        /*Broken: method archiveFile is missing!!*/
         configureTask(freezeTaskName) {
             from instance.location
-            //archiveFile instance.frozenJarFile
             destinationDir = instance.frozenJarFile.parentFile
             archiveName = instance.frozenJarFile.name
         }
@@ -457,6 +436,31 @@ class NetKernelPlugin implements Plugin<Project> {
             delete instance.frozenLocation
         }
 
+        if(instance.edition==Edition.ENTERPRISE) {
+
+            configureTask(appositeConfigureName) {
+                apposite = netKernel.apposite
+            }
+
+            configureTask(deployCollectionName) {
+                deploy = netKernel.deploy
+                from project.configurations.runtime
+                //Copy the runtime dependencies set up by the Deploy configuration
+                def modulesDir = new File(instance.getLocation(), "modules")
+                into modulesDir     //Into the modules directory of the thawed target
+                //Keep record of each copied file in the copied list in the task
+                eachFile { f ->
+                    name = f.getFile().getName()
+                    println("Copied $name")
+                    copied.add(name)
+                }
+                def modulesd = new File(netKernel.getThawInstallationDirectory(), "etc/modules.d/")
+                doLast {
+                    writeModulesd(modulesd);
+                }
+            }
+
+        }
 //        // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?
 //        def applyCleanAllTask(def project, ExecutionConfig config) {
 //            project.task("cleanAll${config.name}", type: CleanAllTask)
@@ -482,9 +486,14 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     NamedDomainObjectContainer<NetKernelInstance> createNetKernelInstances() {
         NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
-
+        /*
         Edition.values().each { Edition edition ->
             instances.add createNetKernelInstance(edition)
+        }
+        */
+        if(instances.isEmpty()) {
+            def nk = createNetKernelInstance(Edition.ENTERPRISE)
+            instances.add nk
         }
 
         return instances
@@ -511,7 +520,8 @@ class NetKernelPlugin implements Plugin<Project> {
             location: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_INSTALL_DIR, null, [edition: edition, netKernelVersion: netKernelVersion])),
             jarFileLocation: netKernel.workFile(netKernel.projectProperty(NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: edition, netKernelVersion: netKernelVersion])),
             frozenJarFile: netKernel.workFile("freeze/frozen-${name}.jar"),
-            frozenLocation: netKernel.workFile("freeze/${name}")
+            frozenLocation: netKernel.workFile("freeze/${name}"),
+            project: this.project
         )
 
         return instance

@@ -40,23 +40,40 @@ class NetKernelExtension {
 
     def download(Closure closure) {
         project.configure(download, closure)
+        if(download.edition==null)
+        {   throw new Exception("Download requires 'edition' of either 'SE' or 'EE'")
+        }
+        //Magically upcast the string to its Edition enumeration instance...
+        switch(download.edition) {
+            case Edition.ENTERPRISE:
+                download.edition = Edition.ENTERPRISE
+                break
+            case Edition.STANDARD:
+                download.edition = Edition.STANDARD
+                break
+        }
     }
 
     def apposite(Closure closure) {
-        println("APPOSITE RECEIVED A CLOSURE")
         project.configure(apposite, closure)
     }
 
     def deploy(Closure closure) {
-        println("DEPLOY RECEIVED A CLOSURE")
         project.configure(deploy, closure)
     }
 
     def instances(Closure closure) {
+        //Remove the default instance which has been setup earlier due to bootstrapping order affect.
+        instances.clear()
+
+        //Now setup the user specified instances
         instances.configure(closure)
 
         // After initial configuration, loop through instances and fill in default values if missing
         instances.each { NetKernelInstance instance ->
+            if(instance.location==null)
+            {   throw new Exception("Instance ${instance.name} must specify the NetKernel install path directory 'location'")
+            }
             instance.edition = instance.edition ?: Edition.STANDARD
             instance.netKernelVersion = instance.netKernelVersion ?: currentMajorReleaseVersion()
             instance.url = instance.url ?: new URL(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL))
@@ -64,6 +81,10 @@ class NetKernelExtension {
             instance.frontendPort = instance.frontendPort ?: projectProperty(PropertyHelper.NETKERNEL_INSTANCE_FRONTEND_PORT) as int
             instance.jarFileLocation = instance.jarFileLocation ?:
                 workFile(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: instance.edition, netKernelVersion: instance.netKernelVersion]))
+            instance.frozenJarFile = instance.frozenJarFile ?: workFile("freeze/frozen-${instance.name}.jar")
+            instance.frozenLocation = instance.frozenLocation ?: workFile("freeze/${instance.name}")
+
+            //println(instance)
         }
     }
 

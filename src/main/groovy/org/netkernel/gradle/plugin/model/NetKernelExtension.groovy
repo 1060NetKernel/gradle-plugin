@@ -24,6 +24,8 @@ class NetKernelExtension {
     // NetKernel instances (SE & EE come for free)
     NamedDomainObjectContainer<NetKernelInstance> instances
 
+    def frozenArchiveFile
+
     SourceStructure sourceStructure
 
     Project project
@@ -81,10 +83,10 @@ class NetKernelExtension {
             instance.frontendPort = instance.frontendPort ?: projectProperty(PropertyHelper.NETKERNEL_INSTANCE_FRONTEND_PORT) as int
             instance.jarFileLocation = instance.jarFileLocation ?:
                 workFile(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DOWNLOAD_JAR_NAME, null, [edition: instance.edition, netKernelVersion: instance.netKernelVersion]))
-            instance.frozenJarFile = instance.frozenJarFile ?: workFile("freeze/frozen-${instance.name}.jar")
-            instance.frozenLocation = instance.frozenLocation ?: workFile("freeze/${instance.name}")
-
-            //println(instance)
+            //instance.frozenJarFile = instance.frozenJarFile ?: workFile("freeze/frozen-${instance.name}.jar")
+            //instance.frozenLocation = instance.frozenLocation ?: workFile("freeze/${instance.name}")
+            instance.project = project
+            instance.eggMeetChicken()
         }
     }
 
@@ -155,9 +157,11 @@ class NetKernelExtension {
         return workFile('thawInstallation')
     }
 
+    /*
     File getFrozenArchiveFile() {
         return workFile('download/frozen.zip')
     }
+    */
 
     /**
      * Returns a file reference that is inside the ~/.gradle/netkernel directory.

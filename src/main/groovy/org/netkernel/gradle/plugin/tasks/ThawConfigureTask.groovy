@@ -15,7 +15,7 @@ class ThawConfigureTask extends DefaultTask {
 
         //edit netkernel.sh
         println "CONFIGURING NETKERNEL.SH"
-        def netkernelShFile=thawDirInner+"/bin/netkernel.sh";
+        def netkernelShFile=new File(thawDirInner ,"/bin/netkernel.sh");
         def pr2 = new BufferedReader(new InputStreamReader(new FileInputStream(netkernelShFile),"UTF-8"));
         String line2;
         def sb2=new StringBuilder(2048);
@@ -41,17 +41,17 @@ class ThawConfigureTask extends DefaultTask {
 
         //recreate license dir
         println "MKDIR LICENSE"
-        def licenseDir=new File(thawDirInner+"/etc/license/")
+        def licenseDir=new File(thawDirInner,"/etc/license/")
         licenseDir.mkdirs();
 
         //recreate package-cache dir
         println "MKDIR PACKAGE CACHE"
-        def packageCacheDir=new File(thawDirInner+"/package-cache")
+        def packageCacheDir=new File(thawDirInner,"/package-cache")
         packageCacheDir.mkdirs();
 
         //recreate log dir
         println "MKDIR LOG"
-        def logDir=new File(thawDirInner+"/log")
+        def logDir=new File(thawDirInner,"/log")
         logDir.mkdirs();
 
     }

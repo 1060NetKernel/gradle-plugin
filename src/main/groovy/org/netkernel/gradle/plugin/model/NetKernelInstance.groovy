@@ -35,6 +35,10 @@ class NetKernelInstance implements Serializable {
     // The frozen location is where the NetKernel instance is copied to prior to jar file creation
     File frozenLocation
 
+    //Maps for freeze/thaw configuration
+    def freezeConfig
+    Map thawConfig
+
     // Standard or Enterprise
     Edition edition
 
@@ -55,7 +59,24 @@ class NetKernelInstance implements Serializable {
 
     //Declare maven dependency to thaw
     def thaw (dependencyMap)
-    {   project.dependencies.thaw dependencyMap
+    {   thawConfig = dependencyMap
+
+    }
+
+    def eggMeetChicken()
+    {   if(thawConfig!=null) {
+            println("SETTING THAW DEPENDENCIES ${thawConfig}")
+            project.configurations.create("thawrepo")
+            project.dependencies.thawrepo thawConfig
+            println("THAW DEPENDENCIES SET")
+        }
+
+    }
+
+    //Declare freeze config using dependency syntax for symmetry
+    def freeze (freezeMap)
+    {   println("FREEZEMAP SET ${freezeMap}")
+        freezeConfig = freezeMap
     }
 
     /**
@@ -325,5 +346,74 @@ class NetKernelInstance implements Serializable {
 
     String toString() {
         return "NetKernel Instance: ${name}\nLocation: ${location}\nEdition: ${this.edition} ${this.netKernelVersion}\nAdmin Fulcrum: ${this.url}:${this.backendPort}"
+    }
+
+    /*********
+     * FREEZE Parameters
+     */
+    String getFreezeGroup()
+    {   def s
+        if(freezeConfig!=null) {
+            s = freezeConfig["group"]
+        }
+        if(s==null)
+        {   s=project.group
+        }
+        if(s==null)
+        {   s="org.netkernel"
+        }
+        return s
+    }
+
+    String getFreezeName()
+    {   def s
+        if(freezeConfig!=null) {
+            s = freezeConfig["name"]
+        }
+        if(s==null)
+        {   s=project.name
+        }
+        return s
+    }
+    String getFreezeVersion()
+    {   def s
+        if(freezeConfig!=null) {
+            s = freezeConfig["version"]
+        }
+        if(s==null)
+        {   s=project.version
+        }
+        if(s==null)
+        {   s="1.1.1"
+        }
+        return s
+    }
+
+    File getFreezeLocation()
+    {   def f
+        if(frozenLocation!=null)
+        {   f=frozenLocation
+        }
+        else {
+            //Freeze to a directory next to the installation
+            f=new File(location.parentFile, location.name+"-freeze/");
+        }
+        return f
+    }
+
+    File getFrozenJarFile()
+    {   def f
+        if(frozenJarFile!=null)
+        {   f=frozenJarFile
+        }
+        else {
+            f=new File(getFreezeLocation(), getFreezeName()+".jar");
+        }
+        return f
+    }
+
+    boolean exists()
+    {   def f=new File(location, "bin/")
+        return f.exists()
     }
 }

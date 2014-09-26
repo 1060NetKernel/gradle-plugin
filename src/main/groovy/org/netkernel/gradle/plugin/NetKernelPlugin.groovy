@@ -104,6 +104,11 @@ class NetKernelPlugin implements Plugin<Project> {
         if (!netKernel.module) {
             //throw new InvalidUserDataException("Could not find module.xml in the project.")
             System.err.println("WARNING: Could not find module.xml in the project - only sysadmin tasks will be available")
+            /* Doesn't seem to do anything!
+            ['build', 'assemble', 'jar', 'classes', 'buildDependents', 'buildNeeded', 'clean'].each{ task ->
+                project.tasks[task].enabled false
+            }
+            */
         }
 
         // If the project has a netKernelVersion specified, override the value in the module.xml
@@ -132,8 +137,6 @@ class NetKernelPlugin implements Plugin<Project> {
 
         String groupName = "NetKernel Helper"
 
-        //createTask(CREATE_APPOSITE_PACKAGE, CreateAppositePackageTask, 'Creates apposite package', groupName) - Deprecated
-
         createTask(DOWNLOAD, DownloadNetKernelTask, 'Downloads NetKernel EE or SE edition', groupName)
 
         if(netKernel.module) {
@@ -146,13 +149,6 @@ class NetKernelPlugin implements Plugin<Project> {
                     .setEnabled(netKernel.module.versionOverridden)
 
         }
-        /*        project.task('freezePublish', type: org.gradle.api.publish.maven.tasks.PublishToMavenLocal) {
-            publication {
-                from freezeDir
-                artifact 'frozen.zip'
-            }
-        } */
-
     }
 
     /**
@@ -239,8 +235,6 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
             }
 
-
-            // TODO: Rethink for multi modules
             configureTask(JAR) {
                 from project.fileTree(dir: "${project.buildDir}/${netKernel.module.name}")
                 duplicatesStrategy 'exclude'
@@ -258,9 +252,6 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void createTaskDependencies() {
 
-//        project.tasks[FREEZE_DELETE].dependsOn FREEZE_JAR
-//        project.tasks[FREEZE_JAR].dependsOn FREEZE_TIDY
-//        project.tasks[FREEZE_TIDY].dependsOn COPY_BEFORE_FREEZE
         if(netKernel.module) {
             project.tasks[JAR].dependsOn MODULE_RESOURCES
             project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
@@ -268,8 +259,6 @@ class NetKernelPlugin implements Plugin<Project> {
             project.tasks[MODULE_RESOURCES].dependsOn MODULE
             project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
         }
-
-
     }
 
     /**
@@ -300,22 +289,18 @@ class NetKernelPlugin implements Plugin<Project> {
 
         String groupName = "NetKernel Instance (${instance.name})"
 
-        String installTaskName = "install${instance.name}"
+
+
+        //To be sorted tasks
+        /*
         String deployTaskName = "deployTo${instance.name}"
         String undeployTaskName = "undeployFrom${instance.name}"
 
-        //To be sorted tasks
-        createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance.name})", groupName)
-        //createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance.name})", groupName)  //Deprecated - must use Maven
-        //createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance.name})", groupName)    //Deprecated - must use Maven
+        createTask(deployTaskName, DeployToNetKernelTask, "Deploys module(s) to instance (${instance.name})", groupName)  //Deprecated - must use Maven
+        createTask(undeployTaskName, UndeployFromNetKernelTask, "Undeploys module(s) from instance (${instance.name})", groupName)    //Deprecated - must use Maven
+        */
 
-        [installTaskName].each { name ->
-            configureTask(name) {
-                netKernelInstance = instance
-            }
-        }
-
-        /*DEPRECATED
+        /*DEPRECATED - May restore this.
         [deployTaskName, undeployTaskName].each { name ->
             configureTask(name) {
                 moduleArchiveFile = project.tasks.getByName('jar').archivePath
@@ -343,7 +328,11 @@ class NetKernelPlugin implements Plugin<Project> {
             createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
             createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
 
-            [startTaskName, stopTaskName].each { name ->
+            //XUnit tests on instance
+            String xunitTaskName= "xunit${instance.name}"
+            createTask(xunitTaskName, XUnitTask, "Run XUnit tests on NetKernel instance ${instance.name}", groupName)
+
+            [startTaskName, stopTaskName, xunitTaskName].each { name ->
                 configureTask(name) {
                     netKernelInstance = instance
                 }
@@ -466,6 +455,20 @@ class NetKernelPlugin implements Plugin<Project> {
 
             }
         }
+        else    //Instance doesn't exist so need install task...
+        {
+            String installTaskName = "install${instance.name}"
+            createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance.name})", groupName)
+
+            [installTaskName].each { name ->
+                configureTask(name) {
+                    netKernelInstance = instance
+                }
+            }
+
+
+        }
+
 
         //THAW
         if(!instance.exists() && instance.thawConfig!=null) {
@@ -482,23 +485,21 @@ class NetKernelPlugin implements Plugin<Project> {
 
             configureTask(thawRepoFetchTaskName) {
                 from project.configurations.thawrepo
-                def modulesDir = new File(instance.getLocation(), "thaw/")
+                def modulesDir = new File(instance.location, "thaw/")
                 into modulesDir     //Into the modules directory of the thawed target
-                println("THAWING INTO: ${modulesDir}")
                 eachFile { f->
+                    //Have to save this file as the "outputs" of this task is the "into" value not the downloaded jar file!
                     netKernel.frozenArchiveFile=new File(modulesDir, f.name)
                 }
             }
 
             configureTask(thawExpandTaskName) {
-                from new File(instance.getLocation(), "thaw/")
+                from new File(instance.location, "thaw/")  //Do this to ensure cache invalidation works - but file is set for real in doFirst()
                 into instance.location
                 include '**/*'
 
-                //Force this to run always to prevent caching
-                outputs.upToDateWhen { false }  //Seems to make no difference!!
-
                 doFirst() {
+                    //Use the archive that was downloaded from the repo now we know its name.
                     from project.zipTree(netKernel.frozenArchiveFile)
                 }
             }
@@ -509,8 +510,13 @@ class NetKernelPlugin implements Plugin<Project> {
 
             configureTask(thawTaskName) {
                 delete new File(instance.location, "thaw/")
+                doLast(){
+                    def f=new File(instance.location, netKernel.frozenArchiveFile.name)
+                    f.delete()
+                }
             }
 
+            //Thaw pipeline dependencies
             project.tasks[thawTaskName].dependsOn thawConfigureTaskName
             project.tasks[thawConfigureTaskName].dependsOn thawExpandTaskName
             project.tasks[thawExpandTaskName].dependsOn thawRepoFetchTaskName
@@ -540,17 +546,11 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     NamedDomainObjectContainer<NetKernelInstance> createNetKernelInstances() {
         NamedDomainObjectContainer<NetKernelInstance> instances = project.container(NetKernelInstance)
-        /*
-        Edition.values().each { Edition edition ->
-            instances.add createNetKernelInstance(edition)
-        }
-        */
-        println("CREATING DEFAULT NK INSTANCE")
+        //println("CREATING DEFAULT NK INSTANCE")
         if(instances.isEmpty()) {
             def nk = createNetKernelInstance(Edition.ENTERPRISE)
             instances.add nk
         }
-
         return instances
     }
 

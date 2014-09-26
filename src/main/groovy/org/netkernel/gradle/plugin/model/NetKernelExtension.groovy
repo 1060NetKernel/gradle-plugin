@@ -24,13 +24,12 @@ class NetKernelExtension {
     // NetKernel instances (SE & EE come for free)
     NamedDomainObjectContainer<NetKernelInstance> instances
 
+    //Required as temporary storage by the thaw pipeline
     def frozenArchiveFile
 
     SourceStructure sourceStructure
 
     Project project
-
-    //String[] packageList
 
     NetKernelExtension(Project project) {
         this.project = project
@@ -133,35 +132,9 @@ class NetKernelExtension {
         }
     }
 
-    /**
-     * TODO - Are we sure this is the installationDirectory we want, what about EE or SE?
-     * @return
-     */
-    File getInstallationDirectory() {
-        return instances[instanceName].location
-    }
-
-    File getFreezeDirectory() {
-        return workFile('freeze')
-    }
-
     File getDestinationDirectory() {
         return workFile('')
     }
-
-    File getThawDirectory() {
-        return workFile('thaw')
-    }
-
-    File getThawInstallationDirectory() {
-        return workFile('thawInstallation')
-    }
-
-    /*
-    File getFrozenArchiveFile() {
-        return workFile('download/frozen.zip')
-    }
-    */
 
     /**
      * Returns a file reference that is inside the ~/.gradle/netkernel directory.

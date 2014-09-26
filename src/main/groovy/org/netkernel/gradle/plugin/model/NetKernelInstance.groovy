@@ -65,18 +65,14 @@ class NetKernelInstance implements Serializable {
 
     def eggMeetChicken()
     {   if(thawConfig!=null) {
-            println("SETTING THAW DEPENDENCIES ${thawConfig}")
             project.configurations.create("thawrepo")
             project.dependencies.thawrepo thawConfig
-            println("THAW DEPENDENCIES SET")
         }
-
     }
 
     //Declare freeze config using dependency syntax for symmetry
     def freeze (freezeMap)
-    {   println("FREEZEMAP SET ${freezeMap}")
-        freezeConfig = freezeMap
+    {   freezeConfig = freezeMap
     }
 
     /**
@@ -290,6 +286,35 @@ class NetKernelInstance implements Serializable {
     void undeploy(File moduleArchiveFile) {
         log.debug "Undeploying ${moduleArchiveFile} from ${this}"
         new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml").delete()
+    }
+
+    boolean runXUnit()
+    {   boolean result = false
+        try {
+            println("Running Xunit Tests.  Please wait...")
+            HttpResponse response = issueRequest(Method.GET, [path: '/test/exec/xml/all'])
+            result = response.statusLine.statusCode == HttpStatus.SC_OK
+            def testResults=response.getData()
+            //XmlSlurper testResults = new XmlSlurper().parse(is)
+            def results=testResults.totalResults
+
+            println("Total Tests: "+results.testTotal)
+            println("Success: "+results.testSuccess)
+            println("Failures: "+results.testFailException)
+            println("Failed Assertions: "+results.testFailAssert)
+            println("\nExecution Time: ${results.testExecutionTime}  Total Time: ${results.testTotalTime}\n")
+
+            result=results.testTotal.equals(results.testSuccess)
+            if(result)
+            {   println("===========================\nXUNIT TESTS PASSING\n===========================")
+            }
+            else
+            {   println("!!!!!!!!!!!!!!!!!!!!!!!!!!!\nXUNIT TESTS FAILING\n!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            }
+        } catch (Exception e) {
+            throw e
+        }
+        return result
     }
 
     /**

@@ -1,5 +1,10 @@
 apply plugin: 'netkernel'
 
+/*
+project.group='gradle-test'
+project.version='1.1.1'
+*/
+
 buildscript {
     repositories {
         mavenLocal()
@@ -23,17 +28,18 @@ dependencies {
 }
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
+    maven {
+        url "file:/tmp/mvn/"
+    }
 }
 
 netkernel {
 
     download {
-        ee {
-            //url = "http://localhost:8000"
-            username = "pjr"
-            password = ''
-        }
+        edition="EE"
+        username = "pjr"
+        password = ''
     }
 
     apposite {
@@ -43,12 +49,44 @@ netkernel {
 
     deploy {
         collection = "my-deployment"
-        module  group: 'gradle-test', name: 'urn.org.netkernel.single.java.module', version: '[0.0.1,)'
-        //module  group: 'urn.org.netkernel', name: 'test-boo', version: '[0.0.1,)'
-        //module  group: 'urn.org.netkernel', name: 'test-baa', version: '[0.0.1,)'
-        //module  group: 'urn.org.netkernel', name: 'test-baz', version: '[0.0.1,)'
+        module  group: 'gradle-test', name: 'urn.org.netkernel.single.module', version: '[0.0.1,)'
+        module  group: 'gradle-test', name: 'urn.org.netkernel.single.java.module.03', version: '[0.0.1,)'
+        module  group: 'gradle-test', name: 'urn.org.netkernel.single.module.05', version: '[0.0.1,)'
     }
+
+    instances {
+        TEST
+        {
+            edition = "EE"
+            location = "/home/pjr/NKEE-5.2.1/"
+        }
+        STAGE
+        {
+            edition = "EE"
+            location = "/home/pjr/NKEE-5.2.1-test1/"
+        }
+        SE
+        {
+            edition = "SE"
+            location = "/home/pjr/NKSE-5.2.1/"
+            //thaw  group: 'gradle-test', name: 'NKSE-frozen', version: '[0.0.1,)'
+            freeze group: "gradle-test", name: "NKSE-freezer", version : "1.1.1"
+        }
+
+        THAW
+        {
+            edition = "SE"
+            location = "/home/pjr/NKSE-5.2.1-thaw/"
+            thaw group: "gradle-test", name: "NKSE-freezer", version : "1.1.1"
+        }
+    }
+
 }
 
-
-
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:/tmp/mvn/")
+        }
+    }
+}

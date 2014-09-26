@@ -293,7 +293,7 @@ class NetKernelInstance implements Serializable {
         try {
             println("Running Xunit Tests.  Please wait...")
             HttpResponse response = issueRequest(Method.GET, [path: '/test/exec/xml/all'])
-            result = response.statusLine.statusCode == HttpStatus.SC_OK
+
             def testResults=response.getData()
             //XmlSlurper testResults = new XmlSlurper().parse(is)
             def results=testResults.totalResults
@@ -304,7 +304,7 @@ class NetKernelInstance implements Serializable {
             println("Failed Assertions: "+results.testFailAssert)
             println("\nExecution Time: ${results.testExecutionTime}  Total Time: ${results.testTotalTime}\n")
 
-            result=results.testTotal.equals(results.testSuccess)
+            result = response.statusLine.statusCode == HttpStatus.SC_OK && results.testTotal.equals(results.testSuccess)
             if(result)
             {   println("===========================\nXUNIT TESTS PASSING\n===========================")
             }

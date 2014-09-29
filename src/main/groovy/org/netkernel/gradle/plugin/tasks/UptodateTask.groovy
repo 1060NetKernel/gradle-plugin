@@ -6,18 +6,18 @@ import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 
 /**
- * Execute XUnit Tests
+ * Is instance up to date
  */
-class XUnitTask extends DefaultTask {
+class UptodateTask extends DefaultTask {
 
     @Input
     NetKernelInstance netKernelInstance
 
     @TaskAction
-    def runTests() {
+    def uptodate() {
         if(netKernelInstance.isRunning()) {
-            if(!netKernelInstance.runXUnit())
-            {   throw new Exception ("${netKernelInstance.name} Xunit tests have failures. Will not continue.")
+            if(!netKernelInstance.isUpToDate())
+            {   throw new Exception("${netKernelInstance.name} is not up to date - run appositeUpdate${netKernelInstance.name}")
             }
         }
         else throw new Exception ("${netKernelInstance.name} is not running - please start it to run xunit tests")

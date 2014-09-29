@@ -6,6 +6,7 @@ final class TaskName {
     // NetKernel Plugin Tasks
     static final String APPOSITE_CONFIGURE = 'appositeConfigure'
     static final String APPOSITE_UPDATE = 'appositeUpdate'
+    static final String APPOSITE_ISUPDATED = 'appositeIsUpdated'
     static final String DEPLOY_COLLECTION = 'deployCollection'
     static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
 //    static final String DEPLOY = 'deploy'

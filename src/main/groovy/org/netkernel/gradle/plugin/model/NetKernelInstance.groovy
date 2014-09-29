@@ -92,6 +92,31 @@ class NetKernelInstance implements Serializable {
         return result
     }
 
+
+    /**
+     * Determines if an instance's Apposite packages are up to date.
+     *
+     * @return true if the instance is uptodate: false otherwise.
+     */
+    boolean isUpToDate() {
+        if(edition.equals(Edition.ENTERPRISE)) {
+            boolean result = false
+            try {
+                HttpResponse response = issueRequest(Method.GET, [path: '/tools/apposite/unattended/v1/installed'])
+                def resultset = response.getData()
+                def updates=resultset.row.findAll { it.HASUPDATE == 'true' }.size()
+                println("APPOSITE UPDATES AVAILABLE: " + updates)
+                result = response.statusLine.statusCode == HttpStatus.SC_OK && updates==0
+            } catch (Exception e) {
+                throw e;
+            }
+            return result
+        }
+        else
+        {   throw new Exception ("Unattended Apposite is not available on SE")
+        }
+    }
+
     /**
      * Starts NetKernel from installed directory
      */

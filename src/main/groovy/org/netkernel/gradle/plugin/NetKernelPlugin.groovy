@@ -327,12 +327,20 @@ class NetKernelPlugin implements Plugin<Project> {
 
         String appositeConfigureName=APPOSITE_CONFIGURE+instance.name
         String appositeUpdateName=APPOSITE_UPDATE+instance.name
+        String appositeIsUpdatedName=APPOSITE_ISUPDATED+instance.name
         String deployCollectionName=DEPLOY_COLLECTION+instance.name
 
         //Apposite Tasks on EE
         if(instance.edition==Edition.ENTERPRISE) {
             createTask(appositeConfigureName, ConfigureAppositeTask, "Configures NetKernel (${instance.name}) with packages from Apposite repository", groupName)
             createTask(appositeUpdateName, UpdateAppositeTask, "Updates NetKernel (${instance.name}) from Apposite repository", groupName)
+            createTask(appositeIsUpdatedName, UptodateTask, "Verifies that (${instance.name}) is up to date with latest changes from Apposite repository", groupName)
+
+            [appositeIsUpdatedName].each { name ->
+                configureTask(name) {
+                    netKernelInstance = instance
+                }
+            }
         }
         else log.info "${instance.name} is SE. Apposite tasks not available"
         createTask(deployCollectionName, DeployCollectionTask, "Deploy collection of modules from Maven to NetKernel(${instance.name})", groupName)

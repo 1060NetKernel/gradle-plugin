@@ -1,6 +1,12 @@
 =Build=
 
-As much as possible the NetKernel plugin defers to the standard Gradle build tasks.  However Gradle (and Java tools in general) tend to
+{callout}
+==Pizza Model==
+
+In the pizza model, ''build'' is analogous to the preparation of the pizza toppings.
+{/callout}
+
+As much as possible, the NetKernel plugin defers to the standard Gradle build tasks.  However Gradle (and Java tools in general) tend to
 want to create monolithic results.  The NetKernel plugin adds understanding of the modular nature of NetKernel to create consistent modules that can
 be installed as repository artifacts without side-effects.
 
@@ -136,7 +142,7 @@ dependencies {
 
 ===lib/ Dependencies===
 
-NetKernel module's support a dynamic runtime classpath.  Any jar files found in the module's lib/ directory are automatically discovered
+NetKernel ''modules'' support a [http://docs.netkernel.org/book/view/book:guide:physicalreference/doc:physicalreference:classloader|dynamic runtime classpath].  Any jar files found in the module's lib/ directory are automatically discovered
 and added to the runtime classpath allowing for encapsulation and isolation of Java level classes.
 
 The NetKernel plugin recognizes this and automatically detects Java libraries located in a lib/ directory in your source structure - whether using the dynamic NetKernel structure or Gradle conventional - will be detected and the
@@ -217,5 +223,4 @@ If your module's URI is '''urn:com:company:project:module''' with version '''1.1
 (Notice that any ":" (colons) in the module URI are automatically replaced with "." (dots) to ensure filesystem compatibility.)
 
 Finally, to increment the build version number change the version number in the module.xml
-
 

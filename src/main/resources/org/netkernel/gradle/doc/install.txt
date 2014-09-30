@@ -1,27 +1,98 @@
 =Install=
 
-==Build Result==
+{callout}
+==Pizza Model==
 
-Whatever the source structure, the resultant build product will be assembled and placed in the build/ directory relative to the build.gradle file.
+In the pizza model, ''install'' is analogous to freezing a prepared pizza topping.  The ''group, name and version'' of the frozen topping
+is important since that is the key we'll need when we come to build a pizza.
+{/callout}
 
-{literal}
-    ./build.gradle
-    ./build/
-{/literal}
+The NetKernel plugin automatically applies Gradle's [http://www.gradle.org/docs/current/userguide/maven_plugin.html|'maven'] plugin and so the 'install' task is
+always available.
 
-The NetKernel plugin dynamically discovers the name and version of your module by reading ''module.xml''.  The built module
-jar file will be located in...
+'''A word of warning:''' in the world of Gradle the '''install''' task is conceptually the exact opposite of how we think of install in the NetKernel world. It
+takes a built artifact and uploads it to a repository.
 
-{literal}
-    ./build.gradle
-    ./build/lib/
-{/literal}
+The NetKernel plugin defers to Gradle as much as possible, so '''gradle install''' is not directly modified by the NetKernel plugin.  Therefore executing...
 
- If your module's uri is '''urn:com:company:project:module''' with version '''1.1.1''' then the built result will be...
+ gradle install
 
-{literal}
-   ./build.gradle
-   ./build/lib/urn.com.company.project.module-1.1.1.jar
-{/literal}
+will execute the ''build'' task dependency and upload the resulting module jar file to the configured upload repository.
 
+If no repository is specified then the built module will
+be uploaded to the maven local directory - in *nix this is located in the "~/.m2/" directory by default.
+
+
+==Artifact Naming==
+
+The name and version of a built module artifact in the repository is automatically set based upon the name and version of the built module.
+
+If your module's URI is '''urn:com:company:project:module''' with version '''1.1.1''' then the artifact in maven will be...
+
+    name:  urn.com.company.project.module
+    version: 1.1.1
+
+You may control the group in which the artifact is placed by setting the '''project.group''' in build.gradle. Here's an example...
+
+{java}
+//Apply the NetKernel plugin
+apply plugin: 'netkernel'
+
+//Define the project group in which built modules are stored in the repository.
+project.group = 'big-corp-skunkworks'
+
+//Provide this buildscript with repositories and dependencies to obtain the netkernel plugin
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernel.org/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+
+netkernel {
+    //All configuration for netkernel plugin tasks goes here.
+    }
+{/java}
+
+
+==Defining Upload Archives==
+
+The NetKernel plugin will install your built module to any defined upload archive.  Gradle supports ''file, http and scp'' protocols to upload to local and remote
+repositories.  Please refer to Gradle's [http://www.gradle.org/docs/current/userguide/maven_plugin.html|maven documentation] for
+how to declare upload repositores in your build script.
+
+One tip, we have found that rather than rely on mavenlocal() its best to define a file based repository like this, as it's unambiguous and also mavenlocal() doesn't seem
+to always respect the artifact metadata naming consistently...
+
+{java}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:/home/pjr/maven-repository/")
+        }
+    }
+}
+{/java}
+
+==Repository Metadata==
+
+The NetKernel plugin will automatically work out the maven artifact metadata and generate the POM file.  This includes understanding that encapsulated class
+libraries built into the module, can exclude linked library dependencies for runtime deployment.  ''Less monolith, more module.''
+
+==Alternative Tasks==
+
+The ''install'' task is documented and highlighted since it fits neatly into the NetKernel plugin's pizza model.  Of course both
+''build'' and ''install'', although slighlty modified when the 'netkernel' plugin is applied, are still
+just Gradle tasks and so they can be used in completely different ways in your own build processes.
+
+For example you can ''copy'' the built module to a different location.  Or even add it to your local NetKernel
+by copying and then creating an entry in modules.d/
+
+Although on the surface Gradle looks like a build DSL.  It is a full Groovy programming environment - so the power to parameterise, configure, extend and adapt the tools is always there.
 

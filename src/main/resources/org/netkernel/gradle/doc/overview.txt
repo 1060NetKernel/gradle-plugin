@@ -1,0 +1,72 @@
+=Usage Model=
+
+The diagram below provides a schematic overview of the usage model envisaged for the NetKernel plugin.
+
+In the diagram the linking arrows represent development lifecycle transitions typical to development projects.
+The NetKernel plugin provides one or more tasks for each of these transitions.
+
+{image}http:/doc/source/doc:org:netkernel:gradle:img:overview{/image}
+
+==Important: The role of repositories==
+
+It is important to understand that the NetKernel plugin is designed so that all artifacts come from and
+are published to repositories (either Maven or Ivy - and any possible future repository models supported by Gradle).
+
+Artifacts include: build dependencies, NetKernel module deployments, frozen snapshots of base configurations of NetKernel and final
+production images of complete NetKernel application instances.
+
+In the diagram the blue cylinders named "Maven Repo" are not necessarily the same repository.  It is possible to employ
+a multi-repository configuration for development, test, stage, production etc.  Equally, for simplicity, you can do everything
+with just one repository.
+
+==The Pizza Model==
+
+NetKernel is a very flexible platform and provides a wide range of modules from its own Apposite repository.   Its helpful
+to clearly distinguish the job of configuring your base-line NetKernel platform, from creating the application set of modules that
+you will deploy to a configured instance.
+
+To keep it simple, the NetKernel plugin is based on a conceptual '''Pizza Model''', in which our ultimate aim
+is to produce a perfect pizza  - a production instance of NetKernel, configured with our tested application modules
+and any necessary additional Apposite-provided NetKernel modules.
+
+To create a pizza you need just two things.
+
+#A pizza base
+#Toppings to go on it.
+
+A well run pizza business understands that you don't start (1) and (2) from scratch for every pizza order.
+
+An efficient pizza factory has an independent process to create a range of ''bases''.
+
+A second independent process ''creating a pizza'' then just involves choosing a ready-to-use pre-built ''base'' and
+applying the specific toppings before baking the pizza.
+
+The completed pizza is checked against the order to make sure its correct.
+
+Finally the pizza is given to the delivery person and released for consumption.
+
+The NetKernel plugin provides:
+
+*tools for creating bases (configured NetKernel instances)
+*tools for creating and applying toppings (building modules)
+*tools for assembling and baking the combined pizza
+*tools for testing the complete order
+*tools for delivering the final product.
+
+Unlike in the pizza business, where using freezers is frowned on, software configurations can be frozen perfectly and thawed instantly.  In the
+NetKernel plugin's Pizza Model, using repositories is exactly like using a freezer.
+
+The NetKernel plugin can:
+
+*configure and freeze base NetKernel instances and then store them indefinitely in a repository(s).
+
+*build and assemble application modules and store them indefinitely in a repository(s).
+
+*select and thaw a base and apply a configuration of frozen application modules (make the pizza)
+
+*test the combination. If it passes, freeze the complete production image (a "ready-to-eat" pizza)
+
+*select and thaw a production image and start it in production.
+
+Freezing to the repository ensures that the build, assemble, test, deploy processes can happen asynchronously and with independent quality assurance
+checks for each process.   Unlike with pizzas, using the freezer is very efficient and delivers consistently high quality.

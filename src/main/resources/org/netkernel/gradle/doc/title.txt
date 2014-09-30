@@ -1,0 +1,34 @@
+=Gradle Plugin=
+
+{image}http:/doc/source/doc:org:netkernel:gradle:img:logo-full{/image}
+
+This is a guide to the NetKernel [http://www.gradle.org|Gradle] plugin.
+
+Gradle is a Groovy-based build automation tool.  Gradle builds are written in a groovy
+DSL syntax.  Gradle supports extensive plug-in capabilities.
+
+This documentation describes the features and common usage patterns for the '''NetKernel gradle plugin'''.
+
+==Requirements==
+
+You will require a copy of gradle 2.1+, accessible in your path.  Being Groovy/Java-based you will also
+require a full JDK installation for compilers etc.
+
+==Acknowledgements==
+
+The NetKernel Gradle plugin project was conceived and initiated by Brian Sletten.  The tool has evolved
+greatly and has received significant contributions from Nicholas Spilman and Randy Kahle.
+
+NetKernel specific tasks were developed by [http://www.1060research.com|1060 Research] and are officially supported so the long-term
+stability of building, testing and deploying to NetKernel with Gradle is assured.
+
+We are grateful for the assistance of xxxx from the Gradle team for unlocking some of the low-level details
+necessary for this advanced plugin.
+
+==GitHub==
+
+The Gradle plugin (like any development tool) is a work in progress.  You can find the development branches
+and contribute to the evolution of the plugin at the project's Github...
+
+https://github.com/1060NetKernel/gradle-plugin
+

@@ -1,0 +1,221 @@
+=Build=
+
+As much as possible the NetKernel plugin defers to the standard Gradle build tasks.  However Gradle (and Java tools in general) tend to
+want to create monolithic results.  The NetKernel plugin adds understanding of the modular nature of NetKernel to create consistent modules that can
+be installed as repository artifacts without side-effects.
+
+Documented below are the considerations for using the gradle build tasks when the NetKernel plugin is applied.
+
+==Source Structure==
+
+===Gradle Default===
+
+By default Gradle expects source code to be in a directory structure something like this...
+
+{literal}
+    ./build.gradle
+    ./src/main/java/
+    ./src/main/groovy/
+    ./src/main/resources/
+    ./src/test/java/
+    ./src/test/groovy/
+    ./src/test/resources/
+{/literal}
+
+If this is your preferred structure then the NetKernel plugin will happily build this and assemble a final module.
+
+The most important thing for a NetKernel module is its '''module.xml'''. When using the conventional gradle
+source structure you have two choices about where to place your ''module.xml''.
+
+Either it can go in the gradle's standard main/resources/ like this...
+
+{literal}
+    ./build.gradle
+    ./src/main/resources/module.xml
+    ./src/main/resources/...any other resources...
+{/literal}
+
+Alternatively it can be useful to make it clear that these are NetKernel specific resources, in which case you may provide
+a module/ directory in the src/ directory...
+
+{literal}
+    ./build.gradle
+    ./src/module/module.xml
+    ./src/module/...any other resources...
+{/literal}
+
+Whatever your choice for the module resources, its unfortunate that the default gradle source structure makes arbitrary distinction between code (and languages) and resources - it
+also presupposes a static compilation lifecycle - rather than continuous dynamic development - for this reason it is not
+the preferred structure.
+
+===NetKernel Dynamic Structure===
+
+NetKernel is dynamic by default, and has only one concern: everything is a resource.
+
+NetKernel developers tend to prefer to create live modules in which development changes can be detected and instantly reflected into the running NetKernel system for
+instant feedback, testing and iterative development.
+
+A typical live NetKernel module looks like...
+
+{literal}
+    ./build.gradle
+    ./src/
+    ./src/module.xml
+    ./src/...any code resources...
+    ./src/...any other resources...
+{/literal}
+
+We have ensured that the NetKernel plugin automatically detects this typical dynamic module structure and configures Gradle appropriately.  Therefore
+you are free to do dynamic development in your IDE against this dynamic structure and provide a build.gradle for continuous integration that
+detects and handles this structure automatically.
+
+===Compilation of Static Source Code===
+
+Whatever your source structure, the NetKernel plugin automatically applies both the 'java' and 'groovy' Gradle plugins.  Running gradle build...
+
+{literal}
+gradle build
+{/literal}
+
+Will cause all static ''*.java'' and ''*.groovy'' code in your project to be compiled.
+
+==Classpath==
+
+===Compile Classpath===
+
+Gradle's compilation classpath can be configured as normal using the Gradle dependency conventions. In addition
+some conveniences are added by the NetKernel plugin.
+
+Shown below are three built-in methods that automatically set up some common repetitive boilerplate for NetKernel modules...
+
+{java}
+netkernel {
+    //Add the Maven Central respository for compile time dependency resolution
+    useMavenCentral()
+
+    //Add the NetKernel maven respository for compile time dependency resolution of core NetKernel libraries
+	useMavenNK()
+
+    //Add the core NetKernel libraries as compile time dependencies
+    useStandardCompileDependencies()
+}
+{/java}
+
+The two repository related declarations respectively add Maven Central and the official NetKernel Maven as places to look for dependencies.
+
+The call to '''useStandardCompileDependencies()''' is very useful since it declares a set of compile time dependencies
+on the core NetKernel libraries (which are provided by the NetKernel Maven repository).  The core libraries that are added include:
+
+*kernel-impl
+*kernel-api
+*layer0
+*standard-module
+*cache
+*layer1
+
+Essentially, this one call sets up the compilation dependencies necessary for the NetKernel Foundation API,
+which every NetKernel module using Standard Module endpoints will require.
+
+====Gradle Dependencies====
+
+You may add any number of other library dependencies using Gradle's dependencies delcaration. Here's an example that
+declares the NetKernel boilerplate dependencies and adds an additional dependency on Apache common-compress.
+
+{java}
+netkernel {
+    useMavenCentral()
+    useMavenNK()
+    useStandardCompileDependencies()
+}
+
+//Additional Compile Dependencies
+dependencies {
+    compile group:'org.apache.commons', name: 'commons-compress', version: '1.7'
+}
+{/java}
+
+===lib/ Dependencies===
+
+NetKernel module's support a dynamic runtime classpath.  Any jar files found in the module's lib/ directory are automatically discovered
+and added to the runtime classpath allowing for encapsulation and isolation of Java level classes.
+
+The NetKernel plugin recognizes this and automatically detects Java libraries located in a lib/ directory in your source structure - whether using the dynamic NetKernel structure or Gradle conventional - will be detected and the
+libraries automatically added to the compile classpath.
+
+If your source is NetKernel dynamic structure then the libraries will be detected in....
+
+{literal}
+    ./build.gradle
+    ./src/lib/...jar libraries for compile and runtime deployment...
+{/literal}
+
+If your source is Gradle structure then the libraries will be detected in....
+
+{literal}
+    ./build.gradle
+    ./src/main/resources/lib/...jar libraries for compile and runtime deployment...
+{/literal}
+
+or alternatively...
+
+{literal}
+    ./build.gradle
+    ./src/module/lib/...jar libraries for compile and runtime deployment...
+{/literal}
+
+===Runtime Classpath===
+
+The NetKernel plugin will automatically reconcile the runtime classpath based upon what compile time dependencies were used and where they originated.
+
+*Dynamic lib/ dependencies found in the module source structure, are automatically moved into the ''/lib/'' directory of the built module.
+*Core libraries and any dependencies in the ''urn.org.netkernel'' dependency group are ignored and assumed to be runtime dependencies provided by NetKernel.
+
+*Any compile time classes declared using the Gradle ''dependencies'' mechanism are detected and automatically encapsulated into the built module in the /lib/ directory.
+This includes any linked dependencies resolved through the repository's dependency model.
+
+''It follows that a compiled and linked module will be completely encapsulated with no need for the installation of any additional class libraries at deployment time.''
+
+==Dynamic Code or No Code at All!==
+
+All of the talk of source code and compilation and runtime classpaths is necessary for low-level understanding
+but in a great deal of NetKernel development it is completely irrelevant.
+
+NetKernel developers are used to runtimes and declarative or dynamically compiled (transrepted) code.
+
+In which case simply ignore all of the above.  The only thing you need to know is that, when there is no static source code to compile...
+
+{literal}
+gradle build
+{/literal}
+
+...will just as happily assemble a correctly structured module for you!
+
+==Build Result==
+
+Whatever the source structure, the resultant build product will be assembled and placed in the build/ directory relative to the build.gradle file.
+
+{literal}
+    ./build.gradle
+    ./build/
+{/literal}
+
+The NetKernel plugin dynamically discovers the URI and version of your module by reading ''module.xml''.  The built module
+jar file will be located in...
+
+{literal}
+    ./build.gradle
+    ./build/libs/
+{/literal}
+
+If your module's URI is '''urn:com:company:project:module''' with version '''1.1.1''' then the built result will be...
+
+{literal}
+   ./build.gradle
+   ./build/libs/urn.com.company.project.module-1.1.1.jar
+{/literal}
+
+(Notice that any ":" (colons) in the module URI are automatically replaced with "." (dots) to ensure filesystem compatibility.)
+
+Finally, to increment the build version number change the version number in the module.xml
+
+

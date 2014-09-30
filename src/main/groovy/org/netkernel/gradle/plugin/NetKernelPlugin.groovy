@@ -62,6 +62,8 @@ class NetKernelPlugin implements Plugin<Project> {
             netKernel.sourceStructure = SourceStructure.GRADLE
         }
 
+        def libDir
+
         switch (netKernel.sourceStructure) {
             case SourceStructure.NETKERNEL:
                 def baseDir = new File(project.projectDir, 'src/')
@@ -81,25 +83,29 @@ class NetKernelPlugin implements Plugin<Project> {
 
                 netKernel.module = new Module(project.file('src/module.xml'))
 
-                //Add any libs to classpath
-                def libDir = new File(baseDir, "lib/")
-                if (libDir.exists()) {
-                    def libTree = project.fileTree(dir: libDir, includes: ['**/*.jar'])
-                    libTree.visit { f ->
-                        //println "lib/ DEPENDENCY ADDED: ${f}"
-                    }
-                    project.dependencies.add("compile", libTree)
-                }
+                libDir = new File(baseDir, "lib/")
 
                 break;
             case SourceStructure.GRADLE:
                 if (project.file('src/module/module.xml').exists()) {
                     netKernel.module = new Module(project.file('src/module/module.xml'))
+                    libDir = new File(project.projectDir, "src/module/lib/")
                 } else if (project.file('src/main/resources/module.xml').exists()) {
                     netKernel.module = new Module(project.file('src/main/resources/module.xml'))
+                    libDir = new File(project.projectDir, "src/main/resources/lib/")
                 }
+
                 break;
         }
+        //Deal with any libraries in the module
+        if (libDir!=null && libDir.exists()) {
+            def libTree = project.fileTree(dir: libDir, includes: ['**/*.jar'])
+            libTree.visit { f ->
+                //println "lib/ DEPENDENCY ADDED: ${f}"
+            }
+            project.dependencies.add("compile", libTree)
+        }
+
 
         if (!netKernel.module) {
             //throw new InvalidUserDataException("Could not find module.xml in the project.")
@@ -329,6 +335,7 @@ class NetKernelPlugin implements Plugin<Project> {
         String appositeUpdateName=APPOSITE_UPDATE+instance.name
         String appositeIsUpdatedName=APPOSITE_ISUPDATED+instance.name
         String deployCollectionName=DEPLOY_COLLECTION+instance.name
+        String undeployCollectionName=UNDEPLOY_COLLECTION+instance.name
 
         //Apposite Tasks on EE
         if(instance.edition==Edition.ENTERPRISE) {
@@ -343,7 +350,8 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         }
         else log.info "${instance.name} is SE. Apposite tasks not available"
-        createTask(deployCollectionName, DeployCollectionTask, "Deploy collection of modules from Maven to NetKernel(${instance.name})", groupName)
+        createTask(deployCollectionName, DeployCollectionTask, "Deploy the collection of modules from Maven to NetKernel(${instance.name})", groupName)
+        createTask(undeployCollectionName, Delete, "Undeploy the collection of modules from NetKernel(${instance.name})", groupName)
 
         // Tasks related to freezing instance
         String freezeTaskName = "freeze${instance.name}"
@@ -460,6 +468,13 @@ class NetKernelPlugin implements Plugin<Project> {
             doLast {
                 writeModulesd(modulesd);
             }
+            outputs.upToDateWhen { false }      //Make sure deployment always works and no cache
+        }
+
+        //Everyone can undeploy a collection
+        configureTask(undeployCollectionName) {
+            def modulesd = new File(instance.location, "etc/modules.d/${netKernel.deploy.collection}.xml")
+            delete modulesd
         }
 
         String installTaskName = "install${instance.name}"

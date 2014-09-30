@@ -8,6 +8,7 @@ final class TaskName {
     static final String APPOSITE_UPDATE = 'appositeUpdate'
     static final String APPOSITE_ISUPDATED = 'appositeIsUpdated'
     static final String DEPLOY_COLLECTION = 'deployCollection'
+    static final String UNDEPLOY_COLLECTION = 'undeployCollection'
     static final String CREATE_APPOSITE_PACKAGE = 'createAppositePackage'
 //    static final String DEPLOY = 'deploy'
 //    static final String UNDEPLOY = 'undeploy'

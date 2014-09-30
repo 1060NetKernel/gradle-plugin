@@ -18,6 +18,16 @@
         </classloader>
     </system>
     <rootspace>
-            <!--Deliberately Empty - this is only a java class library and provides no resources -->
+        <!--Deliberately Empty - this is only a java class library and provides no resources -->
+    </rootspace>
+
+    <rootspace uri="urn:org:netkernel:gradle:plugin:docs" public="true">
+        <!--Documentation resources for when this is deployed as module in NetKernel -->
+        <fileset>
+            <regex>res:/etc/system/(Docs|Books).xml</regex>
+        </fileset>
+        <fileset>
+            <regex>res:/org/netkernel/gradle/doc/.*</regex>
+        </fileset>
     </rootspace>
 </module>

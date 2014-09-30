@@ -152,7 +152,7 @@ class NetKernelInstance implements Serializable {
             */
         } else {
             log.warn "Not starting NetKernel because it is already running"
-            // TODO: Throw exception? Ignore?
+            throw new Exception("Not starting NetKernel because it is already running")
         }
     }
 

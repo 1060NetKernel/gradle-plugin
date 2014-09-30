@@ -1,0 +1,27 @@
+=Install=
+
+==Build Result==
+
+Whatever the source structure, the resultant build product will be assembled and placed in the build/ directory relative to the build.gradle file.
+
+{literal}
+    ./build.gradle
+    ./build/
+{/literal}
+
+The NetKernel plugin dynamically discovers the name and version of your module by reading ''module.xml''.  The built module
+jar file will be located in...
+
+{literal}
+    ./build.gradle
+    ./build/lib/
+{/literal}
+
+ If your module's uri is '''urn:com:company:project:module''' with version '''1.1.1''' then the built result will be...
+
+{literal}
+   ./build.gradle
+   ./build/lib/urn.com.company.project.module-1.1.1.jar
+{/literal}
+
+

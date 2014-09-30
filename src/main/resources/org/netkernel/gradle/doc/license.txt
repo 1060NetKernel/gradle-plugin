@@ -1,0 +1,3 @@
+=License=
+
+The urn:org:netkernel:gradle:plugin module is licensed under the [http://www.1060research.com/license|1060 Public License v1.2].

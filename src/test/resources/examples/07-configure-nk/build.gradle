@@ -7,10 +7,11 @@ project.version='1.1.1'
 
 buildscript {
     repositories {
-        mavenLocal()
+        //mavenLocal()
         mavenCentral()
         maven {
-            url "http://maven.netkernel.org/netkernel-maven"
+            //url "http://maven.netkernel.org/netkernel-maven"
+            url "http://localhost:8080/netkernel-maven"
         }
     }
 
@@ -19,18 +20,26 @@ buildscript {
     }
 }
 
-//******************************************
-
+/*
 dependencies {
     //compile 'org.codehaus.groovy:groovy-all:2.2.1'
     //compile 'commons-compress:commons-compress:20050911'
     //thaw 'org.netkernel:frozenInstance:1.1.1'
 }
+*/
 
 repositories {
     //mavenLocal()
     maven {
         url "file:/tmp/mvn/"
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:/tmp/mvn/")
+        }
     }
 }
 
@@ -58,12 +67,14 @@ netkernel {
         TEST
         {
             edition = "EE"
+            backendPort = 1060
             location = "/home/pjr/NKEE-5.2.1/"
         }
         STAGE
         {
             edition = "EE"
             location = "/home/pjr/NKEE-5.2.1-test1/"
+            freeze group: "gradle-test", name: "NKEE-production", version : "1.1.1"
         }
         SE
         {
@@ -73,20 +84,13 @@ netkernel {
             freeze group: "gradle-test", name: "NKSE-freezer", version : "1.1.1"
         }
 
-        THAW
+        PROD
         {
-            edition = "SE"
-            location = "/home/pjr/NKSE-5.2.1-thaw/"
-            thaw group: "gradle-test", name: "NKSE-freezer", version : "1.1.1"
+            edition = "EE"
+            location = "/home/pjr/NKEE-Gradle-Production/"
+            thaw group: "gradle-test", name: "NKEE-production", version : "1.1.1"
         }
     }
 
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file:/tmp/mvn/")
-        }
-    }
-}

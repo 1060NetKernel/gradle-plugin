@@ -1,0 +1,77 @@
+<docs>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:title</id>
+        <title>Gradle Plugin Guide</title>
+        <desc>A guide to the NetKernel Gradle Plugin</desc>
+        <uri>res:/org/netkernel/gradle/doc/title.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:overview</id>
+        <title>Overview</title>
+        <desc>Overview of the NetKernel plugin model</desc>
+        <uri>res:/org/netkernel/gradle/doc/overview.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:plugin</id>
+        <title>Plugin Essentials</title>
+        <desc>Accessing the plugin from Gradle</desc>
+        <uri>res:/org/netkernel/gradle/doc/plugin.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:build</id>
+        <title>Build</title>
+        <desc>Tasks for building modules</desc>
+        <uri>res:/org/netkernel/gradle/doc/build.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:install</id>
+        <title>Install</title>
+        <desc>Task for installing a built module to Maven</desc>
+        <uri>res:/org/netkernel/gradle/doc/install.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:configure</id>
+        <title>Configure</title>
+        <desc>Tasks for configuring NetKernel base</desc>
+        <uri>res:/org/netkernel/gradle/doc/configure.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:test</id>
+        <title>Test</title>
+        <desc>Tasks for testing assembled configuration</desc>
+        <uri>res:/org/netkernel/gradle/doc/test.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:deploy</id>
+        <title>Deploy</title>
+        <desc>Tasks for deploying tested configuration</desc>
+        <uri>res:/org/netkernel/gradle/doc/deploy.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:license</id>
+        <title>License</title>
+        <desc>Licensing terms for the Gradle plugin</desc>
+        <uri>res:/org/netkernel/gradle/doc/license.txt</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:img:overview</id>
+        <uri>res:/org/netkernel/gradle/doc/gradle-overview.png</uri>
+    </doc>
+
+    <doc>
+        <id>doc:org:netkernel:gradle:img:logo-full</id>
+        <uri>res:/org/netkernel/gradle/doc/gradle-full.png</uri>
+    </doc>
+
+
+</docs>

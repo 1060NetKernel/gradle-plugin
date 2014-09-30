@@ -1,0 +1,34 @@
+=Essentials=
+
+To use the NetKernel plugin you need to supply some boilerplate to Gradle.  The following configuration
+should be declared at the top of your ''build.gradle'' file...
+
+{java}
+//Apply the NetKernel plugin
+apply plugin: 'netkernel'
+
+//Provide this buildscript with repositories and dependencies to obtain the netkernel plugin
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernel.org/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+
+netkernel {
+    //All configuration for netkernel plugin tasks goes here.
+    }
+{/java}
+
+The NetKernel plugin is hosted as a jar file in the official 1060 Research maven repository (http://maven.netkernel.org/netkernel-maven).  The ''buildscript''
+declaration defines the ''repositories'' to use to find the plugin and its dependencies.  The ''apply'' statement instructs Gradle to instantiate and make
+available the tasks provided by the NetKernel plugin.
+
+The options for what can be configured in the '''netkernel { ... }''' closure are documented in the following sections.
+

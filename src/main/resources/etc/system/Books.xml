@@ -1,0 +1,29 @@
+<books>
+    <book>
+        <id>book:org:netkernel:gradle:plugin:book</id>
+        <title>Gradle Plugin</title>
+        <desc>Documentation for the Gradle NetKernel plugin</desc>
+        <author/>
+        <publisher/>
+        <date/>
+        <modified>/</modified>
+        <icon>res:/org/netkernel/gradle/doc/gradle-icon.png</icon>
+        <keywords/>
+        <toc>
+            <item id="doc:org:netkernel:gradle:doc:title"/>
+            <item id="doc:org:netkernel:gradle:doc:overview"/>
+            <item id="doc:org:netkernel:gradle:doc:plugin"/>
+            <separator/>
+            <item id="doc:org:netkernel:gradle:doc:build"/>
+            <item id="doc:org:netkernel:gradle:doc:install"/>
+            <separator/>
+            <item id="doc:org:netkernel:gradle:doc:configure"/>
+            <separator/>
+            <item id="doc:org:netkernel:gradle:doc:test"/>
+            <item id="doc:org:netkernel:gradle:doc:deploy"/>
+            <separator/>
+            <item id="doc:org:netkernel:gradle:doc:license"/>
+        </toc>
+    </book>
+</books>
+

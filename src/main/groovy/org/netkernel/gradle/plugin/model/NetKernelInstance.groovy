@@ -148,6 +148,7 @@ class NetKernelInstance implements Serializable {
         def jarfile=jarFileLocation.absolutePath
         if(isWindows())
         {   jarfile=jarfile.replaceAll(" ", "%20")  //Take care of stupid windows username folders
+            javaBinary=javaBinary.replaceAll(" ", "%20")
         }
         doStart(location.parentFile, javaBinary, '-jar', "${jarfile}")
     }

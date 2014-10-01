@@ -126,7 +126,9 @@ class NetKernelInstance implements Serializable {
         def loc=location.absolutePath
         if(isWindows())
         {   startscript="netkernel.bat"
-            loc=loc.replaceAll(" ", "%20")
+            if(loc.contains(" ")) {
+                loc = "\"${loc}\""
+            }
         }
         else
         {   startscript="netkernel.sh"
@@ -147,8 +149,13 @@ class NetKernelInstance implements Serializable {
         }
         def jarfile=jarFileLocation.absolutePath
         if(isWindows())
-        {   jarfile=jarfile.replaceAll(" ", "%20")  //Take care of stupid windows username folders
-            javaBinary=javaBinary.replaceAll(" ", "%20")
+        {   //jarfile=jarfile.replaceAll(" ", "%20")  //Take care of stupid windows username folders
+            if(jarfile.contains(" "))
+            {   jarfile="\"${jarfile}\""
+            }
+            if(javaBinary.contains(" "))
+            {   javaBinary="\"${javaBinary}\""
+            }
         }
         doStart(location.parentFile, javaBinary, '-jar', "${jarfile}")
     }

@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.apache.tools.ant.taskdefs.condition.Os
 
 /**
  * Tidys up copied NetKernel instance by removing license, updating expandDir, etc.
@@ -28,8 +29,12 @@ class FreezeTidyTask extends DefaultTask {
         File freezeExpandDir
         File propertiesFile = new File(freezeDirectory, "etc/kernel.properties")
         propertiesFile.text = propertiesFile.text.replaceAll(/netkernel.layer0.expandDir=(.*)/) { match ->
-            URI expandDirURI = URI.create(match[1])
-            String expandDirPath = URI.create(installDirectory.absolutePath).relativize(expandDirURI) as String
+            def fileuri=""
+            if(isWindows())
+            {   fileuri="file:///"
+            }
+            URI expandDirURI = URI.create(fileuri+match[1])
+            String expandDirPath = URI.create(fileuri+installDirectory.absolutePath).relativize(expandDirURI) as String
             freezeExpandDir = new File(freezeDirectory, expandDirPath)
             return "netkernel.layer0.expandDir=${freezeExpandDir}"
         }
@@ -54,5 +59,9 @@ class FreezeTidyTask extends DefaultTask {
     private void delete(File directory) {
         log.debug "Deleting ${directory}"
         project.delete(directory)
+    }
+
+    boolean isWindows()
+    {   return Os.isFamily(Os.FAMILY_WINDOWS)
     }
 }

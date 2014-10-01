@@ -169,7 +169,8 @@ class NetKernelPlugin implements Plugin<Project> {
                     download = netKernel.download
                     netKernelVersion = netKernel.currentMajorReleaseVersion()
                     destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(download.edition, netKernelVersion)}")
-                    destinationFile.mkdirs()
+                    println("DOWNLOAD DESTINATION ${destinationFile}")
+                    destinationFile.parent().mkdirs()
                 }
         }
 

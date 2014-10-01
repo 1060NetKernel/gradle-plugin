@@ -60,7 +60,7 @@ class ThawConfigureTask extends DefaultTask {
                 //println "FOUND EXPANDIR*********************************"
                 def exp=expandDir.absolutePath
                 if(windows)
-                {   exp=exp.replaceAll("\\", "\\\\")        //Need to do this in the property file on windows!!!
+                {   exp=exp.replaceAll("\\\\", "\\\\\\\\")        //Need to do this in the property file on windows!!!
                 }
                 line2="""netkernel.layer0.expandDir=${exp}""";
             }

@@ -67,8 +67,8 @@ The NetKernel plugin will install your built module to any defined upload archiv
 repositories.  Please refer to Gradle's [http://www.gradle.org/docs/current/userguide/maven_plugin.html|maven documentation] for
 how to declare upload repositores in your build script.
 
-One tip, we have found that rather than rely on mavenlocal() its best to define a file based repository like this, as it's unambiguous and also mavenlocal() doesn't seem
-to always respect the artifact metadata naming consistently...
+One tip, we have found that rather than rely on mavenlocal() its best to define a file based repository, as it's unambiguous and also mavenlocal() doesn't seem
+to always respect the artifact metadata naming consistently.  Here's an example...
 
 {java}
 uploadArchives {
@@ -87,12 +87,12 @@ libraries built into the module, can exclude linked library dependencies for run
 
 ==Alternative Tasks==
 
-The ''install'' task is documented and highlighted since it fits neatly into the NetKernel plugin's pizza model.  Of course both
-''build'' and ''install'', although slighlty modified when the 'netkernel' plugin is applied, are still
+The ''install'' task is documented and highlighted since it fit the NetKernel plugin's pizza model.  Of course both
+''build'' and ''install'', although slightly modified when the 'netkernel' plugin is applied, are still
 just Gradle tasks and so they can be used in completely different ways in your own build processes.
 
 For example you can ''copy'' the built module to a different location.  Or even add it to your local NetKernel
 by copying and then creating an entry in modules.d/
 
-Although on the surface Gradle looks like a build DSL.  It is a full Groovy programming environment - so the power to parameterise, configure, extend and adapt the tools is always there.
+Although on the surface Gradle looks like a build DSL, it is a full Groovy programming environment - so the power to parameterise, configure, extend and adapt the tools is always there.
 

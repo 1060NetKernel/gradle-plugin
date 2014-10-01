@@ -123,14 +123,15 @@ class NetKernelInstance implements Serializable {
      */
     void start() {
         def startscript
+        def loc=location.absolutePath
         if(isWindows())
         {   startscript="netkernel.bat"
+            loc=loc.replaceAll(" ", "%20")
         }
         else
         {   startscript="netkernel.sh"
-
         }
-        doStart(location, "${location.absolutePath}/bin/${startscript}")
+        doStart(location, "${loc}/bin/${startscript}")
     }
 
     /**
@@ -144,7 +145,11 @@ class NetKernelInstance implements Serializable {
         if(!jarFileLocation.exists())
         {   throw new Exception("${jarFileLocation} does not exist - can't start the NK from jar")
         }
-        doStart(location.parentFile, javaBinary, '-jar', "${jarFileLocation.absolutePath}")
+        def jarfile=jarFileLocation.absolutePath
+        if(isWindows())
+        {   jarfile=jarfile.replaceAll(" ", "%20")  //Take care of stupid windows username folders
+        }
+        doStart(location.parentFile, javaBinary, '-jar', "${jarfile}")
     }
 
     /**

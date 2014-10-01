@@ -17,11 +17,13 @@ class ThawConfigureTask extends DefaultTask {
 
         //Work out if this is a windows or unix target
         def netkernelShFile=new File(thawDirInner ,"/bin/netkernel.sh");
+        def windows=false
         if(!netkernelShFile.exists())
         {   netkernelShFile=new File(thawDirInner ,"/bin/netkernel.bat");
             if(!netkernelShFile.exists())
             {   throw new Exception("Can't find either netkernel.sh or netkernel.bat")
             }
+            windows=true
         }
         def pr2 = new BufferedReader(new InputStreamReader(new FileInputStream(netkernelShFile),"UTF-8"));
         String line2;
@@ -56,7 +58,11 @@ class ThawConfigureTask extends DefaultTask {
             if (line2.startsWith("netkernel.layer0.expandDir="))
             {
                 //println "FOUND EXPANDIR*********************************"
-                line2="""netkernel.layer0.expandDir=${expandDir.absolutePath}""";
+                def exp=expandDir.absolutePath
+                if(windows)
+                {   exp=exp.replaceAll("\\", "\\\\")        //Need to do this in the property file on windows!!!
+                }
+                line2="""netkernel.layer0.expandDir=${exp}""";
             }
             sb2.append(line2);
             sb2.append('\n');

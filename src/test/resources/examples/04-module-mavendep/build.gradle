@@ -1,5 +1,7 @@
 apply plugin: 'netkernel'
 
+project.group="gradle-test"
+
 buildscript {
     repositories {
         mavenLocal()

@@ -237,18 +237,6 @@ class NetKernelPlugin implements Plugin<Project> {
                     }
                     println("MODULE ${netKernel.module.name} IS BUILT")
 
-                    //Remove all pom dependencies otherwise install to maven will create false runtime dependencies on Java compilation jars
-                    println("REMOVING COMPILATION DEPENDENCIES FROM POM")
-                    def installer = project.tasks.install.repositories.mavenInstaller
-                    //def deployer = project.tasks.uploadArchives.repositories.mavenDeployer
-                    /*
-                    [installer]*.pom*.whenConfigured { pom ->
-                        pom.dependencies.removeAll { it.scope == "compile" }
-                    }
-                    */
-                    [installer]*.pom*.whenConfigured { pom ->
-                        pom.dependencies.removeAll()
-                    }
                 }
             }
 
@@ -261,6 +249,14 @@ class NetKernelPlugin implements Plugin<Project> {
                 sourceModuleXml = netKernel.module.moduleFile
                 outputModuleXml = project.file("${project.buildDir}/${netKernel.module.name}/module.xml")
             }
+        }
+
+        //Remove all pom dependencies otherwise install to maven will create false runtime dependencies on Java compilation jars
+        println("REMOVING COMPILATION DEPENDENCIES FROM POM")
+        def installer = project.tasks.install.repositories.mavenInstaller
+        //def deployer = project.tasks.uploadArchives.repositories.mavenDeployer
+        [installer]*.pom*.whenConfigured { pom ->
+            pom.dependencies.removeAll { it.scope == "compile" }
         }
     }
 

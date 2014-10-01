@@ -241,8 +241,13 @@ class NetKernelPlugin implements Plugin<Project> {
                     println("REMOVING COMPILATION DEPENDENCIES FROM POM")
                     def installer = project.tasks.install.repositories.mavenInstaller
                     //def deployer = project.tasks.uploadArchives.repositories.mavenDeployer
+                    /*
                     [installer]*.pom*.whenConfigured { pom ->
                         pom.dependencies.removeAll { it.scope == "compile" }
+                    }
+                    */
+                    [installer]*.pom*.whenConfigured { pom ->
+                        pom.dependencies.removeAll()
                     }
                 }
             }

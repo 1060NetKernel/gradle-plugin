@@ -22,6 +22,7 @@ final class TaskName {
     static final String THAW_EXPAND = 'thawExpand'
     static final String UPDATE_MODULE_XML_VERSION = 'updateModuleXmlVersion'
     static final String UPLOAD_FREEZE = 'uploadFreeze'
+    static final String CLEAN = 'clean'
 
     // Tasks from gradle
     static final String COMPILE_GROOVY = 'compileGroovy'

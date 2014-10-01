@@ -18,6 +18,7 @@
             <item id="doc:org:netkernel:gradle:doc:install"/>
             <separator/>
             <item id="doc:org:netkernel:gradle:doc:configure"/>
+            <item id="doc:org:netkernel:gradle:doc:freezethaw"/>
             <separator/>
             <item id="doc:org:netkernel:gradle:doc:test"/>
             <item id="doc:org:netkernel:gradle:doc:deploy"/>

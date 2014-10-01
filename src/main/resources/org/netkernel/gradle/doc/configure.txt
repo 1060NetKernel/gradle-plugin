@@ -1,2 +1,309 @@
-=Build=
+=Configure=
 
+{callout}
+==Pizza Model==
+
+In the pizza model, configuring is analogous to creating and freezing the pizza base.
+{/callout}
+
+This section outlines the tools that are provided for configuring NetKernel.
+
+==Instances==
+
+The core concept in this section is the idea of declaring one or many named ''instances'' of NetKernel.  For each declared
+instance the NetKernel plugin will create an associated set of configuration tasks for that instance.
+
+Here's how to declare an instance in the netkernel{ } configuration...
+
+{java}
+//...NK plugin boilerplate not shown for clarity...
+
+netkernel {
+
+    instances {
+        TEST
+        {
+            edition = "EE"
+            location = "/opt/netkernel/NKEE-5.2.1-test/"
+        }
+        STAGE
+        {
+            edition = "EE"
+            location = "/opt/netkernel/NKEE-5.2.1-stage/"
+        }
+        PROD
+        {
+            edition = "EE"
+            location = "/opt/netkernel/NKEE-5.2.1-prod/"
+        }
+    }
+
+}
+{/java}
+
+In this example we have 3 named instances TEST, STAGE and PROD. The name you may choose for an instance is arbitrary (the underlying data structure for instances is Gradle's
+NamedObjectCollection).  Here we're using all caps since its useful to be able to clearly spot the named instance when looking at the available tasks (more below).
+
+An instance '''must''' declare an ''edition'' property which must be either "SE" or "EE".
+
+====location====
+
+An instance '''should''' declare a ''location'' property which must be the directory for the NetKernel installation (note, here we mean the NK concept of an installation).
+
+The location may point to an existing instance of NetKernel, but equally an instance may not yet exist and so declaring the location states where
+you would like to install an instance of NetKernel.
+
+It can be useful in some circumstances to not declare the ''location'', for example if you have an open source project that just wants to grab a copy of NetKernel to run on.
+In which case the location will default to:
+
+ ~/.gradle/netkernel/instances/XXXXX/
+
+''The instance concept is best understood with reference to the available tasks.''
+
+==Instance Tasks==
+
+When you have a declared an instance in your NetKernel configuration, you will have access to a new set of tasks. For example, looking at the TEST instance
+above, when we issue...
+
+ gradle tasks
+
+In addition to the regular build tasks of Gradle, we see the following highlighted set of tasks..
+
+{literal}
+NetKernel Instance (TEST) tasks
+-------------------------------
+appositeConfigureTEST - Configures NetKernel (TEST) with packages from Apposite repository
+appositeIsUpdatedTEST - Verifies that (TEST) is up to date with latest changes from Apposite repository
+appositeUpdateTEST - Updates NetKernel (TEST) from Apposite repository
+cleanFreezeTEST - Cleans frozen instance
+deployCollectionTEST - Deploy the collection of modules from Maven to NetKernel(TEST)
+freezeTEST - Freezes the NetKernel instance (TEST)
+installFreezeTEST - Installs frozen NetKernel TEST into maven repository
+installTEST - Installs NetKernel instance (TEST)
+startTEST - Starts NetKernel instance (TEST)
+stopTEST - Stops NetKernel instance (TEST)
+undeployCollectionTEST - Undeploy the collection of modules from NetKernel(TEST)
+xunitTEST - Run XUnit tests on NetKernel instance TEST
+{/literal}
+
+Notice how the named instance is identifiable and the task is specific to that instance.
+
+Some of the tasks are self-evident: startTEST, stopTEST and xunitTEST - do what you'd expect they start, stop and run the full set of Xunit tests on the named instance.
+
+In the following documentation for instance specific tasks, XXXX means the name of the specific instance
+
+==installXXXX==
+
+'''installXXXX''' can be used to install a brand new installation of NetKernel to the '''location''' specified for the named instance.
+
+This task depends on the '''download''' task which is not instance specific but which requires some configuration as follows...
+
+{java}
+netkernel {
+
+    download {
+        edition = "EE"  //or SE
+        username = "foo"
+        password = "baa"
+    }
+
+}
+{/java}
+
+The download task fetches a fresh NetKernel installer jar from the 1060 Research servers.
+
+'''download''' must specify an ''edition'' which must be one of '''EE''' or '''SE'''.
+
+If specifying ''EE'' you '''must''' supply the ''username'' and ''password'' for you [https://cs.1060research.com/csp/|NetKernel account].
+The downloaded EE instance will have a temporary license suitable for configuration tasks but '''not suitable for production'''.
+
+In all cases the installation jar file will be downloaded to:
+
+ ~/.gradle/netkernel/download/
+
+When installXXXX is run, if a recent copy of the jar file is found, the ''download'' task will not need to run.
+
+Once installed then the instance can be started with ''startXXXX'' and stopped with ''stopXXXX''.
+
+==appositeUpdateXXXX==
+
+'''Enterprise Edition Only'''
+
+'''appositeUpdateXXXX''' will automatically synchronize and apply all available Apposite updates to the instance.
+
+It's useful to apply this task immediately after running '''installXXXX''' to ensure your base installation is full up to date.
+
+''This task requires that the instance is running and will fail with a warning if it is not running.''
+
+==appositeIsUpdatedXXXX==
+
+'''Enterprise Edition Only'''
+
+'''appositeIsUpdatedXXXX''' will verify that the set of installed Apposite packages are fully up to date.
+
+''If this instances Apposite packages are not up to date, this task will report and error.''
+
+==appositeConfigureXXXX==
+
+'''Enterprise Edition Only'''
+
+'''appositeConfigureXXXX''' will configure the instance by installing a specified set of packages from Apposite.
+
+This task requires that you declare in the '''netkernel{}''' configuration the '''apposite''' ''packageList'' to install. Here is an example...
+
+{java}
+netkernel {
+
+    apposite {
+        packageList = ["lang-trl", "html5-frameworks"]
+    }
+
+}
+{/java}
+
+''packageList'' is an array containing the names of the apposite packages that must be installed.
+
+''In pizza model terms - the apposite* tasks are all about preparing the base.''
+
+==deployCollectionXXXX==
+
+'''deployCollectionXXXX''' downloads a collection of built modules from Maven and deploys them as a set to the
+specified instance.
+
+This task ''requires'' a configured '''deploy''' collection of module dependencies. The declaration looks like...
+
+{java}
+//Boilerplate omitted
+
+netkernel {
+
+ deploy {
+     collection = "skunkworks-project"
+     module  group: 'skunkworks', name: 'urn.com.corp.project.x', version: '1.1.1'
+     module  group: 'skunkworks', name: 'urn.com.corp.project.y', version: '1.1.1'
+     module  group: 'skunkworks', name: 'urn.com.corp.project.z', version: '0.0.1'
+ }
+
+}
+{/java}
+
+Notice this deploy declaration is not instance specific - so the same deployment collection can be applied to any declared instance.
+
+The ''deploy'' configuration must have a ''collection'' - this is the name of the set of modules and will be used as the name of the
+set of modules in the NetKernel modules.d/ directory...
+
+ etc/modules.d/{collection}.xml
+
+Each '''module''' statement uses the standard Gradle map dependency syntax to declare the repository artifacts (modules) to download and
+deploy to NetKernel.   (Note that only the map syntax is supported and you must specify all of 'group', 'name' and 'version'.)
+
+Setting up the deploy configuration allows you to reference the modules that have been built
+and [[doc:org:netkernel:gradle:doc:install|installed to maven]] (see artifact name).
+
+====example====
+
+Say, using the build/install tasks, you built a module with URI '''urn:com:company:project:module''' and version '''1.1.1''' and
+it was installed into Maven in the repository group '''big-corp-modules''',  then we could reference that as deploy dependency like this...
+
+{java}
+ deploy {
+     collection = "project-modules"
+     module  group: 'big-corp-modules', name: 'urn.com.company.project.module', version: '1.1.1'
+ }
+{/java}
+
+===Version Dependency Resolution===
+
+A very powerful feature of the '''deploy''' configuration is that it fully supports Gradle/Maven
+[http://stackoverflow.com/questions/30571/how-do-i-tell-maven-to-use-the-latest-version-of-a-dependency|version range syntax] for resolution of the modules
+in the maven repository.
+
+Therefore you can easily declare that a module should be the highest available version of the version 1.x.x major release but not the version 2.x.x generation
+like this...
+
+{java}
+ deploy {
+     collection = "project-modules"
+     module  group: 'skunkworks', name: 'urn.com.corp.project', version: '[1.0.0,2.0.0)'
+ }
+{/java}
+
+
+''In pizza model terms deployCollectionXXXXX is the task to put the topping on the base.''
+
+==undeployCollectionXXXX==
+
+'''undeployCollectionXXXX''' undeploys the named collection from the specified instance.
+
+As with ''deployCollectionXXXX'' the '''collection''' name is determined from the ''deploy'' declaration.
+
+==cleanXXXX==
+
+'''cleanXXXX''' deletes the instance location completely - making the logical instance pristine.
+
+==Full Example: Download, install, configure a base instance and apply modules==
+
+The following build.gradle provides sufficient configuration to download and fully set up a new instance of NetKernel.
+
+
+{java}
+//Boilerplate omitted
+
+//The repository where we'll get the deploy modules from
+repositories {
+    maven {
+        url "file:/tmp/mvn/"
+    }
+}
+
+//NetKernel plugin configuration
+netkernel {
+
+    //declare download edition and credentials
+    download {
+            edition = "EE"
+            username = "foo"
+            password = "baa"
+    }
+
+    //declare the apposite packages we want in the base
+    apposite {
+        packageList = ["lang-trl", "html5-frameworks"]
+    }
+
+    //declare the modules we've previously built and installed into the maven
+    deploy {
+         collection = "skunkworks-project"
+         module  group: 'skunkworks', name: 'urn.com.corp.project.x', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.y', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.z', version: '0.0.1'
+     }
+
+    //declare our named instance called BASE
+    instances
+    {
+        BASE
+            {
+                edition = "EE"
+                location = "/opt/netkernel/NKEE-5.2.1-base/"
+            }
+    }
+}
+{/java}
+
+We can sequence the steps by issuing the following gradle command line...
+
+ gradle installBASE startBASE appositeUpdateBASE appositeConfigureBASE deployCollectionBASE stopBASE
+
+This will do the following
+
+#Download and install the BASE instance to /opt/netkernel/NKEE-5.2.1-base/
+#Start the instance
+#Synchronize and apply any updates from Apposite
+#Configure this instance by installing ''lang-trl'' and ''html5-frameworks'' from Apposite
+#Configure this instance by installing the module deployment collection from Maven
+#Finally stop the instance
+
+''From our pizza model's perspective, this is maybe not a very good scenario - since its the equivalent of creating the base and applying the toppings all in one go.''
+
+''In the next section we'll see how we can use the freezer to decouple the base configuration from the topping deployment.''

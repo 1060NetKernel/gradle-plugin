@@ -163,10 +163,15 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void configureTasks() {
 
-        // TODO - Figure out what this task is doing...
-        //configureTask(THAW_DELETE_INSTALL) {
-        //    delete project.netkernel.thawInstallationDirectory
-        //}
+        configureTask(DOWNLOAD) {
+            doFirst()
+                {
+                    download = netKernel.download
+                    netKernelVersion = netKernel.currentMajorReleaseVersion()
+                    destinationFile = netKernel.workFile("download/${netKernel.distributionJarFile(download.edition, netKernelVersion)}")
+                    destinationFile.mkdirs()
+                }
+        }
 
         if(netKernel.module) {
             configureTask(MODULE) {
@@ -317,8 +322,10 @@ class NetKernelPlugin implements Plugin<Project> {
         //Starting and Stopping instance
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
+        String cleanTaskName = "clean${instance.name}"
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
+        createTask(cleanTaskName, Delete, "Cleans and Deletes the NetKernel instance (${instance.name})", groupName)
 
         //XUnit tests on instance
         String xunitTaskName= "xunit${instance.name}"
@@ -328,6 +335,10 @@ class NetKernelPlugin implements Plugin<Project> {
             configureTask(name) {
                 netKernelInstance = instance
             }
+        }
+
+        configureTask(cleanTaskName)
+        {   delete instance.location
         }
 
 
@@ -479,12 +490,10 @@ class NetKernelPlugin implements Plugin<Project> {
 
         String installTaskName = "install${instance.name}"
         createTask(installTaskName, InstallNetKernelTask, "Installs NetKernel instance (${instance.name})", groupName)
-
-        [installTaskName].each { name ->
-            configureTask(name) {
-                netKernelInstance = instance
-            }
+        configureTask(installTaskName) {
+            netKernelInstance = instance
         }
+        project.tasks[installTaskName].dependsOn DOWNLOAD
 
         //THAW
         if(instance.thawConfig!=null) {
@@ -540,18 +549,6 @@ class NetKernelPlugin implements Plugin<Project> {
             project.tasks[thawExpandTaskName].dependsOn thawRepoFetchTaskName
         }
 
-//        // TODO - I don't think this works as expected.  Should be a clean per instance perhaps?
-//        def applyCleanAllTask(def project, ExecutionConfig config) {
-//            project.task("cleanAll${config.name}", type: CleanAllTask)
-//                {
-//                    executionConfig = config
-//                }
-//        }
-
-        // TODO - Add task dependencies for instance tasks by from previous code:
-//                project.tasks."${startNKJarName}".dependsOn "downloadNK${config.relType}"
-//                project.tasks."${installNKJarName}".dependsOn startNKJarName
-//                    //project.tasks."${initDaemonDirName}".dependsOn installNKJarName
 
 
     }

@@ -1,0 +1,186 @@
+=Freeze/Thaw=
+
+{callout}
+==Pizza Model==
+
+In the pizza model, freezing and thawing is analogous to preparing frozen bases
+or defrosting bases or full ready-to-eat pizzas.
+{/callout}
+
+This section outlines the tools that are provided for freezing and thawing NetKernel instances.
+
+As with the configuration tools - these tools are named instance specific.  In the examples below XXXX is the name of the instance.
+
+==installFreezeXXXX==
+
+'''installFreezeXXX''' takes a static frozen snapshot of the named NetKernel instance and installs it (Gradle/Maven meaning) into
+a maven upload repository.
+
+In order to freeze an instance of NetKernel you must declare the artifact metadata which will identify it in the repository.  We do this per-instance
+with a '''freeze''' declaration.  Here is an example...
+
+{java}
+//Need to declare an upload archive for the frozen instance
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:/tmp/mvn/")
+        }
+    }
+}
+
+//NetKernel plugin configuration
+netkernel {
+    instances {
+        STAGE
+        {
+            edition = "EE"
+            location = "/opt/netkernel/NKEE-5.2.1-stage/"
+            freeze group: "big-corp-netkernels", name: "NKEE-5.2.1-base-production", version : "1.1.1"
+        }
+    }
+}
+{/java}
+
+As with the module dependency declaration the ''freeze'' declaration takes the standard Gradle dependency map syntax.
+
+With this example when we issue...
+
+ gradle installFreezeSTAGE
+
+The STAGE instance located at ''/opt/netkernel/NKEE-5.2.1-stage/'' will be frozen and installed to Maven as the artifact...
+
+  group: big-corp-netkernels
+  name: NKEE-5.2.1-base-production
+  version: 1.1.1
+
+This frozen instance can be used over and over as the base for new application configurations.
+
+Typically we would expect that the process of creating, configuring and freezing base NetKernel instances would be done
+independently from applying application configurations.
+
+==thawXXXX==
+
+'''thawXXXX''' takes a frozen snapshot of NetKernel and installs it (NetKernel meaning) to the location specified for the named instance.
+
+In order to thaw an instance of NetKernel you must declare the artifact metadata which will identify it in the repository.
+We do this per-instance with a '''thaw''' declaration.  Here is an example...
+
+{java}
+//Need to declare the repository where we'll get the frozen instance from
+//(notice this is different to uploadArchives for freeze task!)
+repositories {
+    //mavenLocal()
+    maven {
+        url "file:/tmp/mvn/"
+    }
+}
+
+//NetKernel plugin configuration
+netkernel {
+    instances {
+        PROD
+        {
+            edition = "EE"
+            location = "/opt/netkernel/NKEE-5.2.1-prod/"
+            thaw group: "big-corp-netkernels", name: "NKEE-5.2.1-base-production", version : "1.1.1"
+        }
+    }
+}
+{/java}
+
+As with the module and freeze dependency declaration the ''thaw'' declaration takes the standard Gradle dependency map syntax.
+It also supports Maven version resolution to, for example, support "most-recent" version patterns.
+
+With the example shown above when we issue...
+
+ gradle thawPROD
+
+The frozen NetKernel instance, with maven artifact values...
+
+  group: big-corp-netkernels
+  name: NKEE-5.2.1-base-production
+  version: 1.1.1
+
+...will be downloaded from maven and expanded and fully re-installed into the PROD instance location at ''/opt/netkernel/NKEE-5.2.1-prod/''.
+
+==Note==
+
+Please note the ''freeze'' and ''thaw'' configuration is specified per instance.  If necessary you can specify both a freeze and a thaw configuration
+on the same instance.
+
+==Example==
+
+We envisage that freezeXXX will be used to create standard base images of the NetKernel.  We envisage that thawXXXX will be used in conjunction with
+deployCollectionXXXX to create a combined application image.
+
+Here's an example that is sufficient to set up a frozen instance with an application deployment....
+
+{java}
+//Boilerplate omitted
+
+//The repository where we'll get the deployed modules and the frozen instance from
+repositories {
+    maven {
+        url "file:/tmp/mvn/"
+    }
+}
+
+//NetKernel plugin configuration
+netkernel {
+
+    //declare the modules we've previously built and installed into the maven
+    deploy {
+         collection = "skunkworks-project"
+         module  group: 'skunkworks', name: 'urn.com.corp.project.x', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.y', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.z', version: '0.0.1'
+     }
+
+    //declare our named instance called BASE
+    instances
+    {
+        PROD
+            {
+                edition = "EE"
+                location = "/opt/netkernel/NKEE-5.2.1-prod/"
+                thaw group: "skunkworks-netkernels", name: "NKEE-5.2.1-base-production", version : "1.1.1"
+            }
+    }
+}
+{/java}
+
+Assuming the maven repository contains the specified modules and the frozen base NetKernel instance, then...
+
+ gradle cleanPROD thawPROD deployCollectionPROD startPROD
+
+Will do the following
+
+#clean the PROD location to make sure we don't overwrite onto a previous instantiation.
+#Download from Maven the frozen NetKernel instance and install it into ''/opt/netkernel/NKEE-5.2.1-prod/''
+#Download from Maven the ''deploy'' collection of modules and install them as the collection ''modules.d/skunkworks-project.xml'' on the PROD instance
+#Start the PROD instance.
+
+''In pizza model terms, we took a ready-made base, applied the toppings and baked it''
+
+==Multiple Repositories==
+
+You may specify multiple ''repositories'' so you could have a repository for frozen base instances and another for modules.  All you need to do is use
+Gradle's ''repositories'' configuration with multiple entries.   The thawXXXX and deployCollectionXXXX will attempt to resolve their
+dependencies in each of the repositories in turn.
+
+Here's an example...
+
+{java}
+repositories {
+    //Our module repository
+    maven {
+        url "http://module.maven.corp.com/modules/"
+    }
+
+    //Our frozen base repository
+    maven {
+        url "http://base.maven.corp.com/bases/"
+    }
+}
+{/java}

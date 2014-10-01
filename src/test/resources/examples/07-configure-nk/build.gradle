@@ -7,12 +7,14 @@ project.version='1.1.1'
 
 buildscript {
     repositories {
-        //mavenLocal()
+        mavenLocal()
         mavenCentral()
+		/*
         maven {
             //url "http://maven.netkernel.org/netkernel-maven"
-            url "http://localhost:8080/netkernel-maven"
+            //url "http://localhost:8080/netkernel-maven"
         }
+		*/
     }
 
     dependencies {

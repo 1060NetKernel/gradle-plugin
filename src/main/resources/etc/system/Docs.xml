@@ -43,6 +43,14 @@
     </doc>
 
     <doc>
+        <id>doc:org:netkernel:gradle:doc:freezethaw</id>
+        <title>Freeze / Thaw</title>
+        <desc>Tasks for freezing and thawing NetKernel</desc>
+        <uri>res:/org/netkernel/gradle/doc/freezethaw.txt</uri>
+    </doc>
+
+
+    <doc>
         <id>doc:org:netkernel:gradle:doc:test</id>
         <title>Test</title>
         <desc>Tasks for testing assembled configuration</desc>

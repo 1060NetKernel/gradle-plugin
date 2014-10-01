@@ -1,2 +1,94 @@
-=Build=
+=Test=
 
+{callout}
+==Pizza Model==
+
+In the pizza model, ''test'' is analogous to checking that combined base and topping is what the customer ordered.
+{/callout}
+
+Test is per instance - in the following XXXX is the declared instance name.
+
+==xunitXXXX==
+
+'''xunitXXXX''' runs the complete set of XUnit tests on the named instance.
+
+The execution report for the tests is presented.  If there are any failures at all this task halts with an error.
+
+
+===Usage===
+
+We expect that you would use the configuration and freeze tools to create a frozen base NetKernel instance.
+You would have a set of application modules and associated test modules (using NetKernel's XUnit test framework).
+
+You would have a TEST server with the following configuration...
+
+{java}
+//Boilerplate omitted
+
+//The repository where we'll get the deployed modules and the frozen instance from
+repositories {
+    maven {
+        url "file:/tmp/mvn/"
+    }
+}
+
+//NetKernel plugin configuration
+netkernel {
+
+    //declare the modules we've previously built and installed into the maven
+    deploy {
+         collection = "skunkworks-project-test"
+         module  group: 'skunkworks', name: 'urn.com.corp.project.x', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.y', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.com.corp.project.z', version: '0.0.1'
+         module  group: 'skunkworks', name: 'urn.test.com.corp.project.x', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.test.com.corp.project.y', version: '1.1.1'
+         module  group: 'skunkworks', name: 'urn.test.com.corp.project.z', version: '0.0.1'
+     }
+
+    //declare our named instance called TEST
+    instances
+    {
+        TEST
+            {
+                edition = "EE"
+                location = "/opt/netkernel/NKEE-5.2.1-test/"
+                thaw group: "skunkworks-netkernels", name: "NKEE-5.2.1-base-production", version : "1.1.1"
+            }
+    }
+}
+{/java}
+
+Now issuing ...
+
+ gradle cleanBASE thawBASE deployCollectionTEST startTEST xunitTEST stopTEST
+
+would do the following...
+
+#clean any previous version
+#Download from maven the NKEE-5.2.1-base-production frozen instance and install it to '/opt/netkernel/NKEE-5.2.1-test/'
+#Download from Maven the ''deploy'' collection of modules and install them as the collection ''modules.d/skunkworks-project-test.xml'' on the TEST instance
+#Start the TEST instance.
+#Run all unit tests and succeed or fail
+#Stop the TEST instance
+
+==Continuous Integration Testing==
+
+For continuous integration, using the example build.gradle above you could run...
+
+ gradle stopTEST cleanTEST thawTEST deployCollectionTEST xunitTEST stopTEST
+
+This sequence would
+
+#Ensure the instance is stopped
+#Clean any previous instance in PROD location
+#Thaw a clean base image
+#Deploy the collection
+#Start the instance
+#Run the unit tests
+#Stop the TEST instance
+
+Remember that Gradle is just Groovy code - so you could easily set up the ''deploy'' configuration with parameters or loop over module names and versions from an external
+declarative source and repeatedly call...
+
+ netkernel.deploy.module ([dependencyMap])

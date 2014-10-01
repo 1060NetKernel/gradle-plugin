@@ -13,20 +13,27 @@ class ThawConfigureTask extends DefaultTask {
     @org.gradle.api.tasks.TaskAction
     void thaw() {
 
-        //edit netkernel.sh
-        println "CONFIGURING NETKERNEL.SH"
+        println "CONFIGURING NETKERNEL START SCRIPT"
+
+        //Work out if this is a windows or unix target
         def netkernelShFile=new File(thawDirInner ,"/bin/netkernel.sh");
+        if(!netkernelShFile.exists())
+        {   netkernelShFile=new File(thawDirInner ,"/bin/netkernel.bat");
+            if(!netkernelShFile.exists())
+            {   throw new Exception("Can't find either netkernel.sh or netkernel.bat")
+            }
+        }
         def pr2 = new BufferedReader(new InputStreamReader(new FileInputStream(netkernelShFile),"UTF-8"));
         String line2;
         def sb2=new StringBuilder(2048);
         while ((line2=pr2.readLine())!=null)
         {   //println line2
-            if (line2.startsWith("INSTALLPATH='"))
+            if (line2.startsWith("INSTALLPATH="))
             {
                 def i=line2.indexOf('\'');
                 if (i>0)
                 {   def installPath=line2.substring(i+1);
-                    line2="INSTALLPATH='"+thawDirInner+"'";
+                    line2="""INSTALLPATH="${thawDirInner}" """;
                 }
             }
             sb2.append(line2);

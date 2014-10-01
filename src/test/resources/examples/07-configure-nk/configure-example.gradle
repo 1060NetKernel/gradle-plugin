@@ -1,0 +1,42 @@
+apply plugin: 'netkernel'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernel.org/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+}
+
+repositories {
+    maven {
+        url "file:/tmp/mvn/"
+    }
+}
+
+
+netkernel {
+
+    instances {
+        TEST
+        {
+            edition = "EE"
+            //location = "/opt/netkernel/NKEE-5.2.1-test/"
+            //thaw group: "gradle-test", name: "NKEE-production", version : "1.1.1"
+        }
+    }
+
+    download {
+        edition = "EE"
+        username = "pjr"
+        password = ''
+    }
+
+}
+

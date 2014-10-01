@@ -40,10 +40,8 @@ class DownloadNetKernelTask extends DefaultTask {
     def propertyHelper = new PropertyHelper()
     Download download
 
-    @Input
     String netKernelVersion
 
-    @OutputFile
     File destinationFile
 
     @TaskAction

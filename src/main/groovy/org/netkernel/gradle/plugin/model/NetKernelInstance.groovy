@@ -7,6 +7,7 @@ import groovyx.net.http.RESTClient
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 import org.gradle.api.Project
+import org.apache.tools.ant.taskdefs.condition.Os
 
 /**
  * A NetKernelInstance represents an individual instance of NetKernel.  Both the downloaded
@@ -121,8 +122,15 @@ class NetKernelInstance implements Serializable {
      * Starts NetKernel from installed directory
      */
     void start() {
-        // TODO: Add Windows Handling
-        doStart(location, "${location.absolutePath}/bin/netkernel.sh")
+        def startscript
+        if(isWindows())
+        {   startscript="netkernel.bat"
+        }
+        else
+        {   startscript="netkernel.sh"
+
+        }
+        doStart(location, "${location.absolutePath}/bin/${startscript}")
     }
 
     /**
@@ -133,6 +141,9 @@ class NetKernelInstance implements Serializable {
         def javaBinary = jvm.javaExecutable.absolutePath
         //println "Starting NK jar:  ${jarFileLocation.absolutePath} in directory ${location.parentFile}"
         location.parentFile.mkdirs()
+        if(!jarFileLocation.exists())
+        {   throw new Exception("${jarFileLocation} does not exist - can't start the NK from jar")
+        }
         doStart(location.parentFile, javaBinary, '-jar', "${jarFileLocation.absolutePath}")
     }
 
@@ -465,5 +476,9 @@ class NetKernelInstance implements Serializable {
     boolean exists()
     {   def f=new File(location, "bin/")
         return f.exists()
+    }
+
+    boolean isWindows()
+    {   return Os.isFamily(Os.FAMILY_WINDOWS)
     }
 }

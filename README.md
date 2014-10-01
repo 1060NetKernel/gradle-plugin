@@ -47,7 +47,7 @@ Example build.gradle file for creating modules:
       mavenLocal()
       mavenCentral( )
       maven {
-        url "http://maven.netkernelroc.org:8080/netkernel-maven"
+        url "http://maven.netkernel.org/netkernel-maven"
       }
     }
 
@@ -56,11 +56,11 @@ Example build.gradle file for creating modules:
         mavenLocal()
         mavenCentral()
         maven {
-          url "http://maven.netkernelroc.org:8080/netkernel-maven"
+          url "http://maven.netkernel.org/netkernel-maven"
         }
       }
       dependencies {
-        classpath group: 'org.netkernel', name: 'gradle-plugin', version: '0.0.2'
+        classpath group: 'urn.org.netkernel', name: 'gradle-plugin', version: '1.1.1'
       }
     }
 

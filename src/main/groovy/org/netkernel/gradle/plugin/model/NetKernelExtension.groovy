@@ -46,10 +46,10 @@ class NetKernelExtension {
         }
         //Magically upcast the string to its Edition enumeration instance...
         switch(download.edition) {
-            case Edition.ENTERPRISE:
+            case "EE":
                 download.edition = Edition.ENTERPRISE
                 break
-            case Edition.STANDARD:
+            case "SE":
                 download.edition = Edition.STANDARD
                 break
         }
@@ -72,9 +72,6 @@ class NetKernelExtension {
 
         // After initial configuration, loop through instances and fill in default values if missing
         instances.each { NetKernelInstance instance ->
-            if(instance.location==null)
-            {   throw new Exception("Instance ${instance.name} must specify the NetKernel install path directory 'location'")
-            }
             instance.edition = instance.edition ?: Edition.STANDARD
             instance.netKernelVersion = instance.netKernelVersion ?: currentMajorReleaseVersion()
             instance.url = instance.url ?: new URL(projectProperty(PropertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL))
@@ -86,6 +83,11 @@ class NetKernelExtension {
             //instance.frozenLocation = instance.frozenLocation ?: workFile("freeze/${instance.name}")
             instance.project = project
             instance.eggMeetChicken()
+            //If location is not set then use the work path and put it into a directory under instances/
+            if(instance.location==null)
+            {   instance.location = new File(this.workFile("instances/"), instance.name+"/")
+                println("Instance ${instance.name} had no location so using default ${instance.location}")
+            }
         }
     }
 

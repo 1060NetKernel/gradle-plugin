@@ -27,7 +27,11 @@ class FreezeTidyTask extends DefaultTask {
         log.debug "Cleaning up kernel.properties"
 
         File freezeExpandDir
+        /*
         File propertiesFile = new File(freezeDirectory, "etc/kernel.properties")
+        propertiesFile.text = propertiesFile.text.replaceAll(/netkernel.layer0.expandDir=(.*)/,"netkernel.layer0.expandDir=")
+        */
+        /*
         propertiesFile.text = propertiesFile.text.replaceAll(/netkernel.layer0.expandDir=(.*)/) { match ->
             def fileuri=""
             if(isWindows())
@@ -38,6 +42,7 @@ class FreezeTidyTask extends DefaultTask {
             freezeExpandDir = new File(freezeDirectory, expandDirPath)
             return "netkernel.layer0.expandDir=${freezeExpandDir}"
         }
+        */
 
         log.debug "Cleaning up netkernel.sh"
 

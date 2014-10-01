@@ -46,6 +46,28 @@ class ThawConfigureTask extends DefaultTask {
         osw2.flush();
         fos2.close();
 
+        //Deal with properties file
+        def propertiesFile=new File(thawDirInner ,"/etc/kernel.properties");
+        def expandDir=new File(thawDirInner ,"/lib/expanded/");
+        pr2 = new BufferedReader(new InputStreamReader(new FileInputStream(propertiesFile),"UTF-8"));
+        sb2=new StringBuilder(2048);
+        while ((line2=pr2.readLine())!=null)
+        {   //println line2
+            if (line2.startsWith("netkernel.layer0.expandDir="))
+            {
+                //println "FOUND EXPANDIR*********************************"
+                line2="""netkernel.layer0.expandDir=${expandDir.absolutePath}""";
+            }
+            sb2.append(line2);
+            sb2.append('\n');
+        }
+        pr2.close();
+        fos2=new FileOutputStream(propertiesFile);
+        osw2=new OutputStreamWriter(fos2,"UTF-8");
+        osw2.write(sb2.toString());
+        osw2.flush();
+        fos2.close();
+
         //recreate license dir
         println "MKDIR LICENSE"
         def licenseDir=new File(thawDirInner,"/etc/license/")

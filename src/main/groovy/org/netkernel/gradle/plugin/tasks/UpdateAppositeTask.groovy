@@ -2,6 +2,8 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Input
+import org.netkernel.gradle.plugin.model.NetKernelInstance
 import org.netkernel.gradle.plugin.model.PropertyHelper
 
 /*
@@ -16,13 +18,17 @@ class UpdateAppositeTask extends DefaultTask {
     //Helpers
     def propertyHelper = new PropertyHelper()
 
+    @Input
+    NetKernelInstance netKernelInstance
+
     @TaskAction
     void updateApposite() {
         println("UPDATING NETKERNEL WITH APPOSITE");
 
-        def url=propertyHelper.findProjectProperty(project, propertyHelper.NETKERNEL_INSTANCE_DEFAULT_URL, "http://localhost")+
+
+        def url=nkinstance.getUrl()+
                 ":"+
-                propertyHelper.findProjectProperty(project, propertyHelper.NETKERNEL_INSTANCE_BACKEND_PORT, "1060")
+                nkinstance.getBackendPort()
 
         def synchronize=url+"/tools/apposite/unattended/v1/synchronize";
         def update=url+"/tools/apposite/unattended/v1/update";

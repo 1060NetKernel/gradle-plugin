@@ -32,4 +32,11 @@ netkernel {
     useMavenNK()
     useStandardCompileDependencies()
 
+	instances
+		{
+			TEST
+			{	location="/home/pjr/NKEE-5.2.1/"
+			}
+		}
+
 }

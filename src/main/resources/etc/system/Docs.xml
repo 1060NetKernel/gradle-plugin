@@ -65,6 +65,13 @@
     </doc>
 
     <doc>
+        <id>doc:org:netkernel:gradle:doc:process</id>
+        <title>Good Practice Guidelines</title>
+        <desc>Discussion of good practice</desc>
+        <uri>res:/org/netkernel/gradle/doc/process.txt</uri>
+    </doc>
+
+    <doc>
         <id>doc:org:netkernel:gradle:doc:license</id>
         <title>License</title>
         <desc>Licensing terms for the Gradle plugin</desc>

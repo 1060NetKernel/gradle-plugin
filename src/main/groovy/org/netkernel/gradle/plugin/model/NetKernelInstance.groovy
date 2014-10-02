@@ -321,7 +321,7 @@ class NetKernelInstance implements Serializable {
         File moduleReference = new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml")
         moduleReference.text = """
         <modules>
-        <module runlevel="7">${moduleArchiveFile.absolutePath}</module>
+        <module runlevel="7">${moduleArchiveFile.toURI()}</module>
         </modules>
         """.stripIndent()
     }

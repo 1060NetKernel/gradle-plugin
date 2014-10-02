@@ -10,8 +10,8 @@ is important since that is the key we'll need when we come to build a pizza.
 The NetKernel plugin automatically applies Gradle's [http://www.gradle.org/docs/current/userguide/maven_plugin.html|'maven'] plugin and so the 'install' task is
 always available.
 
-'''A word of warning:''' in the world of Gradle the '''install''' task is conceptually the exact opposite of how we think of install in the NetKernel world. It
-takes a built artifact and uploads it to a repository.
+'''A word of warning:''' in the world of Gradle the '''install''' task is conceptually the exact opposite of how we think of install in the NetKernel world.
+In Gradle/Maven, ''install'' takes a built artifact and uploads it ''to'' a repository.
 
 The NetKernel plugin defers to Gradle as much as possible, so '''gradle install''' is not directly modified by the NetKernel plugin.  Therefore executing...
 
@@ -20,8 +20,7 @@ The NetKernel plugin defers to Gradle as much as possible, so '''gradle install'
 will execute the ''build'' task dependency and upload the resulting module jar file to the configured upload repository.
 
 If no repository is specified then the built module will
-be uploaded to the maven local directory - in *nix this is located in the "~/.m2/" directory by default.
-
+be uploaded to the maven local directory (this is usually located in the "/.m2/" directory in your home directory).
 
 ==Artifact Naming==
 

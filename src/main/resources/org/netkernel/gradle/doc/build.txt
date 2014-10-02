@@ -222,5 +222,10 @@ If your module's URI is '''urn:com:company:project:module''' with version '''1.1
 
 (Notice that any ":" (colons) in the module URI are automatically replaced with "." (dots) to ensure filesystem compatibility.)
 
-Finally, to increment the build version number change the version number in the module.xml
+==Versioning==
+
+By default the ''version'' for the build artifact is take from the NetKernel ''module.xml''.  However ''project.version'' may be set
+and will be used for the artifact, but take care, since NetKernel only uses the version number
+in module.xml as its definitive version number.
+
 

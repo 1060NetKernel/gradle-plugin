@@ -20,8 +20,10 @@
             <item id="doc:org:netkernel:gradle:doc:configure"/>
             <item id="doc:org:netkernel:gradle:doc:freezethaw"/>
             <separator/>
-            <item id="doc:org:netkernel:gradle:doc:test"/>
             <item id="doc:org:netkernel:gradle:doc:deploy"/>
+            <item id="doc:org:netkernel:gradle:doc:test"/>
+            <separator/>
+            <item id="doc:org:netkernel:gradle:doc:process"/>
             <separator/>
             <item id="doc:org:netkernel:gradle:doc:license"/>
         </toc>

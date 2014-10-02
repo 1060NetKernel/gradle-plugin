@@ -1,0 +1,84 @@
+=Good Practice Guidelines=
+
+Gradle and the NetKernel plugin provides a set of tasks that can be used in arbitrary processes.
+
+As discussed in the [[doc:org:netkernel:gradle:doc:overview|overview]], the NetKernel plugin was
+designed with a simple two-phase "pizza model" concept.
+
+==Base Configuration==
+
+The plugin provides [[doc:org:netkernel:gradle:doc:configure|configuration]] tools
+for configuring base instances of NetKernel and freezing these as
+ready to use foundations (pizza base).
+
+The '''freezeInstallXXXX''' tool is designed to take '''any''' NetKernel instance and to perfectly freeze it
+to a repository.
+
+The '''thawXXXX''' tool can take any frozen instance of NetKernel from a repository and restore it instantly
+to a given instance location.
+
+Of course preparing bases does not have to be automated, it's perfectly fine to manually configure
+a base NetKernel instance and then use freezeInstallXXXXX task to snapshot it and store
+it in a repository.  You could even use this task to take daily production instance snapshots for backup
+and archive.
+
+==Topping Preparation==
+
+The ''build'' tools are oriented around building single modules.  Each built module can be '''install'''ed
+as a maven artifact for later deployment to an instance.
+
+The plugin only supports single module builds since this reflects the underlying Gradle model. But it also
+ensures a simplicity and consistency that means each tool is unambiguous and requires minimal configuration.
+Simply put, each module has its own ''build.gradle'' file but all the tools are standard gradle tasks with internal
+customisation to understand NetKernel's modular infrastructure.
+
+===Multi-Module Builds===
+
+Doing multi-module builds is simply a matter of using Gradle's multi-project support to create a master build.gradle that
+references all the module ''build.gradle'' files.   Given that we defer to Gradle as much as possible, means that you
+can run
+
+ gradle build install
+
+on the master project and all sub-modules will be built and installed as maven artifacts.
+
+For an example of a multi-project configuration checkout the [https://github.com/1060NetKernel/gradle-plugin|git] project and see
+
+ src/test/resources/examples/build.gradle
+
+Which is set-up to build the collection 0x-xxxxxxx-xxxxx of test modules
+
+==Assembling Deployments==
+
+Putting the pizza together involves choosing a base and applying the necessary toppings.  For this there is the
+'''thawXXXX''' tool to instantiate a frozen base and '''deployCollectionXXXX''' to a install a set of modules to the instance.
+
+Running '''xunitXXXX''' validates that the complete assembly is performing as expected.
+
+==Production Deployment==
+
+You have two choices for the style of production deployment - "continuous hot-deployment" or "static monolithic deployment".
+
+===Static===
+
+The static method is the classical application server approach whereby a single deployment is installed as a unit.  Any existing installation
+is temporarily stopped, the new instance installed and the system started again.
+
+To do static deployments you would use the installFreezeXXXX task to snapshot the assembled base and toppings - to create a complete ready-to-eat
+frozen pizza.   From the production side you would just use thawXXXX to pull it from a repository and fire it up.
+
+===Dynamic===
+
+NetKernel is designed for hot-deployment and our obsession is to never reboot.  NetKernel is more than happy to dynamically install new
+configurations of modules with no downtime.
+
+You can use the tools to do continuous updates with zero downtime.  For this you would prepare a base installation and install it to your
+production instances using thawXXXX.   As you continuously create new tested collections of modules, you very simply hot-deploy
+them to your production NetKernels using deployCollectionXXXX.
+
+If you're worried about regressions - simply set up your gradle build file to
+copy the old modules.d/{collection}.xml file to something like {collection}.xml.bak before running deployCollectionXXXX.  If anything goes
+wrong you can instantly revert back by switching the old file back again.  deployCollectionXXXX never removes any earlier module versions - our deployment
+philosophy is to treat the system as historically immutable so that any previous configuration can always be used.
+
+''One caveat - due to the finite possibilities of Java - NetKernel can only detect new versions of module's if they are in a new jar file with a different version number. Therefore its important that any module changes being deployed in a collection have incremented version numbers so that NetKernel can be aware that they should be reloaded.''

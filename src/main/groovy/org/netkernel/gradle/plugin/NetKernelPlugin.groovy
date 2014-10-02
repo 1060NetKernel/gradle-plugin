@@ -318,10 +318,12 @@ class NetKernelPlugin implements Plugin<Project> {
         String stopTaskName = "stop${instance.name}"
         String cleanTaskName = "clean${instance.name}"
         String xunitTaskName= "xunit${instance.name}"
+        String describeTaskName= "describe${instance.name}"
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
         createTask(cleanTaskName, Delete, "Cleans and Deletes the NetKernel instance (${instance.name})", groupName)
         createTask(xunitTaskName, XUnitTask, "Run XUnit tests on NetKernel instance ${instance.name}", groupName)
+        createTask(describeTaskName, DefaultTask, "Describe details for NetKernel instance ${instance.name}", groupName)
         [startTaskName, stopTaskName, xunitTaskName].each { name ->
             configureTask(name) {
                 netKernelInstance = instance
@@ -330,15 +332,28 @@ class NetKernelPlugin implements Plugin<Project> {
         configureTask(cleanTaskName)
         {   delete instance.location
         }
+        configureTask(describeTaskName)
+                {
+                    doFirst()
+                            {
+                                println instance.toString()
+                            }
+                    outputs.upToDateWhen { false }
+                }
 
         //Apposite Tasks on EE
         String appositeConfigureName=APPOSITE_CONFIGURE+instance.name
         String appositeUpdateName=APPOSITE_UPDATE+instance.name
         String appositeIsUpdatedName=APPOSITE_ISUPDATED+instance.name
+        String licenseTaskName= "deployLicense${instance.name}"
+        String deleteLicenseDirTaskName= "deleteLicenseDir${instance.name}"
         if(instance.edition==Edition.ENTERPRISE) {
             createTask(appositeConfigureName, ConfigureAppositeTask, "Configures NetKernel (${instance.name}) with packages from Apposite repository", groupName)
             createTask(appositeUpdateName, UpdateAppositeTask, "Updates NetKernel (${instance.name}) from Apposite repository", groupName)
             createTask(appositeIsUpdatedName, UptodateTask, "Verifies that (${instance.name}) is up to date with latest changes from Apposite repository", groupName)
+            createTask(licenseTaskName, DeployLicenseTask, "Deploy License(s) to NetKernel instance ${instance.name}", groupName)
+            createTask(deleteLicenseDirTaskName, Delete, "Delete License(s) from NetKernel instance ${instance.name}", null)
+
             [appositeIsUpdatedName, appositeUpdateName].each { name ->
                 configureTask(name) {
                     netKernelInstance = instance
@@ -347,6 +362,21 @@ class NetKernelPlugin implements Plugin<Project> {
             configureTask(appositeConfigureName) {
                 apposite = netKernel.apposite
             }
+            configureTask(licenseTaskName)
+            {   def licensedir=new File(instance.location, "etc/license/")
+                def licenses = project.fileTree('.') {
+                    include '**/*.lic'
+                }
+                from licenses.files  //flatten the tree
+                into licensedir
+            }
+            configureTask(deleteLicenseDirTaskName)
+            {   def licensedir=new File(instance.location, "etc/license/")
+                //Clean out any old licenses
+                delete licensedir
+            }
+            project.tasks[licenseTaskName].dependsOn deleteLicenseDirTaskName
+
         }
         else log.info "${instance.name} is SE. Apposite tasks not available"
 

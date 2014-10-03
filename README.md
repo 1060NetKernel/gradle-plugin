@@ -3,7 +3,15 @@ gradle-plugin
 
 Gradle Plugin to provide build, deploy, module templating functionality and more
 
+##Main Documentation
 
+Live production documentation for the plugin is available here
+
+http://docs.netkernel.org/book/view/book:org:netkernel:gradle:plugin:book/
+
+
+
+Below are some notes on the pre-production templating features...
 
 ## Templates
 

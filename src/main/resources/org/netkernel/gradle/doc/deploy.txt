@@ -100,6 +100,19 @@ like this...
 
 As with ''deployCollectionXXXX'' the '''collection''' name is determined from the ''deploy'' declaration.
 
+==deployLicenseXXXX==
+
+'''deployLicenseXXXX''' first empties the named instance's ''etc/license/'' directory then searches the local build path for all ''*.lic''
+license files and copies them into the NetKernel instance.
+
+This task ''requires'' no configuration.
+
+==describeXXXX==
+
+'''describeXXXX''' provides a human readable report of the configuration of the named instance.  Handy if you can't remember which instance is
+which.
+
+
 ==cleanXXXX==
 
 '''cleanXXXX''' deletes the instance location completely - making the logical instance pristine.

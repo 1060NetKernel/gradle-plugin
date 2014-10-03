@@ -60,6 +60,14 @@ In which case the location will default to:
 
 ''The instance concept is best understood with reference to the available tasks.''
 
+====Other Instance Properties===
+
+The following optional properties may be set in an instance declaration, the defaults are shown below...
+
+ url = "http://localhost"
+ backendPort = 1060
+ frontendPort = 8080
+
 ==Instance Tasks==
 
 When you have a declared an instance in your NetKernel configuration, you will have access to a new set of tasks. For example, looking at the TEST instance

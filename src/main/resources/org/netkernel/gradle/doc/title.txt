@@ -22,7 +22,7 @@ greatly and has received significant contributions from Nicholas Spilman and Ran
 NetKernel specific tasks were developed by [http://www.1060research.com|1060 Research] and are officially supported so the long-term
 stability of building, testing and deploying to NetKernel with Gradle is assured.
 
-We are grateful for the assistance of xxxx from the Gradle team for unlocking some of the low-level details
+We are grateful for the assistance of Luke Daley from the Gradleware and Tim Berglund at Datastax for helping unlock some of the low-level details
 necessary for this advanced plugin.
 
 ==GitHub==

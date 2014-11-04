@@ -21,9 +21,15 @@ class StartNetKernelTask extends DefaultTask {
         netKernelInstance.start()
 
         log.info "Waiting for NetKernel to start..."
+        println "Waiting for NetKernel to start..."
+        def loops=0
         while (!netKernelInstance.isRunning()) {
-            log.info "."
+            print "."
             sleep(500)
+            loops++
+            if(loops==120)
+            {   throw new Exception("!!!!!!!!!!! Unable to start ${netKernelInstance}")
+            }
             // TODO - Think about timeout here
         }
     }

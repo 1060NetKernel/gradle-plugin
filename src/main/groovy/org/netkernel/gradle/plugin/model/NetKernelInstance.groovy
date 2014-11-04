@@ -168,7 +168,15 @@ class NetKernelInstance implements Serializable {
             println("Process to be Executed: ${command}")
             ProcessBuilder processBuilder = new ProcessBuilder(command)
             Process process = processBuilder.redirectErrorStream(true).directory(workingDir).start()
+            try {
+                if (process.exitValue() < 0) {
+                    throw new Exception("Error attempting to execute ${command} - try executing manually to diagnose the issue")
 
+                }
+            }
+            catch(IllegalThreadStateException e)
+            {   //Good this is thrown if the process is still executing.
+            }
             /* Debug when process couldn't be found - this feeds forked process stdout into Gradle stdout
             def procis=proc.getInputStream()
             Utils.pipe(procis, System.out)
@@ -379,7 +387,16 @@ class NetKernelInstance implements Serializable {
      * @throws IOException
      */
     HttpResponse issueRequest(Method method, Map args) {
-        return new RESTClient("${url}:${backendPort}")."${method.toString().toLowerCase()}"(args)
+        try {
+            RESTClient client = new RESTClient("${url}:${backendPort}")
+            client.getClient().getParams().setParameter("http.socket.timeout", new Integer(5000))
+            log.info "HTTP Request: ${method} ${args}"
+            return client."${method.toString().toLowerCase()}"(args)
+        }
+        catch(Exception e)
+        {   //e.printStackTrace()
+            throw e
+        }
     }
 
     /**

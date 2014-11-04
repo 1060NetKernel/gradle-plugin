@@ -253,10 +253,15 @@ class NetKernelInstance implements Serializable {
 
         startJar()
 
-        while (!running) {
-            log.info "Waiting for NetKernel to start..."
+        log.info "Waiting for NetKernel to start..."
+        def loops=0
+        while (!isRunning()) {
+            print "."
             Thread.sleep(500)
-            //TODO: Timeout eventually
+            loops++
+            if(loops==60)
+            {   throw new Exception("NetKernel installer not responding on port ${this.backendPort}")
+            }
         }
 
         try {

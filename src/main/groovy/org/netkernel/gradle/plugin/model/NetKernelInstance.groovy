@@ -167,7 +167,10 @@ class NetKernelInstance implements Serializable {
         if (!isRunning()) {
             println("Process to be Executed: ${command}")
             ProcessBuilder processBuilder = new ProcessBuilder(command)
-            Process process = processBuilder.redirectErrorStream(true).directory(workingDir).start()
+            //Redirect output to prevent deadlock if stdout buffer fills on windows
+            File logfile = new File(this.location, "/log/netkernel.out")
+            logfile.getParentFile().mkdirs()
+            Process process = processBuilder.redirectErrorStream(true).redirectOutput(logfile).directory(workingDir).start()
             try {
                 if (process.exitValue() < 0) {
                     throw new Exception("Error attempting to execute ${command} - try executing manually to diagnose the issue")

@@ -46,6 +46,18 @@ class DownloadNetKernelTask extends DefaultTask {
 
     @TaskAction
     void downloadNetKernel() {
+
+        if(destinationFile.exists())
+        {   long now=System.currentTimeMillis()
+            long mod=destinationFile.lastModified()
+            float age=(now-mod)/(24*60*60*1000.0)
+
+            if(age < 85.0f)
+            {   println "No need to download, found recent install jar file: ${destinationFile}"
+                return;
+            }
+        }
+
         switch (download.edition) {
             case Edition.STANDARD:
                 downloadNKSEImpl(new URL(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_SE, null, [netKernelVersion: netKernelVersion])))

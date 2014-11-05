@@ -277,7 +277,7 @@ class NetKernelInstance implements Serializable {
                             username         : '',
                             password         : '',
                             ntWorkstationHost: '',
-                            ntDomain         : '']])) {
+                            ntDomain         : '']], 60000)) {
                 log.info "Successfully installed NetKernel in ${location}"
                 log.info "Shutting NetKernel down..."
 
@@ -382,11 +382,16 @@ class NetKernelInstance implements Serializable {
         return result
     }
 
+    //Issue request with default 5s timeout
+    HttpResponse issueRequest(Method method, Map args) {
+        return issueRequest(method, args, 5000)
+    }
     /**
      * Issues request to backend fulcrum.
      *
      * @param method http method (GET, POST, etc.)
      * @param args Map of arguments passed to rest client
+     * @param timeout time to wait before request times out
      *
      * @return {@link HttpResponse} from invoking request
      *
@@ -394,10 +399,10 @@ class NetKernelInstance implements Serializable {
      * @throws org.apache.http.client.ClientProtocolException
      * @throws IOException
      */
-    HttpResponse issueRequest(Method method, Map args) {
+    HttpResponse issueRequest(Method method, Map args, timeout) {
         try {
             RESTClient client = new RESTClient("${url}:${backendPort}")
-            client.getClient().getParams().setParameter("http.socket.timeout", new Integer(5000))
+            client.getClient().getParams().setParameter("http.socket.timeout", timeout)
             log.info "HTTP Request: ${method} ${args}"
             return client."${method.toString().toLowerCase()}"(args)
         }

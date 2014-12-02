@@ -88,6 +88,10 @@ class NetKernelExtension {
             {   instance.location = new File(this.workFile("instances/"), instance.name+"/")
                 println("Instance ${instance.name} had no location so using default ${instance.location}")
             }
+            if(instance.location.toString().startsWith("."))
+            {   //Resolve relative location to build script.
+                instance.location=project.file(instance.location)
+            }
         }
     }
 

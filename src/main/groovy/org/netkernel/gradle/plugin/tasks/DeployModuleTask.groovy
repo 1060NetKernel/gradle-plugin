@@ -26,7 +26,8 @@ class DeployModuleTask extends DefaultTask {
 
     @org.gradle.api.tasks.TaskAction
     def deployModule()
-    {   nkinstance.deploy(moduleArchiveFile)
+    {
+        nkinstance.deploy(moduleArchiveFile)
     }
 
 }

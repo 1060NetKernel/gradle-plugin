@@ -338,10 +338,11 @@ class NetKernelInstance implements Serializable {
      */
     void deploy(File moduleArchiveFile) {
         log.debug "Deploying ${moduleArchiveFile} to ${this}"
-        File moduleReference = new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml")
+        String fname = moduleArchiveFile.name.replaceAll("\\.jar","")
+        File moduleReference = new File(location, "etc/modules.d/${fname}.xml")
         moduleReference.text = """
         <modules devmode="true">
-        <module runlevel="7">${moduleArchiveFile.toURI()}</module>
+        <module runlevel="7">${moduleArchiveFile.getParentFile().getParentFile().toURI().toString()+fname+"/"}</module>
         </modules>
         """.stripIndent()
     }

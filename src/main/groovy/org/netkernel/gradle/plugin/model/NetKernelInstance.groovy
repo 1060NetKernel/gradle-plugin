@@ -330,13 +330,17 @@ class NetKernelInstance implements Serializable {
      * archive file is module-1.0.0.jar, a file named module-1.0.0.jar.xml is created in the modules.d
      * folder with a reference to the archive file.
      *
+     * The @devmode attribute on <modules> tells the NetKernel module manager to reload this set of modules even if only
+     * the timestamp of the .xml file has changed - this allows continuous redeployment of a jar build file even if its version
+     * has not been updated.
+     *
      * @param moduleArchiveFile module file to deploy
      */
     void deploy(File moduleArchiveFile) {
         log.debug "Deploying ${moduleArchiveFile} to ${this}"
         File moduleReference = new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml")
         moduleReference.text = """
-        <modules>
+        <modules devmode="true">
         <module runlevel="7">${moduleArchiveFile.toURI()}</module>
         </modules>
         """.stripIndent()

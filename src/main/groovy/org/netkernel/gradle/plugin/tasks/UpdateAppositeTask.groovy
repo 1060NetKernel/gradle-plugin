@@ -26,17 +26,17 @@ class UpdateAppositeTask extends DefaultTask {
         println("UPDATING NETKERNEL WITH APPOSITE");
 
 
-        def url=nkinstance.getUrl()+
+        def url=netKernelInstance.getUrl().toString()+
                 ":"+
-                nkinstance.getBackendPort()
+                netKernelInstance.getBackendPort().toString()
 
         def synchronize=url+"/tools/apposite/unattended/v1/synchronize";
         def update=url+"/tools/apposite/unattended/v1/update";
 
         callAppositeAPI(synchronize);
-        sleep(5000);
+        sleep(15000);
         callAppositeAPI(update)
-        sleep(30000);
+        sleep(90000);
     }
 
     def callAppositeAPI(url)

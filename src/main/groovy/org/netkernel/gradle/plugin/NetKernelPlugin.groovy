@@ -44,7 +44,7 @@ class NetKernelPlugin implements Plugin<Project> {
      */
     void configureProject() {
 
-        ['freeze', 'thaw', 'provided'].each { name ->
+        ['freeze', 'thaw', 'provided','nkdeploy'].each { name ->
             project.configurations.create(name)
         }
 
@@ -476,8 +476,8 @@ class NetKernelPlugin implements Plugin<Project> {
         //Deploy collection task
         configureTask(deployCollectionName) {
             deploy = netKernel.deploy
-            from project.configurations.runtime
-            //Copy the runtime dependencies set up by the Deploy configuration
+            from project.configurations.nkdeploy
+            //Copy the nkdeploy dependencies set up by the Deploy configuration
             def modulesDir = new File(instance.getLocation(), "modules")
             into modulesDir     //Into the modules directory of the thawed target
             //Keep record of each copied file in the copied list in the task

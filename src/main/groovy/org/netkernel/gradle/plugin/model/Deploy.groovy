@@ -15,6 +15,6 @@ class Deploy {
     }
 
     def module (moduleMap)
-    {   project.dependencies.runtime moduleMap
+    {   project.dependencies.nkdeploy moduleMap
     }
 }

@@ -326,9 +326,8 @@ class NetKernelInstance implements Serializable {
     }
 
     /**
-     * Adds a new file to the modules.d folder using the name of the archive file.  So if the
-     * archive file is module-1.0.0.jar, a file named module-1.0.0.jar.xml is created in the modules.d
-     * folder with a reference to the archive file.
+     * Adds a new file to the modules.d folder referencing the expanded build directory of the built module.  This means that a dynamic module
+     * will be automatically updated whenever the module is built without any need to redeploy.
      *
      * The @devmode attribute on <modules> tells the NetKernel module manager to reload this set of modules even if only
      * the timestamp of the .xml file has changed - this allows continuous redeployment of a jar build file even if its version
@@ -348,14 +347,14 @@ class NetKernelInstance implements Serializable {
     }
 
     /**
-     * Undeploy simply removes the file from the modules.d folder that references the archive file.  The
-     * method assumes that the name of the file will be {archive file name}.xml.
+     * Undeploy simply removes the file from the modules.d folder that references the expanded built module directory.
      *
      * @param moduleArchiveFile module file to undeploy
      */
     void undeploy(File moduleArchiveFile) {
-        log.debug "Undeploying ${moduleArchiveFile} from ${this}"
-        new File(location, "etc/modules.d/${moduleArchiveFile.name}.xml").delete()
+        String fname = moduleArchiveFile.name.replaceAll("\\.jar","")
+        log.debug "Undeploying ${fname} from ${this}"
+        new File(location, "etc/modules.d/${fname}.xml").delete()
     }
 
     boolean runXUnit()

@@ -13,9 +13,10 @@ These tools are named instance specific.  In the examples below XXXX is the name
 ''This task is for developer convenience - do not use for production configuration as no files are copied!''
 
 '''deployModuleXXXX''' is a convenience task associated with a single module ''build''.  It will create a new modules.d/ entry
-pointing to the file URI of the module jar for the project.
+pointing to the file URI of the expanded module created when the project is built.   By using the expanded location of the built module, then
+if the module is marked as <dynamic/>, any subsequent build will be automatically hot-redeployed to netkernel with no restart.
 
-'''Note - it does not copy the built jar, it simply tells the NetKernel instance where to find it'''
+'''Note - it does not copy the built module, it simply tells the NetKernel instance where to find it'''
 
 ''For production configuration use <b>deployCollectionXXXX</b> (see below)''
 
@@ -24,7 +25,7 @@ pointing to the file URI of the module jar for the project.
 ''This task is for developer convenience - do not use for production configuration as no files are copied!''
 
 '''undeployModuleXXXX''' is a convenience task associated with a single module ''build''.  It removes the modules.d/ entry
-for the project jar file.
+for the expanded module.
 
 '''Note - it does not touch the jar, it simply tells NetKernel not to use it any more'''
 

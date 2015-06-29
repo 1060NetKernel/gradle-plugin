@@ -443,8 +443,8 @@ class NetKernelPlugin implements Plugin<Project> {
             }
             doLast()
             {   //Clear up the temporary freeze location
-                delete instance.getFrozenJarFile()
-                delete instance.getFreezeLocation()
+                project.delete instance.getFrozenJarFile()
+                project.delete instance.getFreezeLocation()
             }
         }
         configureTask(freezeTaskName) {

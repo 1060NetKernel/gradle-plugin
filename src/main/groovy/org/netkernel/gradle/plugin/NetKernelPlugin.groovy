@@ -517,7 +517,7 @@ class NetKernelPlugin implements Plugin<Project> {
             createTask(thawExpandTaskName, Copy, "Thaws and expands frozen NetKernel instance (${instance.name})", null)
             createTask(thawRepoFetchTaskName, Copy, "Thaws/installs frozen NetKernel instance (${instance.name}) from repo", null)
             configureTask(thawRepoFetchTaskName) {
-                from project.configurations.thawrepo
+                from project.configurations["thawrepo"+instance.name]
                 def modulesDir = new File(instance.location, "thaw/")
                 into modulesDir     //Into the modules directory of the thawed target
                 eachFile { f ->

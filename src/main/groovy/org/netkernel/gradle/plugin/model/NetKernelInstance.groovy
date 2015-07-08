@@ -66,8 +66,8 @@ class NetKernelInstance implements Serializable {
 
     def eggMeetChicken()
     {   if(thawConfig!=null) {
-            project.configurations.create("thawrepo")
-            project.dependencies.thawrepo thawConfig
+            project.configurations.create("thawrepo"+this.name)
+            project.dependencies.add("thawrepo"+this.name, thawConfig)
         }
     }
 

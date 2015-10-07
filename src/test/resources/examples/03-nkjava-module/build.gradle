@@ -3,19 +3,8 @@ apply plugin: 'netkernel'
 project.group='gradle-test'
 
 buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven {
-            // TODO: Default to local, but allow override
-            url "http://maven.netkernel.org:8080/netkernel-maven"
-            //url "http://localhost:8080/netkernel-maven"
-        }
-    }
-
-    dependencies {
-        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: "[${project.netkernelGradlePluginVersion},)"
-    }
+    //Provide this build script with repositories and dependencies to obtain the netkernel plugin
+    apply from: "$rootProject.projectDir/common-buildscript.gradle", to: buildscript
 }
 
 //******************************************

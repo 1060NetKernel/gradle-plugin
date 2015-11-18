@@ -36,12 +36,12 @@ class ConfigureAppositeTask extends DefaultTask {
             println(p)
         }
 
-        //callAppositeAPI(install)
+        callAppositeAPI(install)
         sleep(20000)
     }
 
     def callAppositeAPI(url)
-    {   println ("APPOSITE API CALL: $url")
+    {   
         ant.get(src: url,
                 dest: "temp-apposite.html",
                 verbose: true,

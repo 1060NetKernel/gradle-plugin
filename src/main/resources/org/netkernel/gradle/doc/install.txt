@@ -36,6 +36,8 @@ You may control the group in which the artifact is placed by setting the '''proj
 {java}
 //Apply the NetKernel plugin
 apply plugin: 'netkernel'
+//Apply the maven plugin (required for uploadArchives)
+apply plugin: 'maven'
 
 //Define the project group in which built modules are stored in the repository.
 project.group = 'big-corp-skunkworks'
@@ -79,6 +81,14 @@ uploadArchives {
 }
 {/java}
 
+To upload your module to this upload archive you need to use the ''uploadArchives'' task ('''note''' do not use the '''install''' task as this will always target ''~/.m2/'')
+
+ gradle uploadArchives
+
+Note: ''uploadArchives'' is a task from the ''maven plugin'' which must be declared in order to upload to maven repositories.
+
+Further details for uploading to repositories are in the [https://docs.gradle.org/current/userguide/maven_plugin.html|gradle documentation here] section 31.6.2
+
 ==Repository Metadata==
 
 The NetKernel plugin will automatically work out the maven artifact metadata and generate the POM file.  This includes understanding that encapsulated class
@@ -86,8 +96,8 @@ libraries built into the module, can exclude linked library dependencies for run
 
 ==Alternative Tasks==
 
-The ''install'' task is documented and highlighted since it fit the NetKernel plugin's pizza model.  Of course both
-''build'' and ''install'', although slightly modified when the 'netkernel' plugin is applied, are still
+The ''install'' and '''uploadArchives'' tasks are documented and highlighted since they fit the NetKernel plugin's pizza model.  Of course both
+''build'', ''install'' and ''uploadArchives'', although slightly modified when the 'netkernel' plugin is applied, are still
 just Gradle tasks and so they can be used in completely different ways in your own build processes.
 
 For example you can ''copy'' the built module to a different location.  Or even add it to your local NetKernel

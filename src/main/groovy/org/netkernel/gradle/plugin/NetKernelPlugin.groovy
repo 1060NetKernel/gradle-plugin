@@ -279,13 +279,15 @@ class NetKernelPlugin implements Plugin<Project> {
             [installer]*.pom*.whenConfigured { pom ->
                 pom.dependencies.removeAll { it.scope == "compile" }
             }
-            if(project.tasks.uploadArchives!=null) {
-                println("REMOVING COMPILATION DEPENDENCIES FROM POM for uploadArchives task")
+            try {
                 def deployer = project.tasks.uploadArchives.repositories.mavenDeployer
+                println("REMOVING COMPILATION DEPENDENCIES FROM POM for uploadArchives task")
                 [deployer]*.pom*.whenConfigured { pom ->
                     pom.dependencies.removeAll { it.scope == "compile" }
                 }
             }
+            catch(Exception e)
+            { /*Relax there is no mavenDeployer*/}
         }
     }
 

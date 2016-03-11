@@ -68,7 +68,15 @@ class DownloadNetKernelTask extends DefaultTask {
                 def password = propertyHelper.findProjectProperty(project, "nkeePassword", download.password)
 
                 if (!username || !password) {
-                    ant.fail("Downloading NetKernel Enterprise Edition requires a username and password.  Details can be found here: http://1060research.com/resources/#download")
+                    println("****************************************************************")
+                    println("*NKEE Download - Portal Login Credentials Required             *")
+                    println("****************************************************************")
+                    if(!username) {
+                        username = new String(System.console().readLine("\nNetKernel CSP username: "))
+                    }
+                    if(!password) {
+                        password = new String(System.console().readPassword("NetKernel CSP password: "))
+                    }
                 }
 
                 URL url = new URL(propertyHelper.findProjectProperty(project, PropertyHelper.DISTRIBUTION_URL_EE, null, [netKernelVersion: netKernelVersion]))

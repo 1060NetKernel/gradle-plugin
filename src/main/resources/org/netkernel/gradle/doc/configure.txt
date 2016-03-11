@@ -111,8 +111,8 @@ netkernel {
 
     download {
         edition = "EE"  //or SE
-        username = "foo"
-        password = "baa"
+        username = "foo"   //Optional - will be prompted at console if not set
+        password = "baa"   //Optional - will be prompted at console if not set
     }
 
 }
@@ -122,7 +122,9 @@ The download task fetches a fresh NetKernel installer jar from the 1060 Research
 
 '''download''' must specify an ''edition'' which must be one of '''EE''' or '''SE'''.
 
-If specifying ''EE'' you '''must''' supply the ''username'' and ''password'' for you [https://cs.1060research.com/csp/|NetKernel account].
+If specifying ''EE'' you '''must''' provide the ''username'' and ''password'' for you [https://cs.1060research.com/csp/|NetKernel account] - if login
+details are not specified in the download task's configuration you will be prompted at the command line.
+
 The downloaded EE instance will have a temporary license suitable for configuration tasks but '''not suitable for production'''.
 
 In all cases the installation jar file will be downloaded to:

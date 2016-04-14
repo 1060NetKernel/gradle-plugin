@@ -68,6 +68,10 @@ class DownloadNetKernelTask extends DefaultTask {
                 def password = propertyHelper.findProjectProperty(project, "nkeePassword", download.password)
 
                 if (!username || !password) {
+                    if(System.console()==null)
+                    {   ant.fail("No user or password set in download{} and cannot read from console in daemon mode\nPlease either disable daemon mode or provide user and password in the build file\nSee https://issues.gradle.org/browse/GRADLE-2310")
+                        break;
+                    }
                     println("****************************************************************")
                     println("*NKEE Download - Portal Login Credentials Required             *")
                     println("****************************************************************")

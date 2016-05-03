@@ -35,7 +35,7 @@ class ThawConfigureTask extends DefaultTask {
                 def i=line2.indexOf('\'');
                 if (i>0)
                 {   def installPath=line2.substring(i+1);
-                    line2="""INSTALLPATH="${thawDirInner}" """;
+                    line2="""INSTALLPATH='${thawDirInner}' """;
                 }
             }
             sb2.append(line2);

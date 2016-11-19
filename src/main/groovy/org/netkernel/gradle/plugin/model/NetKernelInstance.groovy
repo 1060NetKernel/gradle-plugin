@@ -269,7 +269,7 @@ class NetKernelInstance implements Serializable {
 
         try {
             if (issueRequest(Method.POST, [
-                    path : '/installer/',
+                    path : '/installer/install',
                     query: [target           : location,
                             expand           : 'yes',
                             proxyHost        : '',

@@ -204,6 +204,17 @@ class NetKernelPlugin implements Plugin<Project> {
                         }
                     }
                     def jarsToPack=[]
+
+                    //Filter out provided classpath - ie libraries that were used for compiled but are expected to be provided at runtime
+                    //See https://sinking.in/blog/provided-scope-in-gradle/
+                    if(project.configurations.find{c->c.name.equals('provided')}!=null)
+                    {   //println("CLASSPATH BEFORE PROVIDED FILTER")
+                        //project.tasks.compileJava.classpath.each{f->println(f)}
+                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->!project.configurations.provided.files.contains(f)}
+                        //println("CLASSPATH AFTER PROVIDED FILTER")
+                        //project.tasks.compileJava.classpath.each{f->println(f)}
+                    }
+
                     project.tasks.compileJava.classpath.each { f ->
                         File fi=f
                         if(fi.absolutePath.matches(".*expanded\\.lib.*"))

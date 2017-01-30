@@ -181,6 +181,15 @@ This includes any linked dependencies resolved through the repository's dependen
 
 ''It follows that a compiled and linked module will be completely encapsulated with no need for the installation of any additional class libraries at deployment time.''
 
+Any Gradle dependencies referenced using the '''provided''' mechanism will not be packaged and are assumed to be provided by the runtime environment.  Using provided is
+usually the best choice for compiling one netkernel module against another as is shown in this provided dependency example...
+
+dependencies {
+	provided project('../urn.com.bigco.project.foo.baa')
+}
+
+Any classes and lib/ jar files in the project urn.com.bigco.project.foo.baa will be used for compiling but not packaged into the build module.
+
 ==Dynamic Code or No Code at All!==
 
 All of the talk of source code and compilation and runtime classpaths is necessary for low-level understanding

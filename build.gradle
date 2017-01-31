@@ -45,12 +45,14 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.0.1'
     compile group: 'jline', name: 'jline', version: '2.11'
     compile group: 'org.freemarker', name: 'freemarker', version: '2.3.20'
-
+	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
+    
     // Test Dependencies
-    testCompile 'org.spockframework:spock-core:0.7-groovy-1.8' // Friends don't let friends use other unit testing frameworks...
+    testCompile 'org.spockframework:spock-core:[0.7-groovy-1.8,)' // Friends don't let friends use other unit testing frameworks...
     testCompile 'cglib:cglib-nodep:2.2.2'
+    
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = '3.3'
 }

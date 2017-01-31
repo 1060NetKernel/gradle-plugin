@@ -7,6 +7,7 @@ import org.gradle.api.tasks.Upload
 import org.gradle.api.tasks.bundling.Jar
 import org.netkernel.gradle.plugin.model.*
 import org.netkernel.gradle.plugin.tasks.*
+import org.gradle.util.GradleVersion
 import groovy.util.logging.Slf4j
 
 import static org.netkernel.gradle.plugin.model.PropertyHelper.*
@@ -214,8 +215,19 @@ class NetKernelPlugin implements Plugin<Project> {
                         //println("CLASSPATH AFTER PROVIDED FILTER")
                         //project.tasks.compileJava.classpath.each{f->println(f)}
                     }
-
-                    project.tasks.compileJava.classpath.each { f ->
+                    GradleVersion gradleVersion = GradleVersion.current()
+                    GradleVersion gradleVersion211 = GradleVersion.version("2.1.1")
+                    if(gradleVersion>gradleVersion211 && project.configurations.find{c->c.name.equals('compileOnly')}!=null)
+                    {   //println("CLASSPATH BEFORE COMPILEONLY FILTER")
+                        //project.tasks.compileJava.classpath.each{f->println(f)}
+                    	//println("COMPILE FILES-------------")
+                    	//project.configurations.compile.files.each{f->println(f)}
+                    	//println("-------------")
+                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->project.configurations.compile.files.contains(f)}
+                        //println("CLASSPATH AFTER COMPILEONLY FILTER")
+                        //project.tasks.compileJava.classpath.each{f->println(f)}
+                    }
+					project.tasks.compileJava.classpath.each { f ->
                         File fi=f
                         if(fi.absolutePath.matches(".*expanded\\.lib.*"))
                         {   println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"

@@ -1,0 +1,44 @@
+apply plugin: 'netkernel'
+//apply plugin: 'netkerneltemplates'
+
+project.group='gradle-test'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernel.org/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+}
+
+//******************************************
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.6'
+}
+
+netkernel {
+
+    useMavenCentral()
+    useMavenNK()
+    //useMavenNKLocal()
+
+    useStandardCompileDependencies()
+
+	instances {
+        BC
+        {
+            edition = "EE"
+            location = "/home/pjr/BC-NKEE/"
+        }
+	}
+
+}
+
+

@@ -1,0 +1,57 @@
+apply plugin: 'netkernel'
+
+/*
+project.group='gradle-test'
+project.version='1.1.1'
+*/
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "http://maven.netkernel.org/netkernel-maven"
+        }
+    }
+
+    dependencies {
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+}
+
+/*
+dependencies {
+    //compile 'org.codehaus.groovy:groovy-all:2.2.1'
+    //compile 'commons-compress:commons-compress:20050911'
+    //thaw 'org.netkernel:frozenInstance:1.1.1'
+}
+*/
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    /*
+    maven {
+        url "file:/tmp/mvn/"
+    }
+    */
+}
+netkernel {
+
+
+    deploy {
+        collection = "gradle-plugin-for-docs"
+        module  group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[0.0.1,)'
+    }
+
+    instances {
+        TEST
+        {
+            edition = "EE"
+            backendPort = 1060
+            location = "/home/pjr/NKEE-5.2.1/"
+        }
+    }
+
+}
+

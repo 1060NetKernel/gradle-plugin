@@ -36,13 +36,14 @@ import org.netkernel.gradle.plugin.model.PropertyHelper
  */
 class NetKernelEclipse extends DefaultTask {
 
+	String base
 	String target
 	
 	@TaskAction
 	void exec()
 	{
 		println("NETKERNEL ECLIPSE BUILD TARGET $target")
-		def xmlFile = ".classpath"
+		def xmlFile = base+File.separator+".classpath"
 		def xml = new XmlParser().parse(xmlFile)
 		xml.classpathentry.each { 
 		    if("output".equals(it.@kind))

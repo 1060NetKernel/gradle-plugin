@@ -51,6 +51,9 @@ class NetKernelEclipse extends DefaultTask {
 		    }
 		}
 		new XmlNodePrinter(new PrintWriter(new FileWriter(xmlFile))).print(xml)
-	}
 
+		//Finally remove Eclipse bin/ target if it is there
+		def binFile = base+File.separator+"bin"
+		new File(binFile).deleteDir()
+	}
 }

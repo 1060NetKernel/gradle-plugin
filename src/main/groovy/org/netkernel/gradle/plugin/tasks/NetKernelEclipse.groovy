@@ -46,7 +46,7 @@ class NetKernelEclipse extends DefaultTask {
 		def xml = new XmlParser().parse(xmlFile)
 		xml.classpathentry.each { 
 		    if("output".equals(it.@kind))
-		    {	it.@path = target
+		    {	it.@path = "build"+File.separator+target
 		    }
 		}
 		new XmlNodePrinter(new PrintWriter(new FileWriter(xmlFile))).print(xml)

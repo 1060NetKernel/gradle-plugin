@@ -178,7 +178,7 @@ class NetKernelPlugin implements Plugin<Project> {
         	
         	createTask(NKECLIPSE, NetKernelEclipse, "Runs eclipse target then makes eclipse/gradle point to same versioned build/ location for dynamic module support", "IDE")
         	configureTask(NKECLIPSE){
-        		target="${project.buildDir}/${netKernel.module.name}"
+        		target="${netKernel.module.name}"
         	}
         	project.tasks[NKECLIPSE].dependsOn "eclipse"
         	

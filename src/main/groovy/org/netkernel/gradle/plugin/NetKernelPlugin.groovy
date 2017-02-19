@@ -142,7 +142,7 @@ class NetKernelPlugin implements Plugin<Project> {
     void createTasks() {
 
         String groupName = "NetKernel Helper"
-
+        
         createTask(DOWNLOAD, DownloadNetKernelTask, 'Downloads NetKernel EE or SE edition', groupName)
 
         if(netKernel.module) {
@@ -175,6 +175,13 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         if(netKernel.module) {
+        	
+        	createTask(NKECLIPSE, NetKernelEclipse, "Runs eclipse target then makes eclipse/gradle point to same versioned build/ location for dynamic module support", "IDE")
+        	configureTask(NKECLIPSE){
+        		target="${project.buildDir}/${netKernel.module.name}"
+        	}
+        	project.tasks[NKECLIPSE].dependsOn "eclipse"
+        	
             configureTask(MODULE) {
                 into "${project.buildDir}/${netKernel.module.name}"
                 from project.sourceSets.main.output

@@ -356,11 +356,13 @@ class NetKernelPlugin implements Plugin<Project> {
         String startTaskName = "start${instance.name}"
         String stopTaskName = "stop${instance.name}"
         String cleanTaskName = "clean${instance.name}"
+        String cleanDeploymentName = "cleanDeployment${instance.name}"
         String xunitTaskName= "xunit${instance.name}"
         String describeTaskName= "describe${instance.name}"
         createTask(startTaskName, StartNetKernelTask, "Starts NetKernel instance (${instance.name})", groupName)
         createTask(stopTaskName, StopNetKernelTask, "Stops NetKernel instance (${instance.name})", groupName)
         createTask(cleanTaskName, Delete, "Cleans and Deletes the NetKernel instance (${instance.name})", groupName)
+        createTask(cleanDeploymentName, Delete, "Cleans the module deployment in etc/modules.d/ for the NetKernel instance (${instance.name})", groupName)
         createTask(xunitTaskName, XUnitTask, "Run XUnit tests on NetKernel instance ${instance.name}", groupName)
         createTask(describeTaskName, DefaultTask, "Describe details for NetKernel instance ${instance.name}", groupName)
         [startTaskName, stopTaskName, xunitTaskName].each { name ->
@@ -370,6 +372,14 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         configureTask(cleanTaskName)
         {   delete instance.location
+        }
+        configureTask(cleanDeploymentName)
+        {	def modulesdDir = new File(instance.getLocation(), "etc/modules.d")
+        	println "Cleaning $modulesdDir"
+        	def ft= project.fileTree(modulesdDir) {
+        		include '**/*.xml'
+        	}
+        	delete ft
         }
         configureTask(describeTaskName)
                 {

@@ -7,6 +7,7 @@ import org.gradle.api.Project
  */
 class Deploy {
     def collection
+    def runlevelMap=[:]
 
     final Project project
 
@@ -15,6 +16,13 @@ class Deploy {
     }
 
     def module (moduleMap)
-    {   project.dependencies.nkdeploy moduleMap
+    {   
+    	def tempMap=[group: moduleMap['group'], name: moduleMap['name'], version: moduleMap['version']]
+    	project.dependencies.nkdeploy tempMap
+    	//Check for runlevel
+    	def level=moduleMap.get('runlevel')
+    	if(level!=null)
+    	{	runlevelMap.put(moduleMap['name'], level)    		
+    	}
     }
 }

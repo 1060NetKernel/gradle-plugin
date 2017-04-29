@@ -41,15 +41,24 @@ class DeployCollectionTask extends Copy {
         def s = new StringBuilder()
         s.append("<modules>\n")
         copied.each{ f ->
-            println(f)
-            s.append("""<module>./modules/$f</module>\n""")
+            //See if we need to set runlevel
+            def fs=f.toString()
+            def rl=null
+            for(i in deploy.runlevelMap.keySet())
+            {	if(fs.contains(i))
+            	{	rl=deploy.runlevelMap.get(i)
+            		break
+            	}
+            }
+            if(rl!=null)
+            {	s.append("""<module runlevel="$rl">./modules/$fs</module>\n""")
+            }
+            s.append("""<module>./modules/$fs</module>\n""")
         }
         s.append("</modules>\n")
         target.text = s
         println ("Collection deployed: ${deploy.collection}")
 
     }
-
-
     
 }

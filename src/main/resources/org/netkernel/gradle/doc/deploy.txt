@@ -92,6 +92,24 @@ like this...
  }
 {/java}
 
+===NetKernel Runlevel Option===
+
+You may ''optionally'' provide a '''runlevel''' for the specified module deployment as follows...
+
+{java}
+netkernel {
+
+ deploy {
+     collection = "skunkworks-project"
+     module  group: 'skunkworks', name: 'urn.com.corp.project.x', version: '1.1.1', runlevel: 5
+     module  group: 'skunkworks', name: 'urn.com.corp.project.y', version: '1.1.1', runlevel: 7
+     module  group: 'skunkworks', name: 'urn.com.corp.project.z', version: '0.0.1'
+ }
+}
+{/java}
+
+The runlevel attribute will be set on the module entry in the modules.d configuration file.
+
 
 ''In pizza model terms deployCollectionXXXXX is the task to put the topping on the base.''
 

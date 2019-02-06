@@ -48,7 +48,7 @@ dependencies {
 	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
     
     // Test Dependencies
-    testCompile 'org.spockframework:spock-core:[0.7-groovy-1.8,)' // Friends don't let friends use other unit testing frameworks...
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0' // Friends don't let friends use other unit testing frameworks...
     testCompile 'cglib:cglib-nodep:2.2.2'
     
 }

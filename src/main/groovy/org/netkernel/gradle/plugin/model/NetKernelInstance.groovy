@@ -337,11 +337,11 @@ class NetKernelInstance implements Serializable {
      */
     void deploy(File moduleArchiveFile) {
         log.debug "Deploying ${moduleArchiveFile} to ${this}"
-        String fname = moduleArchiveFile.name.replaceAll("\\.jar","")
-        File moduleReference = new File(location, "etc/modules.d/${fname}.xml")
+        String fname = moduleArchiveFile.name.replaceAll("\\.jar", "")
+        File moduleReference = new File(modulesDFolder, "${fname}.xml")
         moduleReference.text = """
         <modules devmode="true">
-        <module runlevel="7">${moduleArchiveFile.getParentFile().getParentFile().toURI().toString()+"/"+fname+"/"}</module>
+        <module runlevel="7">${moduleArchiveFile.getParentFile().getParentFile().toURI().toString()}${fname}/</module>
         </modules>
         """.stripIndent()
     }
@@ -355,6 +355,19 @@ class NetKernelInstance implements Serializable {
         String fname = moduleArchiveFile.name.replaceAll("\\.jar","")
         log.debug "Undeploying ${fname} from ${this}"
         new File(location, "etc/modules.d/${fname}.xml").delete()
+    }
+
+    /**
+     * Helper method to retrieve the etc/modules.d folder.  It takes care of creating it if it doesn't exist.
+     *
+     * @return modules.d file reference
+     */
+    File getModulesDFolder() {
+        File modulesDFolder = new File(location, "etc/modules.d")
+        if (!modulesDFolder.exists()) {
+            modulesDFolder.mkdirs()
+        }
+        return modulesDFolder
     }
 
     boolean runXUnit()

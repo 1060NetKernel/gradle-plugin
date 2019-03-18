@@ -4,3 +4,4 @@ build/
 .idea
 atlassian*
 .DS_Store
+out

@@ -8,7 +8,7 @@ class NetKernelInstanceSpec extends BasePluginSpec {
         setup:
         File location = file("/test/NetKernelInstanceSpec/se")
         NetKernelInstance netKernelInstance = new NetKernelInstance(location: location)
-        File moduleArchiveFile = file("/test/NetKernelInstanceSpec/urn.org.netkernel.gradle.testmodule/build/urn.org.netkernel.gradle.testmodule.jar")
+        File moduleArchiveFile = new File("/test/NetKernelInstanceSpec/urn.org.netkernel.gradle.testmodule/build/urn.org.netkernel.gradle.testmodule.jar")
 
         when:
         netKernelInstance.deploy(moduleArchiveFile)

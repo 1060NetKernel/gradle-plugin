@@ -378,7 +378,7 @@ class NetKernelInstance implements Serializable {
     {   boolean result = false
         try {
             println("Running Xunit Tests.  Please wait...")
-            HttpResponse response = issueRequest(Method.GET, [path: '/test/exec/xml/all'])
+            HttpResponse response = issueRequest(Method.GET, [path: '/test/exec/xml/all'], 1200000)  //Twenty minutes to run tests
 
             def testResults=response.getData()
             //XmlSlurper testResults = new XmlSlurper().parse(is)

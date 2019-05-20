@@ -7,6 +7,8 @@ import org.gradle.api.Project
  */
 class Apposite {
     def packageList=[];
+    def installPackageList=[];
+    def removePackageList=[];
 
     final Project project
 

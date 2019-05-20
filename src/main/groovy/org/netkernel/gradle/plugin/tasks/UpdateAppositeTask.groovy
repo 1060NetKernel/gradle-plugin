@@ -33,6 +33,7 @@ class UpdateAppositeTask extends DefaultTask {
         def synchronize=url+"/tools/apposite/unattended/v1/synchronize";
         def update=url+"/tools/apposite/unattended/v1/update";
 
+        sleep(30000);	//Allow time in case we have just booted for first time and automatic apposite update is running
         callAppositeAPI(synchronize);
         sleep(15000);
         callAppositeAPI(update)

@@ -159,6 +159,26 @@ It's useful to apply this task immediately after running '''installXXXX''' to en
 
 '''appositeConfigureXXXX''' will configure the instance by installing a specified set of packages from Apposite.
 
+This task requires that you declare in the '''netkernel{}''' configuration the '''apposite''' ''installPackageList'' and/or ''removePackageList to install/remove packages respectively. Here is an example...
+
+{java}
+netkernel {
+
+    apposite {
+        installPackageList = ["lang-trl", "html5-frameworks"]
+        removePackageList = ["lang-python"]
+    }
+    
+}
+{/java}
+
+===Legacy Support===
+
+'''Prior to version 1.1.30 appositeConfigureXXXX only supported installing packages.  To ensure backwards compatibility the original packageList option is supported but deprecated'''
+
+''packageList'' is an array containing the names of the apposite packages that must be installed.
+
+
 This task requires that you declare in the '''netkernel{}''' configuration the '''apposite''' ''packageList'' to install. Here is an example...
 
 {java}

@@ -35,6 +35,24 @@ class ConfigureAppositeTask extends DefaultTask {
             install+="install=${p}&"
             println(p)
         }
+        
+        try{
+    		apposite.installPackageList.each { p ->
+	            install+="install=${p}&"
+	            println(p)
+	        }
+        }
+        catch(e)
+        {}
+        
+        try{
+    		apposite.removePackageList.each { p ->
+	            install+="remove=${p}&"
+	            println(p)
+	        }
+        }
+        catch(e)
+        {}
 
         callAppositeAPI(install)
         sleep(20000)

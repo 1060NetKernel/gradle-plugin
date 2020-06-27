@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile;
 import org.apache.tools.ant.taskdefs.condition.Os
 
 /**
@@ -13,9 +14,11 @@ import org.apache.tools.ant.taskdefs.condition.Os
 @Slf4j
 class FreezeTidyTask extends DefaultTask {
 
-    File freezeDirectory
+	@Input
+    String freezeDirectory
 
-    File installDirectory
+    @Input
+    String installDirectory
 
     @org.gradle.api.tasks.TaskAction
     void freeze() {
@@ -73,7 +76,7 @@ class FreezeTidyTask extends DefaultTask {
         project.delete(directory)
     }
 
-    boolean isWindows()
+    private boolean isWindows()
     {   return Os.isFamily(Os.FAMILY_WINDOWS)
     }
 }

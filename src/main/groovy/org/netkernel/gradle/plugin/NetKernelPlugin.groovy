@@ -109,7 +109,7 @@ class NetKernelPlugin implements Plugin<Project> {
             libTree.visit { f ->
                 //println "lib/ DEPENDENCY ADDED: ${f}"
             }
-            project.dependencies.add("compile", libTree)
+            project.dependencies.add("implementation", libTree)
         }
 
 
@@ -309,25 +309,6 @@ class NetKernelPlugin implements Plugin<Project> {
     void afterEvaluate() {
         project.afterEvaluate {
             createNetKernelInstanceTasks()
-            println("*****************USING DEV********************")
-            
-            //Remove all pom dependencies otherwise install to maven will create false runtime dependencies on Java compilation jars
-            /**
-            println("REMOVING COMPILATION DEPENDENCIES FROM POM for install task")
-            def installer = project.tasks.install.repositories.mavenInstaller
-            [installer]*.pom*.whenConfigured { pom ->
-                pom.dependencies.removeAll { it.scope == "compile" }
-            }
-            try {
-                def deployer = project.tasks.uploadArchives.repositories.mavenDeployer
-                println("REMOVING COMPILATION DEPENDENCIES FROM POM for uploadArchives task")
-                [deployer]*.pom*.whenConfigured { pom ->
-                    pom.dependencies.removeAll { it.scope == "compile" }
-                }
-            }
-            catch(Exception e)
-            { //Relax there is no mavenDeployer }
-        	**/
         }
     }
 
@@ -469,9 +450,9 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         configureTask(freezeTaskName) {
             from instance.location
-            destinationDir = instance.getFreezeLocation()
-            archiveName = instance.getFrozenJarFile().name
-            baseName = instance.getFreezeName()
+            destinationDirectory = instance.getFreezeLocation()
+            archiveFileName = instance.getFrozenJarFile().name
+            archiveBaseName = instance.getFreezeName()
             project.publishing.publications	{
             	FREEZE(MavenPublication)
             	{	

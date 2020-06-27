@@ -23,9 +23,10 @@ class FreezeTidyTask extends DefaultTask {
 
     @org.gradle.api.tasks.TaskAction
     void freeze() {
+		println("------------TIDYING BEFORE FREEZING-------------")
 
         // Delete license directory
-        delete(new File(freezeDirectory, "/etc/license"))
+        //delete(new File(freezeDirectory, "/etc/license"))
 
         //edit kernel.properties
         log.debug "Cleaning up kernel.properties"
@@ -64,6 +65,10 @@ class FreezeTidyTask extends DefaultTask {
         if(freezeExpandDir) {
             delete(freezeExpandDir)
         }
+        
+        // delete package cache dir
+        delete(new File(freezeDirectory, "lib/expanded"))
+
 
         // delete package cache dir
         delete(new File(freezeDirectory, "package-cache"))
@@ -73,7 +78,7 @@ class FreezeTidyTask extends DefaultTask {
     }
 
     private void delete(File directory) {
-        log.debug "Deleting ${directory}"
+        println "Deleting ${directory}"
         project.delete(directory)
     }
 

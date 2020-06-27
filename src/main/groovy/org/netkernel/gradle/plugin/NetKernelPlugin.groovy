@@ -453,8 +453,8 @@ class NetKernelPlugin implements Plugin<Project> {
 	        }
         }
         configureTask(freezeTaskName) {
-            from instance.location
-            destinationDirectory = instance.getFreezeLocation()
+            from instance.getFreezeLocation()
+            destinationDirectory = instance.location
             archiveFileName = instance.getFrozenJarFile().name
             archiveBaseName = instance.getFreezeName()
             project.publishing.publications	{
@@ -607,7 +607,7 @@ class NetKernelPlugin implements Plugin<Project> {
             frozenLocation: netKernel.workFile("freeze/${name}"),
             project: this.project
         )
-        instance.eggMeetChicken()
+        //instance.eggMeetChicken()
         return instance
     }
 

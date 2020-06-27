@@ -65,9 +65,20 @@ class NetKernelInstance implements Serializable {
     }
 
     def eggMeetChicken()
-    {   if(thawConfig!=null) {
-            project.configurations.create("thawrepo"+this.name)
-            project.dependencies.add("thawrepo"+this.name, thawConfig)
+    {
+    	def cfg
+    	def n="thawrepo"+this.name
+    	try
+		{	cfg=project.configurations[n]
+		}
+		catch(Exception e)
+		{	//CFG not found first time through - ignore    			
+		}
+    	if(thawConfig!=null  && cfg==null)
+    	{
+    		println ("CREATING configuration: "+n)
+    		project.configurations.create(n)
+            project.dependencies.add(n, thawConfig)
         }
     }
 
@@ -532,7 +543,7 @@ class NetKernelInstance implements Serializable {
         {   f=frozenJarFile
         }
         else {
-            f=new File(getFreezeLocation(), getFreezeName()+".jar");
+            f=new File(location, getFreezeName()+".jar");
         }
         return f
     }

@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.NetKernelInstance
 
@@ -11,17 +12,15 @@ import org.netkernel.gradle.plugin.model.NetKernelInstance
  */
 class UndeployModuleTask extends DefaultTask {
 
+	@InputFile
     File moduleArchiveFile
 
-    NetKernelInstance nkinstance
-
-    UndeployModuleTask()
-    {   outputs.upToDateWhen { false }  //Force expired always
-    }
+    @Input
+    NetKernelInstance netKernelInstance
 
     @TaskAction
     void undeploy() {
-        nkinstance.undeploy(moduleArchiveFile)
+        netKernelInstance.undeploy(moduleArchiveFile)
     }
 
 }

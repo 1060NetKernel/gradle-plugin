@@ -3,6 +3,7 @@ package org.netkernel.gradle.plugin.tasks
 import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.InputFile;
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -14,11 +15,11 @@ import org.apache.tools.ant.taskdefs.condition.Os
 @Slf4j
 class FreezeTidyTask extends DefaultTask {
 
-	@Input
-    String freezeDirectory
+	@Optional				//This is a hack as @File fails as gradle tries to validate the File and even though the object is fine it does not yet exist and will be created in the task!!
+    File freezeDirectory
 
-    @Input
-    String installDirectory
+    @Optional				//Ditto
+    File installDirectory
 
     @org.gradle.api.tasks.TaskAction
     void freeze() {

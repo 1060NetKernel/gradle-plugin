@@ -336,11 +336,12 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(deployTaskName, DeployModuleTask, "Deploys built module to instance (${instance.name})", groupName)
         createTask(undeployTaskName, UndeployModuleTask, "Undeploys module from instance (${instance.name})", groupName)
         [deployTaskName, undeployTaskName].each { name ->
-            configureTask(name) {
-                nkinstance = instance
-                moduleArchiveFile = project.tasks.getByName('jar').archivePath
-            }
-        }
+	        configureTask(name) {
+	            netKernelInstance = instance
+        		moduleArchiveFile = project.tasks.getByName('jar').archivePath
+        		outputs.upToDateWhen { false }		//Always run - don't put this in task constructor else cannot configure netKernelInstance!!
+	        }
+	    }
 
         //Starting, Stopping, XUnit, Clean instance Tasks
         String startTaskName = "start${instance.name}"
@@ -435,18 +436,21 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
         createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
         createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", null)
-        createTask(publishFrozenTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
-        configureTask(publishFrozenTaskName) {
-        	dependsOn project.tasks[freezeTaskName]
-        	dependsOn project.tasks['publish']
-            doFirst() {
-            	println("PUBLISHING ${instance.name} TO MAVEN REPO - " + instance.getFrozenJarFile())
-            }
-            doLast()
-            {   //Clear up the temporary freeze location
-                project.delete instance.getFrozenJarFile()
-                project.delete instance.getFreezeLocation()
-            }
+        if(instance.freezeConfig!=null)
+        {
+	        createTask(publishFrozenTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
+	        configureTask(publishFrozenTaskName) {
+	        	dependsOn project.tasks[freezeTaskName]
+	        	dependsOn project.tasks['publish']
+	            doFirst() {
+	            	println("PUBLISHING ${instance.name} TO MAVEN REPO - " + instance.getFrozenJarFile())
+	            }
+	            doLast()
+	            {   //Clear up the temporary freeze location
+	                project.delete instance.getFrozenJarFile()
+	                project.delete instance.getFreezeLocation()
+	            }
+	        }
         }
         configureTask(freezeTaskName) {
             from instance.location

@@ -1,6 +1,7 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Input
 import org.netkernel.gradle.plugin.model.Deploy
 import org.netkernel.gradle.plugin.model.PropertyHelper
 
@@ -26,6 +27,8 @@ class UnDeployCollectionTask extends Copy {
 
     //Helpers
     def propertyHelper = new PropertyHelper()
+    
+    @Input
     Deploy  deploy
 
     def writeModulesd(modulesd)

@@ -1,33 +1,28 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
 import org.netkernel.gradle.plugin.model.NetKernelInstance
-import org.netkernel.gradle.plugin.model.PropertyHelper
+
+import groovy.util.logging.Slf4j;
 
 /*
  * A task to deploy a single built module to an instance
  */
-
+@Slf4j
 class DeployModuleTask extends DefaultTask {
-    // Static Defaults
+    
+    @Input
+    NetKernelInstance netKernelInstance
 
-    //Variable parameters
-
-    //Helpers
-    def propertyHelper = new PropertyHelper()
-
-    NetKernelInstance nkinstance
-
+    @InputFile
     File moduleArchiveFile
-
-    DeployModuleTask()
-    {   outputs.upToDateWhen { false }      //Force expire
-    }
-
+    
     @org.gradle.api.tasks.TaskAction
     def deployModule()
     {
-        nkinstance.deploy(moduleArchiveFile)
+        netKernelInstance.deploy(moduleArchiveFile)
     }
 
 }

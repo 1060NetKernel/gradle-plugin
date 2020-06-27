@@ -2,6 +2,7 @@ package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.netkernel.gradle.plugin.model.Apposite
 import org.netkernel.gradle.plugin.model.Deploy
@@ -29,7 +30,10 @@ class DeployCollectionTask extends Copy {
 
     //Helpers
     def propertyHelper = new PropertyHelper()
+    		
+    @Input
     Deploy  deploy
+    
     def copied=[]
 
     def writeModulesd(modulesd)

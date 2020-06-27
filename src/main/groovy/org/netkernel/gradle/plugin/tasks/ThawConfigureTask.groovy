@@ -1,6 +1,7 @@
 package org.netkernel.gradle.plugin.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Optional
 import org.netkernel.gradle.plugin.util.FileSystemHelper
 
 /**
@@ -8,6 +9,8 @@ import org.netkernel.gradle.plugin.util.FileSystemHelper
  */
 class ThawConfigureTask extends DefaultTask {
     def FileSystemHelper fsHelper = new FileSystemHelper()
+    		
+    @Optional			//Hack to get around File validation on not yet created file
     def thawDirInner;
 
     @org.gradle.api.tasks.TaskAction

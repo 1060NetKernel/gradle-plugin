@@ -11,22 +11,23 @@ This section outlines the tools that are provided for freezing and thawing NetKe
 
 As with the configuration tools - these tools are named instance specific.  In the examples below XXXX is the name of the instance.
 
-==installFreezeXXXX==
+==publishFrozenXXXX==
 
-'''installFreezeXXX''' takes a static frozen snapshot of the named NetKernel instance and installs it (Gradle/Maven meaning) into
-a maven upload repository.
+'''publishFrozenXXX''' takes a static snapshot (freeze) of the named NetKernel instance and publishes it to
+a maven repository (the freezer).
 
-In order to freeze an instance of NetKernel you must declare the artifact metadata which will identify it in the repository.  We do this per-instance
+In order to publish a the frozen instance of NetKernel you must declare the artifact metadata which will identify it in the repository.  We do this per-instance
 with a '''freeze''' declaration.  Here is an example...
 
 {java}
-//Need to declare an upload archive for the frozen instance
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file:/tmp/mvn/")
-        }
-    }
+//Need to declare a maven publishing repository for the frozen instance
+publishing
+{	repositories
+	{	maven
+		{ 
+			url='file:///home/pjr/workspace/devops/repos/base'
+		} 
+	}
 }
 
 //NetKernel plugin configuration
@@ -36,7 +37,7 @@ netkernel {
         {
             edition = "EE"
             location = "/opt/netkernel/NKEE-5.2.1-stage/"
-            freeze group: "big-corp-netkernels", name: "NKEE-5.2.1-base-production", version : "1.1.1"
+            freeze group: "big-corp-netkernels", name: "NKEE-6.2.1-base-production", version : "1.1.1"
         }
     }
 }
@@ -46,9 +47,9 @@ As with the module dependency declaration the ''freeze'' declaration takes the s
 
 With this example when we issue...
 
- gradle installFreezeSTAGE
+ gradle publishFrozenSTAGE
 
-The STAGE instance located at ''/opt/netkernel/NKEE-5.2.1-stage/'' will be frozen and installed to Maven as the artifact...
+The STAGE instance located at ''/opt/netkernel/NKEE-5.2.1-stage/'' will be frozen and published to Maven as the artifact...
 
   group: big-corp-netkernels
   name: NKEE-5.2.1-base-production

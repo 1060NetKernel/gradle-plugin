@@ -446,16 +446,16 @@ class NetKernelPlugin implements Plugin<Project> {
 
         //Freeze Instance tasks
         String freezeTaskName = "freeze${instance.name}"
-        String publishFreezeTaskName = "publish${instance.name}"
+        String publishFrozenTaskName = "publishFrozen${instance.name}"
         String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
         String freezeTidyTaskName = "freezeTidy${instance.name}"
         String cleanFreezeTaskName = "cleanFreeze${instance.name}"
         createTask(freezeTaskName, Jar, "Freezes the NetKernel instance (${instance.name})", groupName)
         createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
         createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
-        createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", groupName)
-        createTask(publishFreezeTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
-        configureTask(publishFreezeTaskName) {
+        createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", null)
+        createTask(publishFrozenTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
+        configureTask(publishFrozenTaskName) {
         	dependsOn project.tasks[freezeTaskName]
         	dependsOn project.tasks['publish']
             doFirst() {
@@ -468,17 +468,10 @@ class NetKernelPlugin implements Plugin<Project> {
             }
         }
         configureTask(freezeTaskName) {
-            //configuration = project.configurations.freeze    //Can't do this as Jar has no configuration - like why? Its a task isn't it?
             from instance.location
             destinationDir = instance.getFreezeLocation()
             archiveName = instance.getFrozenJarFile().name
             baseName = instance.getFreezeName()
-            /*
-    		project.publishing.publications.each { pub ->
-    			println pub.getName
-            	pub.artifact project.tasks[freezeTaskName]
-            }
-            */
             project.publishing.publications	{
             	FREEZE(MavenPublication)
             	{	
@@ -504,10 +497,8 @@ class NetKernelPlugin implements Plugin<Project> {
             delete instance.getFreezeLocation()
         }
         //Freeze Dependency
-        //project.tasks[publishFreezeTaskName].dependsOn freezeTaskName
         project.tasks[freezeTaskName].dependsOn freezeTidyTaskName
         project.tasks[freezeTidyTaskName].dependsOn copyBeforeFreezeTaskName
-        //project.tasks['publish'].finalizedBy project.tasks[]		//Make publish run after installFreezeXX
         
 
         //Deploy collection task

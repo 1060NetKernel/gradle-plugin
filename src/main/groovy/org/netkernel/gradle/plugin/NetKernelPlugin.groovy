@@ -3,8 +3,11 @@ package org.netkernel.gradle.plugin
 import org.gradle.api.*
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
-import org.gradle.api.tasks.Upload
+//import org.gradle.api.tasks.Upload
+import org.gradle.api.publish.*
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository;
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.internal.impldep.org.apache.maven.project.ProjectUtils;
 import org.netkernel.gradle.plugin.model.*
 import org.netkernel.gradle.plugin.tasks.*
 import org.gradle.util.GradleVersion
@@ -12,6 +15,9 @@ import groovy.util.logging.Slf4j
 
 import static org.netkernel.gradle.plugin.model.PropertyHelper.*
 import static org.netkernel.gradle.plugin.tasks.TaskName.*
+
+//Needed for update to maven-publish
+import org.gradle.api.publish.maven.MavenPublication
 
 /**
  * A plugin to Gradle to manage NetKernel modules, builds, etc.
@@ -29,7 +35,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         // TODO - Do we always want to apply the groovy plugin?  What about other languages like kotlin, scala, etc.?
         project.apply plugin: 'groovy'
-        project.apply plugin: 'maven'
+        project.apply plugin: 'maven-publish'
 
         configureProject()
         createTasks()
@@ -303,8 +309,10 @@ class NetKernelPlugin implements Plugin<Project> {
     void afterEvaluate() {
         project.afterEvaluate {
             createNetKernelInstanceTasks()
-
+            println("*****************USING DEV********************")
+            
             //Remove all pom dependencies otherwise install to maven will create false runtime dependencies on Java compilation jars
+            /**
             println("REMOVING COMPILATION DEPENDENCIES FROM POM for install task")
             def installer = project.tasks.install.repositories.mavenInstaller
             [installer]*.pom*.whenConfigured { pom ->
@@ -318,7 +326,8 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
             }
             catch(Exception e)
-            { /*Relax there is no mavenDeployer*/}
+            { //Relax there is no mavenDeployer }
+        	**/
         }
     }
 
@@ -437,7 +446,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         //Freeze Instance tasks
         String freezeTaskName = "freeze${instance.name}"
-        String installFreezeTaskName = "installFreeze${instance.name}"
+        String publishFreezeTaskName = "publish${instance.name}"
         String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
         String freezeTidyTaskName = "freezeTidy${instance.name}"
         String cleanFreezeTaskName = "cleanFreeze${instance.name}"
@@ -445,50 +454,12 @@ class NetKernelPlugin implements Plugin<Project> {
         createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
         createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
         createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", groupName)
-        createTask(installFreezeTaskName, Upload, "Installs frozen NetKernel ${instance.name} into maven repository", groupName)
-        configureTask(installFreezeTaskName) {
-            //Set the configuration to the special freeze used by freezeXX task for its artifact
-            configuration = project.configurations.freeze
-            //Set up the upload repository(s)
-            if (project.uploadArchives.repositories.isEmpty()) {
-                repositories {
-                    mavenLocal()
-                }
-            } else {
-                repositories {
-                    project.uploadArchives.repositories.each { repo ->
-                        add repo
-                    }
-                }
-
-            }
+        createTask(publishFreezeTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
+        configureTask(publishFreezeTaskName) {
+        	dependsOn project.tasks[freezeTaskName]
+        	dependsOn project.tasks['publish']
             doFirst() {
-                //Ensure the result of the freezeXX task becomes the artifact in the freeze configuration which is used in this task
-                //Have to hack it this way because Jar won't let you set a configuration to target! (see below)
-                project.artifacts {
-                    freeze project.tasks[freezeTaskName]
-                }
-
-                //SETUP THE POM - we have to do it here or else we can get collision between different instances fighting to set global upload repository or project properties!
-
-                //Configuring POM doesn't work for mavenLocal() !!! So we also need to use a global hack!! Uuuurgh
-                project.group = instance.getFreezeGroup()
-                project.version = instance.getFreezeVersion()
-                //project.name='frozenInstance'  //This is a double hack because mavenLocal() ignores archiveTask.basename ! I am getting really sick of this!!
-                //It gets worse - you can't set a project.name at runtime!! So you can't even work around!! Screwed!
-
-                //Configure POM if its possible
-                repositories.each { mavendeployer ->
-                    try {
-                        mavendeployer.pom.groupId = instance.getFreezeGroup()
-                        mavendeployer.pom.version = instance.getFreezeVersion()
-                        mavendeployer.pom.artifactId = instance.getFreezeName()
-                        mavendeployer.pom.scopeMappings.mappings.clear()
-                    }
-                    catch (e) {   /*User must have set mavenLocal() so no POM so ignore and go with hack*/
-                        println("NO POM - so artifactId will use project gradle.settings project name - sorry this is a limitation of mavenLocal()!!")
-                    }
-                }
+            	println("PUBLISHING ${instance.name} TO MAVEN REPO - " + instance.getFrozenJarFile())
             }
             doLast()
             {   //Clear up the temporary freeze location
@@ -502,6 +473,22 @@ class NetKernelPlugin implements Plugin<Project> {
             destinationDir = instance.getFreezeLocation()
             archiveName = instance.getFrozenJarFile().name
             baseName = instance.getFreezeName()
+            /*
+    		project.publishing.publications.each { pub ->
+    			println pub.getName
+            	pub.artifact project.tasks[freezeTaskName]
+            }
+            */
+            project.publishing.publications	{
+            	FREEZE(MavenPublication)
+            	{	
+            		groupId=instance.getFreezeGroup()
+            		artifactId=instance.getFreezeName()
+            		version=instance.getFreezeVersion()
+            		artifact	project.tasks[freezeTaskName]
+            	}
+            }
+            
         }
         configureTask(copyBeforeFreezeTaskName) {
             from instance.location
@@ -517,10 +504,11 @@ class NetKernelPlugin implements Plugin<Project> {
             delete instance.getFreezeLocation()
         }
         //Freeze Dependency
-        project.tasks[installFreezeTaskName].dependsOn freezeTaskName
+        //project.tasks[publishFreezeTaskName].dependsOn freezeTaskName
         project.tasks[freezeTaskName].dependsOn freezeTidyTaskName
         project.tasks[freezeTidyTaskName].dependsOn copyBeforeFreezeTaskName
-
+        //project.tasks['publish'].finalizedBy project.tasks[]		//Make publish run after installFreezeXX
+        
 
         //Deploy collection task
         configureTask(deployCollectionName) {

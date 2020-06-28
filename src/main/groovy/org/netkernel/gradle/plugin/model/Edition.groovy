@@ -3,7 +3,7 @@ package org.netkernel.gradle.plugin.model
 /**
  * An enum of NetKernel editions.
  */
-enum Edition {
+enum Edition implements Serializable{
 
     STANDARD("SE"),
     ENTERPRISE("EE")

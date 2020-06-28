@@ -5,7 +5,7 @@ import org.gradle.api.Project
 /**
  *  A simple class to manage deploy collection configuration.
  */
-class Deploy {
+class Deploy implements Serializable{
     def collection
     def runlevelMap=[:]
 

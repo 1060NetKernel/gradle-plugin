@@ -5,7 +5,7 @@ import org.gradle.api.Project
 /**
  *  A simple class to manage NetKernel download parameters.
  */
-class Download {
+class Download implements Serializable{
     /*
     final DownloadConfig ee = new DownloadConfig()
     final DownloadConfig se = new DownloadConfig()

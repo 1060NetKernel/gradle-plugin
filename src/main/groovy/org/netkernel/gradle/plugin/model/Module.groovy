@@ -2,7 +2,7 @@ package org.netkernel.gradle.plugin.model
 
 import groovy.util.slurpersupport.GPathResult
 
-class Module {
+class Module implements Serializable{
 
     File moduleFile
     GPathResult moduleInfo

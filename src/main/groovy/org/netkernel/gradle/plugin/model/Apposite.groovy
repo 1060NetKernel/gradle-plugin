@@ -5,7 +5,7 @@ import org.gradle.api.Project
 /**
  *  A simple class to manage Apposite package configuration.
  */
-class Apposite {
+class Apposite implements Serializable{
     def packageList=[];
     def installPackageList=[];
     def removePackageList=[];

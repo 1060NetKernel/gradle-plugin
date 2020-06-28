@@ -37,6 +37,7 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven-publish'
 
+        println("Gradle NetKernel Plugin v2.1.3")
         configureProject()
         createTasks()
         configureTasks()
@@ -115,7 +116,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         if (!netKernel.module) {
             //throw new InvalidUserDataException("Could not find module.xml in the project.")
-            System.err.println("WARNING: Could not find module.xml in the project - only sysadmin tasks will be available")
+            System.err.println("NetKernel Plugin: Could not find module.xml in the project - only sysadmin tasks will be available")
             /* Doesn't seem to do anything!
             ['build', 'assemble', 'jar', 'classes', 'buildDependents', 'buildNeeded', 'clean'].each{ task ->
                 project.tasks[task].enabled false

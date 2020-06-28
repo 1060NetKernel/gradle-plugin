@@ -491,7 +491,7 @@ class NetKernelPlugin implements Plugin<Project> {
         
         //Deploy collection task
         configureTask(deployCollectionName) {
-            deploy = netKernel.deploy
+            //deploy = netKernel.deploy
             from project.configurations.nkdeploy
             //Copy the nkdeploy dependencies set up by the Deploy configuration
             def modulesDir = new File(instance.getLocation(), "modules")
@@ -504,7 +504,7 @@ class NetKernelPlugin implements Plugin<Project> {
             }
             def modulesd = new File(instance.location, "etc/modules.d/")
             doLast {
-                writeModulesd(modulesd);
+                writeModulesd(modulesd, netKernel.deploy);
             }
             outputs.upToDateWhen { false }      //Make sure deployment always works and no cache
         }

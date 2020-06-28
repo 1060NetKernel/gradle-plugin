@@ -31,12 +31,12 @@ class DeployCollectionTask extends Copy {
     //Helpers
     def propertyHelper = new PropertyHelper()
     		
-    @Input
-    Deploy  deploy
+    //@Input
+    //Deploy  deploy
     
     def copied=[]
 
-    def writeModulesd(modulesd)
+    def writeModulesd(modulesd, deploy)
     {
         //Set up the modules.d entry
         modulesd.mkdirs()   //First make sure target directory is there

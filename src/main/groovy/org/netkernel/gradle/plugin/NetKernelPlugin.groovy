@@ -56,7 +56,7 @@ class NetKernelPlugin implements Plugin<Project> {
         }
 
         // This is so that provided dependencies are on the classpath, but are filtered out during the build
-        project.configurations.compile.extendsFrom(project.configurations.provided)
+        project.configurations.compileClasspath.extendsFrom(project.configurations.provided)
 
         netKernel = project.extensions.create("netkernel", NetKernelExtension, project)
         netKernel.instances = createNetKernelInstances()
@@ -220,14 +220,14 @@ class NetKernelPlugin implements Plugin<Project> {
                     }
                     def jarsToPack=[]
 
-                    //Filter out provided classpath - ie libraries that were used for compiled but are expected to be provided at runtime
+                    //Filter out provided classpath - ie libraries that were used for compile but are expected to be provided at runtime by NK
                     //See https://sinking.in/blog/provided-scope-in-gradle/
                     if(project.configurations.find{c->c.name.equals('provided')}!=null)
                     {   //println("CLASSPATH BEFORE PROVIDED FILTER")
                         //project.tasks.compileJava.classpath.each{f->println(f)}
                         project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->!project.configurations.provided.files.contains(f)}
                         //println("CLASSPATH AFTER PROVIDED FILTER")
-                        //project.tasks.compileJava.classpath.each{f->println(f)}
+                        project.tasks.compileJava.classpath.each{f->println(f)}
                     }
                     GradleVersion gradleVersion = GradleVersion.current()
                     GradleVersion gradleVersion211 = GradleVersion.version("2.1.1")
@@ -365,12 +365,15 @@ class NetKernelPlugin implements Plugin<Project> {
         {   delete instance.location
         }
         configureTask(cleanDeploymentName)
-        {	def modulesdDir = new File(instance.getLocation(), "etc/modules.d")
-        	println "Cleaning $modulesdDir"
-        	def ft= project.fileTree(modulesdDir) {
-        		include '**/*.xml'
+        {	
+        	doFirst()	{
+        		def modulesdDir = new File(instance.getLocation(), "etc/modules.d")
+	        	def ft= project.fileTree(modulesdDir) {
+	        		include '**/*.xml'
+	        	}
+	        	delete ft
+        		println "Cleaning $modulesdDir"
         	}
-        	delete ft
         }
         configureTask(describeTaskName)
                 {
@@ -420,24 +423,19 @@ class NetKernelPlugin implements Plugin<Project> {
         }
         else log.info "${instance.name} is SE. Apposite tasks not available"
 
-        //Deploy Collection Tasks
-        String deployCollectionName=DEPLOY_COLLECTION+instance.name
-        String undeployCollectionName=UNDEPLOY_COLLECTION+instance.name
-        createTask(deployCollectionName, DeployCollectionTask, "Deploy the collection of modules from Maven to NetKernel(${instance.name})", groupName)
-        createTask(undeployCollectionName, Delete, "Undeploy the collection of modules from NetKernel(${instance.name})", groupName)
-
-        //Freeze Instance tasks
-        String freezeTaskName = "freeze${instance.name}"
-        String publishFrozenTaskName = "publishFrozen${instance.name}"
-        String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
-        String freezeTidyTaskName = "freezeTidy${instance.name}"
-        String cleanFreezeTaskName = "cleanFreeze${instance.name}"
-        createTask(freezeTaskName, Jar, "Freezes the NetKernel instance (${instance.name})", groupName)
-        createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
-        createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
-        createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", null)
+        
         if(instance.freezeConfig!=null)
-        {
+        {	 //Freeze Instance tasks
+            String freezeTaskName = "freeze${instance.name}"
+            String publishFrozenTaskName = "publishFrozen${instance.name}"
+            String copyBeforeFreezeTaskName = "copyBeforeFreeze${instance.name}"
+            String freezeTidyTaskName = "freezeTidy${instance.name}"
+            String cleanFreezeTaskName = "cleanFreeze${instance.name}"
+
+        	createTask(freezeTaskName, Jar, "Freezes the NetKernel instance (${instance.name})", groupName)
+            createTask(copyBeforeFreezeTaskName, Copy, "Copies instance into freeze staging directory", null)
+            createTask(freezeTidyTaskName, FreezeTidyTask, "Cleans up copied instance", null)
+            createTask(cleanFreezeTaskName, Delete, "Cleans frozen instance", null)
 	        createTask(publishFrozenTaskName, DefaultTask, "Publish frozen NetKernel ${instance.name} into maven repository", groupName)
 	        configureTask(publishFrozenTaskName) {
 	        	dependsOn project.tasks[freezeTaskName]
@@ -451,41 +449,46 @@ class NetKernelPlugin implements Plugin<Project> {
 	                project.delete instance.getFreezeLocation()
 	            }
 	        }
-        }
-        configureTask(freezeTaskName) {
-            from instance.getFreezeLocation()
-            destinationDirectory = instance.location
-            archiveFileName = instance.getFrozenJarFile().name
-            archiveBaseName = instance.getFreezeName()
-            project.publishing.publications	{
-            	FREEZE(MavenPublication)
-            	{	
-            		groupId=instance.getFreezeGroup()
-            		artifactId=instance.getFreezeName()
-            		version=instance.getFreezeVersion()
-            		artifact	project.tasks[freezeTaskName]
-            	}
+        	configureTask(freezeTaskName) {
+                from instance.getFreezeLocation()
+                destinationDirectory = instance.location
+                archiveFileName = instance.getFrozenJarFile().name
+                archiveBaseName = instance.getFreezeName()
+                project.publishing.publications	{
+                	FREEZE(MavenPublication)
+                	{	
+                		groupId=instance.getFreezeGroup()
+                		artifactId=instance.getFreezeName()
+                		version=instance.getFreezeVersion()
+                		artifact	project.tasks[freezeTaskName]
+                	}
+                }
+                
             }
-            
+            configureTask(copyBeforeFreezeTaskName) {
+                from instance.location
+                into instance.getFreezeLocation()
+                include "**/*"
+            }
+            configureTask(freezeTidyTaskName) {
+                freezeDirectory = instance.getFreezeLocation()
+                installDirectory = instance.location
+            }
+            configureTask(cleanFreezeTaskName) {
+                delete instance.getFrozenJarFile()
+                delete instance.getFreezeLocation()
+            }
+            //Freeze Dependency
+            project.tasks[freezeTaskName].dependsOn freezeTidyTaskName
+            project.tasks[freezeTidyTaskName].dependsOn copyBeforeFreezeTaskName
         }
-        configureTask(copyBeforeFreezeTaskName) {
-            from instance.location
-            into instance.getFreezeLocation()
-            include "**/*"
-        }
-        configureTask(freezeTidyTaskName) {
-            freezeDirectory = instance.getFreezeLocation()
-            installDirectory = instance.location
-        }
-        configureTask(cleanFreezeTaskName) {
-            delete instance.getFrozenJarFile()
-            delete instance.getFreezeLocation()
-        }
-        //Freeze Dependency
-        project.tasks[freezeTaskName].dependsOn freezeTidyTaskName
-        project.tasks[freezeTidyTaskName].dependsOn copyBeforeFreezeTaskName
         
-
+        //Deploy Collection Tasks
+        String deployCollectionName=DEPLOY_COLLECTION+instance.name
+        String undeployCollectionName=UNDEPLOY_COLLECTION+instance.name
+        createTask(deployCollectionName, DeployCollectionTask, "Deploy the collection of modules from Maven to NetKernel(${instance.name})", groupName)
+        createTask(undeployCollectionName, Delete, "Undeploy the collection of modules from NetKernel(${instance.name})", groupName)
+        
         //Deploy collection task
         configureTask(deployCollectionName) {
             deploy = netKernel.deploy

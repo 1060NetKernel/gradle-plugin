@@ -55,10 +55,6 @@ class FreezeTidyTask extends DefaultTask {
         {   File netkernelShFile = new File(freezeDirectory, "/bin/netkernel.bat")
             netkernelShFile.text = netkernelShFile.text.replaceAll(/INSTALLPATH=".*?"/,"INSTALLPATH=\"%INSTALLPATH%\"")
         }
-        else
-        {   File netkernelShFile = new File(freezeDirectory, "/bin/netkernel.sh")
-            netkernelShFile.text = netkernelShFile.text.replaceAll(/INSTALLPATH='.*?'/,"INSTALLPATH='%INSTALLPATH%'")
-        }
 
 
         //  Delete freeze expand dir

@@ -60,6 +60,10 @@ dependencies {
     
 }
 
+// Pin target JVM to Java 1.8
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 /*
 task wrapper(type: Wrapper) {
     gradleVersion = '4.10'

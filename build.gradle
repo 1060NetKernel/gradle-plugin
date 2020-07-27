@@ -9,7 +9,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
-        url "http://maven.netkernel.org/netkernel-maven"
+        url "https://maven.netkernel.org/netkernel-maven"
     }
 }
 
@@ -64,8 +64,7 @@ dependencies {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-/*
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10'
+//Disable generation of module metadata in publishing task
+tasks.withType(GenerateModuleMetadata) {
+	enabled = false
 }
-*/

@@ -37,7 +37,7 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'groovy'
         project.apply plugin: 'maven-publish'
 
-        println("Gradle NetKernel Plugin v2.1.4")
+        println("Gradle NetKernel Plugin v2.1.6")
         configureProject()
         createTasks()
         configureTasks()
@@ -238,7 +238,7 @@ class NetKernelPlugin implements Plugin<Project> {
                     	//println("COMPILE FILES-------------")
                     	//project.configurations.compile.files.each{f->println(f)}
                     	//println("-------------")
-                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->project.configurations.compile.files.contains(f)}
+                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->project.configurations.compileClasspath.files.contains(f)}
                         //println("CLASSPATH AFTER COMPILEONLY FILTER")
                         //project.tasks.compileJava.classpath.each{f->println(f)}
                     }
@@ -247,10 +247,10 @@ class NetKernelPlugin implements Plugin<Project> {
                         if(fi.absolutePath.matches(".*expanded\\.lib.*"))
                         {   println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"
                         }
-                        else if(fi.absolutePath.contains("urn.com.ten60.core"))
+                        else if(fi.name.contains("urn.com.ten60.core"))
                         {   //println "CORE ${fi.name}"
                         }
-                        else if(fi.absolutePath.contains("urn.org.netkernel"))
+                        else if(fi.name.contains("urn.org.netkernel"))
                         {   println "REJECTED CORE LIB ${fi.name}"
                         }
                         else if(groovySources && fi.absolutePath.matches(".*groovy.*\\.jar"))

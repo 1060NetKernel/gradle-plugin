@@ -18,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[2.1.6,)'
+        classpath group: 'urn.org.netkernel', name: 'gradle.plugin', version: '[2.2.1,)'
     }
 }
 

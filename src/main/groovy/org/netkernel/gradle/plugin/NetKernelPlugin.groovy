@@ -33,11 +33,9 @@ class NetKernelPlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
 
-        // TODO - Do we always want to apply the groovy plugin?  What about other languages like kotlin, scala, etc.?
-        project.apply plugin: 'groovy'
         project.apply plugin: 'maven-publish'
 
-        println("Gradle NetKernel Plugin v2.1.6")
+        println("Gradle NetKernel Plugin v2.2.1")
         configureProject()
         createTasks()
         configureTasks()

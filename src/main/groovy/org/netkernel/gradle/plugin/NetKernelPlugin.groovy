@@ -35,7 +35,7 @@ class NetKernelPlugin implements Plugin<Project> {
 
         project.apply plugin: 'maven-publish'
 
-        println("Gradle NetKernel Plugin v2.2.1")
+        println("Gradle NetKernel Plugin v2.2.2")
         configureProject()
         createTasks()
         configureTasks()

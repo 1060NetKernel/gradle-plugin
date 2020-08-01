@@ -78,13 +78,6 @@ class NetKernelPlugin implements Plugin<Project> {
                 project.tasks.compileJava.configure {
                     source = fileTree
                 }
-                //Configure the groovyCompiler
-                fileTree = project.fileTree(dir: new File(project.projectDir, 'src/'), includes: ['**/*.groovy'])
-                project.tasks.compileGroovy.configure {
-                    source = fileTree
-                }
-
-                // TODO - Make this work for other languages (scala, kotlin, etc.)
 
                 netKernel.module = new Module(project.file('src/module.xml'))
 
@@ -207,16 +200,9 @@ class NetKernelPlugin implements Plugin<Project> {
                 }
                 //Find out what classes were used to build this
                 doLast {
-                    println ("JAVA/GROOVY CLASSPATH AT BUILD")
+                    println ("JAVA CLASSPATH AT BUILD")
                     def groovySources=false
-                    //println "FINDING GROOVY SOURCES"
-                    project.tasks.compileGroovy.source.each { File s ->
-                        if(s.name.endsWith(".groovy"))
-                        {    groovySources=true
-                            println "FOUND GROOOOOOVY SO WILL REJECT groovy*.jar"
-                            return
-                        }
-                    }
+                    
                     def jarsToPack=[]
 
                     //Filter out provided classpath - ie libraries that were used for compile but are expected to be provided at runtime by NK

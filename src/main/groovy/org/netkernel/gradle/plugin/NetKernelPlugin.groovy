@@ -281,7 +281,6 @@ class NetKernelPlugin implements Plugin<Project> {
         if(netKernel.module) {
             project.tasks[JAR].dependsOn MODULE_RESOURCES
             project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
-            project.tasks[MODULE].dependsOn COMPILE_GROOVY
             project.tasks[MODULE_RESOURCES].dependsOn MODULE
             project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
         }

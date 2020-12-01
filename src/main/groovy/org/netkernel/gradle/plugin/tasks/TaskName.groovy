@@ -25,6 +25,10 @@ final class TaskName {
     static final String CLEAN = 'clean'
     static final String NKECLIPSE = 'nkEclipse'
 
+    static final String DEX='dex'
+    static final String DEXLIB='dexLib'
+    static final String DEXUNPACK='dexUnpackFiles'
+    
     // Tasks from gradle
     static final String COMPILE_GROOVY = 'compileGroovy'
     static final String JAR = 'jar'

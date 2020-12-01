@@ -35,7 +35,7 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'java'        
         project.apply plugin: 'maven-publish'
 
-        println("Gradle NetKernel Plugin v2.2.3")
+        println("Gradle NetKernel Plugin v2.3.1")
         configureProject()
         createTasks()
         configureTasks()
@@ -151,6 +151,11 @@ class NetKernelPlugin implements Plugin<Project> {
 
             createTask(UPDATE_MODULE_XML_VERSION, UpdateModuleXmlVersionTask, 'Updates version in module xml to match project version', groupName)
                     .setEnabled(netKernel.module.versionOverridden)
+                    
+            //Android DEX tasks
+            createTask(DEX, DefaultTask, "Build Java module and cross compile to Android DEX bytecode (requires 'dx' on the path)", "Android")
+            createTask(DEXLIB, DefaultTask, "", null)
+            createTask(DEXUNPACK, DefaultTask, "", null)
 
         }
     }
@@ -205,34 +210,17 @@ class NetKernelPlugin implements Plugin<Project> {
                     
                     def jarsToPack=[]
 
-                    //Filter out provided classpath - ie libraries that were used for compile but are expected to be provided at runtime by NK
-                    //See https://sinking.in/blog/provided-scope-in-gradle/
-                    if(project.configurations.find{c->c.name.equals('provided')}!=null)
-                    {   //println("CLASSPATH BEFORE PROVIDED FILTER")
-                        //project.tasks.compileJava.classpath.each{f->println(f)}
-                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->!project.configurations.provided.files.contains(f)}
-                        //println("CLASSPATH AFTER PROVIDED FILTER")
-                        project.tasks.compileJava.classpath.each{f->println(f)}
-                    }
-                    GradleVersion gradleVersion = GradleVersion.current()
-                    GradleVersion gradleVersion211 = GradleVersion.version("2.1.1")
-                    if(gradleVersion>gradleVersion211 && project.configurations.find{c->c.name.equals('compileOnly')}!=null)
-                    {   //println("CLASSPATH BEFORE COMPILEONLY FILTER")
-                        //project.tasks.compileJava.classpath.each{f->println(f)}
-                    	//println("COMPILE FILES-------------")
-                    	//project.configurations.compile.files.each{f->println(f)}
-                    	//println("-------------")
-                        project.tasks.compileJava.classpath = project.tasks.compileJava.classpath.filter {f->project.configurations.compileClasspath.files.contains(f)}
-                        //println("CLASSPATH AFTER COMPILEONLY FILTER")
-                        //project.tasks.compileJava.classpath.each{f->println(f)}
-                    }
-					project.tasks.compileJava.classpath.each { f ->
+					//project.tasks.compileJava.classpath.each { f ->
+                    project.configurations.runtimeClasspath.each { f ->
                         File fi=f
                         if(fi.absolutePath.matches(".*expanded\\.lib.*"))
                         {   println "REJECTED NETKERNEL MAVEN EXPANDED LIB ${fi.name}"
                         }
                         else if(fi.name.contains("urn.com.ten60.core"))
-                        {   //println "CORE ${fi.name}"
+                        {   println "REJECTED CORE LIB ${fi.name}"
+                        }
+                        else if(fi.name.contains("urn.com.ten60.netkernel"))
+                        {   println "REJECTED CORE LIB ${fi.name}"
                         }
                         else if(fi.name.contains("urn.org.netkernel"))
                         {   println "REJECTED CORE LIB ${fi.name}"
@@ -270,6 +258,85 @@ class NetKernelPlugin implements Plugin<Project> {
                 sourceModuleXml = netKernel.module.moduleFile
                 outputModuleXml = project.file("${project.buildDir}/${netKernel.module.name}/module.xml")
             }
+            
+            //Android DEX tasks
+            configureTask(DEX) {
+            		doFirst {
+            			println "Converting module to DEX bytecode and repacking any DEXed lib/ jars"
+		                def f = project.tasks[JAR].archivePath
+                		def exe="dx --dex --output=${f}.tmp.jar ${f}"
+	                    println exe
+	                    def proc = exe.execute();
+		                proc.waitFor();
+		                println "return code: ${proc.exitValue()}"
+		                println "stderr: ${proc.err.text}"
+		                println "stdout: ${proc.in.text}"
+		                project.copy {
+		                    from(project.zipTree("${f}.tmp.jar"))
+		                            {
+		                                include "classes.dex"
+		                            }
+		                    into "${project.buildDir}/dexwork/"
+		                }
+		                project.ant.zip(destfile: "${f}".replaceAll(".jar", ".dex.jar")) {
+		                    fileset(dir: "${project.buildDir}/dexwork/") {
+		                        include(name: '**/*.*')
+		                    }
+		                }
+		                project.delete "${f}.tmp.jar"
+      	
+            	}
+            
+            }
+            
+            //Android DEX tasks
+            configureTask(DEXLIB) {
+                doFirst {
+                	println "Converting any lib/ jars in the module to DEX bytecode"
+	                def ioTree = project.fileTree(dir: "${project.buildDir}/dexwork/lib")
+	                ioTree.each { f ->
+	                    def exe="dx --dex --output=${f}.tmp.jar ${f}"
+	                    println exe
+	                    def proc = exe.execute();
+	                    proc.waitFor();
+	                    println "return code: ${proc.exitValue()}"
+	                    println "stderr: ${proc.err.text}"
+	                    println "stdout: ${proc.in.text}"
+	                    project.copy {
+	                        from(project.zipTree("${f}.tmp.jar"))
+	                                {
+	                                    include "classes.dex"
+	                                }
+	                        into "${project.buildDir}/dexwork/lib/temp"
+	                    }
+	                    project.copy {
+	                        from(project.zipTree("${f}"))
+	                        into "${project.buildDir}/dexwork/lib/temp"
+	                    }
+	                    project.ant.zip(destfile: "${f}".replaceAll(".jar", ".dex.jar")) {
+	                        fileset(dir: "${project.buildDir}/dexwork/lib/temp/") {
+	                            include(name: '**/*.*')
+	                        }
+	                    }
+	                    project.delete "${f}.tmp.jar"
+	                    project.delete "${f}"
+	                    project.delete "${project.buildDir}/dexwork/lib/temp"
+	
+	                }
+                }
+            }
+            
+            //Android DEX tasks
+            configureTask(DEXUNPACK) {
+            	doFirst {
+	                project.delete "${project.buildDir}/dexwork/"
+	                println "Unpacking built module for DEX conversion"
+	                project.copy {
+	                    from project.zipTree(project.tasks[JAR].archivePath)
+	                    into "${project.buildDir}/dexwork/"
+	                }
+            	}
+            }
         }
     }
 
@@ -283,6 +350,10 @@ class NetKernelPlugin implements Plugin<Project> {
             project.tasks[JAR].dependsOn UPDATE_MODULE_XML_VERSION
             project.tasks[MODULE_RESOURCES].dependsOn MODULE
             project.tasks[UPDATE_MODULE_XML_VERSION].dependsOn MODULE_RESOURCES
+            
+            project.tasks[DEX].dependsOn DEXLIB
+            project.tasks[DEXLIB].dependsOn DEXUNPACK
+            project.tasks[DEXUNPACK].dependsOn JAR
         }
     }
 

@@ -26,6 +26,7 @@ import org.gradle.api.publish.maven.MavenPublication
 class NetKernelPlugin implements Plugin<Project> {
 
     Project project
+    def ANDROID_DX_SWITCHES=""
 
     // The primary model class for the build.
     NetKernelExtension netKernel
@@ -156,7 +157,14 @@ class NetKernelPlugin implements Plugin<Project> {
             createTask(DEX, DefaultTask, "Build Java module and cross compile to Android DEX bytecode (requires 'dx' on the path)", "Android")
             createTask(DEXLIB, DefaultTask, "", null)
             createTask(DEXUNPACK, DefaultTask, "", null)
-
+            //Get dex min version or null
+            try
+            {
+            	ANDROID_DX_SWITCHES=project.rootProject.gradle.ext.ANDROID_DX_SWITCHES
+            }
+            catch(e)
+            {	//Ignore as no switches provided            	
+            }
         }
     }
 
@@ -264,7 +272,7 @@ class NetKernelPlugin implements Plugin<Project> {
             		doFirst {
             			println "Converting module to DEX bytecode and repacking any DEXed lib/ jars"
 		                def f = project.tasks[JAR].archivePath
-                		def exe="dx --dex --output=${f}.tmp.jar ${f}"
+                		def exe="dx --dex --output=${f}.tmp.jar ${ANDROID_DX_SWITCHES} ${f}"
 	                    println exe
 	                    def proc = exe.execute();
 		                proc.waitFor();
@@ -295,7 +303,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 	println "Converting any lib/ jars in the module to DEX bytecode"
 	                def ioTree = project.fileTree(dir: "${project.buildDir}/dexwork/lib")
 	                ioTree.each { f ->
-	                    def exe="dx --dex --output=${f}.tmp.jar ${f}"
+            			def exe="dx --dex --output=${f}.tmp.jar ${ANDROID_DX_SWITCHES} ${f}"
 	                    println exe
 	                    def proc = exe.execute();
 	                    proc.waitFor();

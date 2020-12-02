@@ -15,6 +15,7 @@
             <item id="doc:org:netkernel:gradle:doc:plugin"/>
             <separator/>
             <item id="doc:org:netkernel:gradle:doc:build"/>
+            <item id="doc:org:netkernel:gradle:doc:android"/>
             <item id="doc:org:netkernel:gradle:doc:install"/>
             <separator/>
             <item id="doc:org:netkernel:gradle:doc:configure"/>

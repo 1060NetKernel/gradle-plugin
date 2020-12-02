@@ -70,6 +70,13 @@
         <desc>Discussion of good practice</desc>
         <uri>res:/org/netkernel/gradle/doc/process.txt</uri>
     </doc>
+    
+    <doc>
+        <id>doc:org:netkernel:gradle:doc:android</id>
+        <title>Android</title>
+        <desc>Compile to DEX bytecode</desc>
+        <uri>res:/org/netkernel/gradle/doc/android.txt</uri>
+    </doc>
 
     <doc>
         <id>doc:org:netkernel:gradle:doc:license</id>

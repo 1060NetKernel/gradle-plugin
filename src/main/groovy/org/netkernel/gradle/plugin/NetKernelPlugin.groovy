@@ -270,6 +270,11 @@ class NetKernelPlugin implements Plugin<Project> {
             //Android DEX tasks
             configureTask(DEX) {
             		doFirst {
+            			def df=new File(project.tasks[JAR].archivePath.getAbsolutePath().replaceAll(".jar", ".dex.jar"))
+                		if(df.exists())
+                		{	println "Found DEX lib - skipping task";
+                			return;            			
+                		}
             			println "Converting module to DEX bytecode and repacking any DEXed lib/ jars"
 		                def f = project.tasks[JAR].archivePath
                 		def exe="dx --dex --output=${f}.tmp.jar ${ANDROID_DX_SWITCHES} ${f}"
@@ -300,6 +305,12 @@ class NetKernelPlugin implements Plugin<Project> {
             //Android DEX tasks
             configureTask(DEXLIB) {
                 doFirst {
+                	
+                	def df=new File(project.tasks[JAR].archivePath.getAbsolutePath().replaceAll(".jar", ".dex.jar"))
+            		if(df.exists())
+            		{	println "Found DEX lib - skipping task";
+            			return;            			
+            		}
                 	println "Converting any lib/ jars in the module to DEX bytecode"
 	                def ioTree = project.fileTree(dir: "${project.buildDir}/dexwork/lib")
 	                ioTree.each { f ->
@@ -337,6 +348,11 @@ class NetKernelPlugin implements Plugin<Project> {
             //Android DEX tasks
             configureTask(DEXUNPACK) {
             	doFirst {
+            		def df=new File(project.tasks[JAR].archivePath.getAbsolutePath().replaceAll(".jar", ".dex.jar"))
+            		if(df.exists())
+            		{	println "Found DEX lib - skipping task";
+            			return;            			
+            		}
 	                project.delete "${project.buildDir}/dexwork/"
 	                println "Unpacking built module for DEX conversion"
 	                project.copy {

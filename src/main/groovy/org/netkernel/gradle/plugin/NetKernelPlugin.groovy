@@ -26,7 +26,8 @@ import org.gradle.api.publish.maven.MavenPublication
 class NetKernelPlugin implements Plugin<Project> {
 
     Project project
-    def ANDROID_DX_SWITCHES=""
+    def ANDROID_D8_SWITCHES=""
+    def ANDROID_DEX_MINIFY=false;
 
     // The primary model class for the build.
     NetKernelExtension netKernel
@@ -36,7 +37,7 @@ class NetKernelPlugin implements Plugin<Project> {
         project.apply plugin: 'java'        
         project.apply plugin: 'maven-publish'
 
-        println("Gradle NetKernel Plugin v2.3.1")
+        println("Gradle NetKernel Plugin v2.3.3b")
         configureProject()
         createTasks()
         configureTasks()
@@ -160,11 +161,21 @@ class NetKernelPlugin implements Plugin<Project> {
             //Get dex min version or null
             try
             {
-            	ANDROID_DX_SWITCHES=project.rootProject.gradle.ext.ANDROID_DX_SWITCHES
+            	ANDROID_D8_SWITCHES=project.rootProject.gradle.ext.ANDROID_D8_SWITCHES
             }
             catch(e)
             {	//Ignore as no switches provided            	
             }
+            try
+            {
+            	if(project.rootProject.gradle.ext.ANDROID_DEX_MINIFY!=null)
+            	{	ANDROID_DEX_MINIFY=project.rootProject.gradle.ext.ANDROID_DEX_MINIFY
+            	}
+            }
+            catch(e)
+            {	//Ignore as no switches provided            	
+            }
+            println ("ANDROID_DEX_MINIFY="+ANDROID_DEX_MINIFY)
         }
     }
 
@@ -277,7 +288,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 		}
             			println "Converting module to DEX bytecode and repacking any DEXed lib/ jars"
 		                def f = project.tasks[JAR].archivePath
-                		def exe="dx --dex --output=${f}.tmp.jar ${ANDROID_DX_SWITCHES} ${f}"
+		                def exe="d8 --output ${f}.tmp.jar ${ANDROID_D8_SWITCHES} ${f}"
 	                    println exe
 	                    def proc = exe.execute();
 		                proc.waitFor();
@@ -293,13 +304,15 @@ class NetKernelPlugin implements Plugin<Project> {
 		                }
 		                project.ant.zip(destfile: "${f}".replaceAll(".jar", ".dex.jar")) {
 		                    fileset(dir: "${project.buildDir}/dexwork/") {
-		                        include(name: '**/*.*')
+		                        //include(name: '**/*.*')
+		                        if(ANDROID_DEX_MINIFY)
+	                            {	println("DEX LIB MINIFY TRUE")
+		                        	exclude(name: '**/*.class')	                            	
+	                            }
 		                    }
 		                }
 		                project.delete "${f}.tmp.jar"
-      	
             	}
-            
             }
             
             //Android DEX tasks
@@ -314,7 +327,7 @@ class NetKernelPlugin implements Plugin<Project> {
                 	println "Converting any lib/ jars in the module to DEX bytecode"
 	                def ioTree = project.fileTree(dir: "${project.buildDir}/dexwork/lib")
 	                ioTree.each { f ->
-            			def exe="dx --dex --output=${f}.tmp.jar ${ANDROID_DX_SWITCHES} ${f}"
+            			def exe="d8 --output ${f}.tmp.jar ${ANDROID_D8_SWITCHES} ${f}"
 	                    println exe
 	                    def proc = exe.execute();
 	                    proc.waitFor();
@@ -334,7 +347,11 @@ class NetKernelPlugin implements Plugin<Project> {
 	                    }
 	                    project.ant.zip(destfile: "${f}".replaceAll(".jar", ".dex.jar")) {
 	                        fileset(dir: "${project.buildDir}/dexwork/lib/temp/") {
-	                            include(name: '**/*.*')
+		                        //include(name: '**/*.*')
+		                        if(ANDROID_DEX_MINIFY)
+	                            {	println("DEX MINIFY TRUE")
+		                        	exclude(name: '**/*.class')	                            	
+	                            }
 	                        }
 	                    }
 	                    project.delete "${f}.tmp.jar"

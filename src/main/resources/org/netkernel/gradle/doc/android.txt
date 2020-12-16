@@ -6,10 +6,10 @@ Create Android compatible DEX bytecode jar files.
 
 The '''dex''' task will first run the regular ''build'' task on your module to create a standard Java build.
 
-Once built successfully the task calls the Android Developer studio tool '''dx --dex''' to perform a bytecode conversion
+Once built successfully the task calls the Android Developer studio tool '''d8''' to perform a bytecode conversion
 of the built module to Android's DEX bytecode format.
 
-You '''must''' have the ''dx'' build tool accesible on your path.
+You '''must''' have the ''d8'' build tool accesible on your path - its usually found in ''/Android/Sdk/build-tools/x.x.x/d8''
 
 The dex task will covert the core module and any jar files contained in its lib/ directory.  All will be compiled
 to DEX format. A DEX bytecode jar file is given the file extension of '''.dex.jar'''
@@ -24,6 +24,6 @@ to supply additional command line switches for the '''dx''' tool.
 In this example we set the --min-sdk-version switch
 
 {java}
-gradle.ext.ANDROID_DX_SWITCHES="--min-sdk-version=26"
+gradle.ext.ANDROID_D8_SWITCHES="--min-api 26"
 {/java}
 

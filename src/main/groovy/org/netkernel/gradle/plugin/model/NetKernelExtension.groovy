@@ -110,7 +110,7 @@ class NetKernelExtension {
     }
 
     void useMavenNKLocal() {
-        useMaven propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_LOCAL_URL)
+        useMaven(propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_LOCAL_URL), true)
     }
 
     void useMavenNK() {
@@ -118,9 +118,15 @@ class NetKernelExtension {
         useMaven propertyHelper.findProjectProperty(project, PropertyHelper.MAVEN_NETKERNEL_URL)
     }
 
-    void useMaven(String repoURL) {
+    void useMaven(String repoURL, boolean mAllowInsecureProtocol = false) {
         println("Adding repo: ${repoURL}")
-        project.repositories.maven { url repoURL }
+        project.repositories.maven {
+            url repoURL
+            if (mAllowInsecureProtocol) {
+                println("Setting allowInsecureProtocol for repo")
+                allowInsecureProtocol = true
+            }
+        }
     }
 
     void useMavenCentral() {

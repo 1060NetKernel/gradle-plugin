@@ -52,7 +52,7 @@ dependencies {
 
     // Test Dependencies
     // Friends don't let friends use other unit testing frameworks...
-    testImplementation('org.spockframework:spock-core:0.7-groovy-2.0') {
+    testImplementation('org.spockframework:spock-core:2.3-groovy-3.0') {
         exclude module: "groovy-all"
     }
 

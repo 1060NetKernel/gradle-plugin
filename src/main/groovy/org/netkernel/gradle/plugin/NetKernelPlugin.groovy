@@ -7,7 +7,6 @@ import org.gradle.api.tasks.Delete
 import org.gradle.api.publish.*
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository;
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.internal.impldep.org.apache.maven.project.ProjectUtils;
 import org.netkernel.gradle.plugin.model.*
 import org.netkernel.gradle.plugin.tasks.*
 import org.gradle.util.GradleVersion
